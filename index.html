@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>열린협상연구소 | AI 협상 시스템 · 협상 교육</title>
-<meta name="description" content="8-Block Negotiation Model 기반 AI 협상 시스템, 협상 교육, 컨설팅을 제공하는 열린협상연구소 홈페이지 시안" />
+<meta name="description" content="에잇블록 협상모델™ 기반 시뮬레이션 협상교육 전문기관 | 기업 협상 역량 체계화, B2B 영업·구매협상 컨설팅, AI 협상 시스템" />
 <style>
 :root{
   --navy:#1E4476;
@@ -838,6 +838,7 @@ section{padding:88px 0}
     <div class="modal-body">
       <!-- Formspree 연동됨. 알림 수신 이메일은 Formspree 대시보드에서 관리 -->
       <form id="inquiryForm" action="https://formspree.io/f/xqeowezk" method="POST">
+      <input type="hidden" name="_subject" value="[열린협상연구소] 홈페이지 문의 접수">
       <div class="f-row">
         <div class="f-field full">
           <label>문의 구분 <em>*</em></label>
@@ -850,7 +851,7 @@ section{padding:88px 0}
         <div class="f-field"><label>이름 <em>*</em></label><input type="text" name="이름" required placeholder="홍길동"></div>
         <div class="f-field"><label>회사명</label><input type="text" name="회사명" placeholder="(주)회사명"></div>
         <div class="f-field"><label>연락처 <em>*</em></label><input type="tel" name="연락처" required placeholder="010-0000-0000"></div>
-        <div class="f-field"><label>이메일 <em>*</em></label><input type="email" name="이메일" required placeholder="email@company.com"></div>
+        <div class="f-field"><label>이메일 <em>*</em></label><input type="email" name="email" required placeholder="email@company.com"></div>
         <div class="f-field full"><label>문의 내용 <em>*</em></label><textarea name="문의내용" required placeholder="교육 대상, 인원, 희망 일정 등을 함께 적어주시면 더 정확한 상담이 가능합니다."></textarea></div>
       </div>
       <label class="f-agree"><input type="checkbox" required><span>개인정보 수집 및 이용에 동의합니다. <a href="https://www.opennegolab.com/?mode=privacy" target="_blank" rel="noopener">자세히</a></span></label>
@@ -1078,7 +1079,15 @@ section{padding:88px 0}
           closeInquiry();
           alert('문의가 정상적으로 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.');
         } else {
-          alert('전송 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+          res.json().then(function(data){
+            if(data && data.errors && data.errors.length){
+              alert('전송 실패: ' + data.errors.map(function(x){return x.message;}).join(', '));
+            } else {
+              alert('전송 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+            }
+          }).catch(function(){
+            alert('전송 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+          });
         }
       }).catch(function(){
         alert('네트워크 오류로 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.');
