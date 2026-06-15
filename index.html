@@ -20,6 +20,7 @@
 [hidden]{display:none!important}
 html{scroll-behavior:smooth}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Noto Sans KR','Segoe UI',sans-serif;color:var(--ink);line-height:1.55;background:#fff;word-break:keep-all;overflow-wrap:break-word}
+html{background:#1A3D6B}
 a{text-decoration:none;color:inherit}
 .wrap{width:min(1180px,92%);margin:0 auto}
 .kicker{font-weight:900;color:var(--blue);margin-bottom:10px;letter-spacing:.02em}
@@ -137,52 +138,133 @@ section{padding:88px 0}
 .ai-section{background:linear-gradient(135deg,#1E4476,#27538A);color:#fff}
 .ai-grid{display:grid;grid-template-columns:.92fr 1.08fr;gap:44px;align-items:center}
 .feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:28px}
-.feature-item{display:flex;align-items:center;gap:10px;color:#E9F1FB;font-weight:800;font-size:15px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 14px}
-.feature-item .fi{flex:none;width:26px;height:26px;border-radius:8px;background:rgba(154,211,52,.16);display:flex;align-items:center;justify-content:center}
-.feature-item svg{width:15px;height:15px}
+.feature-item{display:flex;align-items:center;gap:11px;color:#E9F1FB;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:11px 14px}
+.feature-item .fi{flex:none;width:30px;height:30px;border-radius:9px;background:rgba(154,211,52,.16);display:flex;align-items:center;justify-content:center}
+.feature-item svg{width:16px;height:16px}
+.fi-txt{display:flex;flex-direction:column;line-height:1.3;min-width:0}
+.fi-txt b{font-weight:900;font-size:14.5px;color:#fff}
+.fi-txt span{font-weight:600;font-size:11.5px;color:#A9C2E2}
 
 /* AI app screen */
-.app{background:#244B7E;border:1px solid rgba(255,255,255,.14);border-radius:22px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4)}
-.app-bar{height:46px;display:flex;align-items:center;gap:7px;padding:0 14px;background:#1F4373;border-bottom:1px solid rgba(255,255,255,.08)}
-.app-bar .window-dot{background:rgba(255,255,255,.22)}
-.url{margin-left:10px;flex:1;max-width:330px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:12px;color:#9DB1CE;padding:5px 12px;font-weight:700;display:flex;align-items:center;gap:7px}
+.app{background:#fff;border:1px solid #E4E9F1;border-radius:22px;overflow:hidden;box-shadow:0 36px 80px rgba(8,26,51,.45)}
+.app-bar{height:46px;display:flex;align-items:center;gap:7px;padding:0 14px;background:#F5F7FA;border-bottom:1px solid #E4E9F1}
+.app-bar .window-dot{background:#CDD6E4}
+.url{margin-left:10px;flex:1;max-width:330px;background:#fff;border:1px solid #E4E9F1;border-radius:8px;font-size:12px;color:#5F7596;padding:5px 12px;font-weight:700;display:flex;align-items:center;gap:7px}
 .url svg{width:11px;height:11px;flex:none}
-.app-body{display:grid;grid-template-columns:188px 1fr;min-height:430px}
-.app-side{background:#1F4373;border-right:1px solid rgba(255,255,255,.08);padding:14px 12px}
-.proj{font-size:11px;font-weight:950;color:#7E92B3;letter-spacing:.06em;margin:2px 4px 4px}
-.proj-name{font-size:13px;font-weight:900;color:#fff;margin:0 4px 14px}
-.side-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:9px;font-size:12px;font-weight:800;color:#8FA3C2;margin-bottom:3px}
-.side-item .st{flex:none;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-.side-item.done .st{background:#9AD334}
-.side-item.done .st svg{width:9px;height:9px}
-.side-item.done{color:#D8E5F8}
-.side-item.run{background:rgba(154,211,52,.12);color:#CDE99A;border:1px solid rgba(154,211,52,.3)}
-.side-item.run .st{background:transparent}
-.side-item.run .st i{width:8px;height:8px;border-radius:50%;background:#9AD334;display:block;animation:pulse 1.3s ease infinite}
-.side-item.wait .st{border:1.6px solid #3A4F73}
-.app-main{padding:18px 18px 14px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,#244B7E,#214676)}
-.amsg-user{align-self:flex-end;max-width:82%;background:#2E5694;color:#E6EFFB;padding:10px 14px;border-radius:13px;border-bottom-right-radius:4px;font-size:13px;font-weight:600}
-.acard{background:#27538C;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:13px 15px;max-width:94%}
-.acard-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}
-.acard-head .av{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#3F5F9E,#9AD334);color:#1E4476;font-size:9.5px;font-weight:950;display:flex;align-items:center;justify-content:center}
-.acard-head b{font-size:12.5px;color:#fff}
-.acard-head span{font-size:11px;color:#7E92B3;font-weight:800;margin-left:auto}
-.acard p{margin:0;font-size:12.5px;color:#C2D2E8;line-height:1.6}
-.ztrack-d{position:relative;height:13px;border-radius:999px;background:rgba(255,255,255,.08);margin:8px 0 4px;overflow:hidden}
-.ztrack-d .zbar.ours{background:linear-gradient(90deg,#3F5F9E,#6E8FD0)}
-.ztrack-d .zbar.theirs{background:rgba(255,255,255,.2)}
-.zlabel-d{display:flex;justify-content:space-between;font-size:10px;font-weight:800;color:#7E92B3}
-.zopa-tag{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;font-weight:950;color:#CDE99A;background:rgba(154,211,52,.12);border:1px solid rgba(154,211,52,.35);padding:4px 10px;border-radius:999px}
-.opt-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
-.opt-chip{font-size:11px;font-weight:900;color:#D8E5F8;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);padding:5px 11px;border-radius:999px}
-.opt-chip.hot{color:#1E4476;background:#9AD334;border-color:#9AD334}
-.acard.final{background:linear-gradient(135deg,rgba(154,211,52,.16),rgba(154,211,52,.07));border-color:rgba(154,211,52,.4)}
-.acard.final .dl{margin-top:10px;display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:950;color:#1E4476;background:#9AD334;padding:7px 13px;border-radius:9px}
-.acard.final .dl svg{width:12px;height:12px}
-.app-input{margin-top:auto;display:flex;align-items:center;gap:9px;background:#1F4373;border:1px solid rgba(255,255,255,.12);border-radius:13px;padding:10px 12px}
-.app-input span{flex:1;font-size:12.5px;color:#5F7596;font-weight:700}
-.app-input .send{flex:none;width:30px;height:30px;border-radius:9px;background:#9AD334;display:flex;align-items:center;justify-content:center}
-.app-input .send svg{width:14px;height:14px}
+/* ===== AI pipeline ===== */
+.pipe{padding:16px 18px 18px;background:#fff}
+.pstep{border:1px solid #E7ECF3;border-radius:15px;padding:11px 14px;background:#FBFCFE;transition:border-color .4s,box-shadow .4s,background .4s}
+.pstep.active{border-color:#9AD334;box-shadow:0 0 0 3px rgba(154,211,52,.16);background:#fff}
+.pstep-head{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:950;color:#10203D}
+.pnum{flex:none;width:21px;height:21px;border-radius:7px;background:#27538A;color:#fff;font-size:11px;font-weight:950;display:flex;align-items:center;justify-content:center}
+.pstat{margin-left:auto;font-size:11px;font-weight:900;padding:3px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
+.pstat.done{color:#4E7C0E;background:rgba(154,211,52,.16);border:1px solid rgba(154,211,52,.45)}
+.pstat.run{color:#1E4476;background:rgba(63,95,158,.12);border:1px solid rgba(63,95,158,.3)}
+.pstat.run i{width:7px;height:7px;border-radius:50%;background:#3F5F9E;animation:pulse 1.1s ease infinite}
+.pstat.wait{color:#8295B2;background:#EEF2F7;border:1px solid #E0E7F0}
+/* step1 input */
+.inputcard{margin-top:9px;display:flex;flex-direction:column;gap:5px}
+.ic-row{display:flex;gap:10px;font-size:12px;align-items:baseline}
+.ic-k{flex:none;width:46px;font-weight:900;color:#8295B2}
+.ic-v{font-weight:700;color:#33425C}
+/* flow arrow */
+.pflow{display:flex;justify-content:center;padding:3px 0}
+.pflow svg{width:19px;height:19px;opacity:.85}
+.engine{margin-top:10px}
+/* step2 engine */
+.eng-bar{height:8px;border-radius:999px;background:#E7ECF3;overflow:hidden}
+.eng-fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#3F5F9E,#9AD334);transition:width .5s linear}
+.blocks{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}
+.bk{font-size:10.5px;font-weight:900;text-align:center;padding:5px 4px;border-radius:8px;color:#8295B2;background:#F1F4F9;border:1px solid #E7ECF3;transition:all .3s}
+.bk.done{color:#4E7C0E;background:rgba(154,211,52,.15);border-color:rgba(154,211,52,.4)}
+.bk.run{color:#fff;background:linear-gradient(135deg,#3F5F9E,#27538A);border-color:#27538A;transform:translateY(-1px);box-shadow:0 4px 12px rgba(39,83,138,.3)}
+.eng-now{margin-top:8px;font-size:11.5px;font-weight:800;color:#3F5F9E;display:flex;align-items:center;gap:7px;min-height:16px}
+.eng-now:before{content:"";width:6px;height:6px;border-radius:50%;background:#9AD334;animation:pulse 1s ease infinite}
+.eng-now.done:before{animation:none}
+/* step3 outputs : document stack with depth */
+.docview{margin-top:10px;perspective:1100px}
+.docstack{position:relative;height:210px;display:flex;align-items:center;justify-content:center}
+.doc{position:absolute;width:228px;opacity:0;transform:translateY(40px) scale(.86);transition:opacity .55s cubic-bezier(.22,.61,.36,1),transform .55s cubic-bezier(.22,.61,.36,1);transform-style:preserve-3d}
+.doc.show{opacity:1}
+/* shown positions: gentle fanned depth, last on top & upright */
+.doc[data-o="0"].show{transform:translate(-186px,20px) rotate(-11deg) scale(.92);z-index:1}
+.doc[data-o="1"].show{transform:translate(-95px,4px) rotate(-6deg) scale(.96);z-index:2}
+.doc[data-o="2"].show{transform:translate(0,-6px) rotate(0deg) scale(1);z-index:3}
+.doc[data-o="3"].show{transform:translate(95px,4px) rotate(6deg) scale(.96);z-index:4}
+.doc[data-o="4"].show{transform:translate(186px,20px) rotate(11deg) scale(.92);z-index:5}
+.doc-page{background:#fff;border:1px solid #E1E7F0;border-radius:12px;box-shadow:0 16px 34px rgba(16,32,61,.18);padding:13px 14px 14px;position:relative;overflow:hidden}
+.doc-page:before{content:"";position:absolute;top:0;left:0;width:100%;height:4px}
+.doc[data-o="0"] .doc-page:before{background:#3F5F9E}
+.doc[data-o="1"] .doc-page:before{background:#27538A}
+.doc[data-o="2"] .doc-page:before{background:#D9821A}
+.doc[data-o="3"] .doc-page:before{background:#7CB518}
+.doc[data-o="4"] .doc-page:before{background:#C0392B}
+/* common header */
+.dp-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.dp-tab{font-size:9px;font-weight:950;letter-spacing:.03em;padding:3px 8px;border-radius:6px}
+.dp-tab.plan{color:#3F5F9E;background:rgba(63,95,158,.12)}
+.dp-tab.report{color:#27538A;background:rgba(39,83,138,.12)}
+.dp-tab.ppt{color:#D9821A;background:rgba(217,130,26,.14)}
+.dp-tab.doc4{color:#5E8F12;background:rgba(124,181,24,.16)}
+.dp-tab.video{color:#C0392B;background:rgba(192,57,43,.12)}
+.dp-meta{font-size:8.5px;font-weight:800;color:#A6B3C8}
+.dp-h{font-size:11.5px;font-weight:950;color:#10203D;line-height:1.32}
+.dp-rule{height:1px;background:#EAEFF5;margin:8px 0 9px}
+.dp-rule:after{content:"";display:block;width:34px;height:2px;background:#9AD334;margin-top:-1px}
+/* plan */
+.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:9px}
+.pg-cell{display:flex;justify-content:space-between;align-items:baseline;background:#F5F8FC;border:1px solid #EAEFF5;border-radius:7px;padding:5px 7px}
+.pg-k{font-size:8.5px;font-weight:900;color:#8295B2}
+.pg-v{font-size:9px;font-weight:900;color:#33425C}
+.pg-v.hi{color:#4E7C0E}
+.dp-steps{display:flex;flex-direction:column;gap:6px}
+.dst{display:flex;align-items:center;gap:7px;font-size:9px;font-weight:900;color:#5A6B86}
+.dst-n{flex:none;width:14px;height:14px;border-radius:5px;background:#3F5F9E;color:#fff;font-size:8px;display:flex;align-items:center;justify-content:center}
+.dst-bar{flex:1;height:6px;border-radius:999px;background:linear-gradient(90deg,#3F5F9E,#9AD334)}
+/* report */
+.rep-kpi{display:flex;gap:6px;margin-bottom:9px}
+.kpi{flex:1;background:#F5F8FC;border:1px solid #EAEFF5;border-radius:8px;padding:6px 4px;text-align:center}
+.kpi b{display:block;font-size:12px;font-weight:950;color:#27538A}
+.kpi span{font-size:7.5px;font-weight:800;color:#8295B2}
+.rep-chart{height:46px;display:flex;align-items:flex-end;gap:5px}
+.rep-chart span{flex:1;border-radius:3px 3px 0 0;background:linear-gradient(180deg,#5C7CB8,#3F5F9E)}
+.rep-chart span:nth-child(4){background:linear-gradient(180deg,#A9D957,#7CB518)}
+/* ppt */
+.ppt-slide{aspect-ratio:16/9;border-radius:8px;background:linear-gradient(135deg,#1E4476,#2C5A92);padding:9px 11px;display:flex;flex-direction:column;gap:4px;position:relative;margin-bottom:8px}
+.ps-no{font-size:7.5px;font-weight:950;color:#CDE99A;letter-spacing:.06em}
+.ps-title{font-size:10px;font-weight:950;color:#fff;margin-bottom:2px}
+.ps-li{display:flex;align-items:center;gap:5px;font-size:8px;font-weight:700;color:#D6E3F4}
+.ps-li i{flex:none;width:5px;height:5px;border-radius:50%;background:#9AD334}
+.ppt-thumbs{display:flex;gap:5px}
+.ppt-thumbs span{flex:1;height:12px;border-radius:3px;background:#EAEFF5}
+.ppt-thumbs span.on{background:#D9821A}
+/* contract */
+.ct-clause{display:flex;gap:7px;align-items:baseline;margin-bottom:6px;font-size:9px}
+.ct-clause b{flex:none;font-weight:950;color:#5E8F12}
+.ct-clause span{font-weight:700;color:#46566F}
+.ct-clause em{font-style:normal;font-weight:950;color:#10203D}
+.ct-clause.mut span{color:#5E8F12;font-weight:900}
+.ct-sign{display:flex;justify-content:space-between;margin-top:11px}
+.ct-sign .sg{width:44%;text-align:center;font-size:8.5px;font-weight:900;color:#A6B3C8}
+.ct-sign .sg i{display:block;height:1px;background:#CDD7E4;margin-bottom:4px}
+/* video */
+.doc-page.video{padding-bottom:13px}
+.vid-frame{position:relative;aspect-ratio:16/9;border-radius:9px;overflow:hidden;background:#0E2747}
+.vid-grad{position:absolute;inset:0;background:radial-gradient(120% 120% at 70% 20%,#27538A 0%,#16335A 55%,#0C1F3A 100%)}
+.vid-tag{position:absolute;top:8px;left:9px;font-size:7px;font-weight:950;letter-spacing:.1em;color:#9AD334;z-index:2}
+.vid-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.16);backdrop-filter:blur(2px);border:1.5px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;z-index:2}
+.vid-play svg{width:15px;height:15px;margin-left:2px}
+.vid-play:after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1.5px solid rgba(154,211,52,.5);animation:vidpulse 1.8s ease-out infinite}
+@keyframes vidpulse{0%{transform:scale(.8);opacity:.8}100%{transform:scale(1.5);opacity:0}}
+.vid-cap{position:absolute;left:9px;bottom:22px;font-size:8px;font-weight:800;color:#E6EFFB;z-index:2}
+.vid-ctrl{position:absolute;left:9px;right:9px;bottom:7px;display:flex;align-items:center;gap:6px;z-index:2}
+.vc-pp{flex:none;width:13px;height:13px;display:flex;align-items:center;justify-content:center}
+.vc-pp svg{width:9px;height:9px}
+.vc-track{flex:1;height:3px;border-radius:999px;background:rgba(255,255,255,.25);position:relative;overflow:hidden}
+.vc-prog{position:absolute;left:0;top:0;height:100%;width:32%;background:#9AD334;border-radius:999px;animation:vidprog 6s linear infinite}
+@keyframes vidprog{0%{width:8%}100%{width:96%}}
+.vc-time{flex:none;font-size:7px;font-weight:800;color:#CBD8EA}
+.w80{width:80%}.w70{width:70%}.w65{width:65%}.w60{width:60%}.w45{width:45%}
 
 
 /* ---------- COMPARE ---------- */
@@ -278,6 +360,11 @@ section{padding:88px 0}
 @media(max-width:620px){.ref-card{width:272px}.ref-nav{display:none}}
 @media(prefers-reduced-motion:reduce){.ref-viewport{overflow-x:auto}.ref-row{transition:none}}
 
+/* ---------- Reveal on scroll ---------- */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1);will-change:opacity,transform}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+
 
 /* ---------- INQUIRY MODAL (문의 게시판) ---------- */
 .modal-bg{position:fixed;inset:0;background:rgba(8,26,51,.55);backdrop-filter:blur(4px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
@@ -335,8 +422,14 @@ section{padding:88px 0}
   .block-grid{grid-template-columns:repeat(2,1fr)}
   .program-grid,.case-grid,.video-duo{grid-template-columns:1fr}
   .diff-grid{grid-template-columns:repeat(2,1fr)}
-  .app-body{grid-template-columns:1fr}
-  .app-side{display:none}
+  .docstack{height:228px;overflow:hidden}
+  .doc{width:182px}
+  .doc[data-o="0"].show{transform:translate(-66px,16px) rotate(-9deg) scale(.86)}
+  .doc[data-o="1"].show{transform:translate(-34px,4px) rotate(-5deg) scale(.9)}
+  .doc[data-o="2"].show{transform:translate(0,-4px) rotate(0deg) scale(.93)}
+  .doc[data-o="3"].show{transform:translate(34px,4px) rotate(5deg) scale(.9)}
+  .doc[data-o="4"].show{transform:translate(66px,16px) rotate(9deg) scale(.86)}
+  .blocks{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:620px){
   section{padding:64px 0}
@@ -430,8 +523,8 @@ section{padding:88px 0}
 <section class="stats-section">
   <div class="wrap">
     <div class="stats-box">
-      <div class="stat"><strong><span class="count" data-target="13">0</span>+년</strong><br>협상 전문 연구</div>
-      <div class="stat"><strong><span class="count" data-target="300">0</span>+기업</strong><br>교육 &amp; 컨설팅</div>
+      <div class="stat"><strong><span class="count" data-target="15">0</span>+년</strong><br>협상 전문 연구</div>
+      <div class="stat"><strong><span class="count" data-target="100">0</span>+기업</strong><br>교육 &amp; 컨설팅</div>
       <div class="stat"><strong><span class="count" data-target="20000">0</span>+명</strong><br>협상 역량 강화</div>
       <div class="stat"><strong>독자적</strong><br><span style="position:relative;display:inline-block;">에잇블록협상모델<sup style="position:absolute;top:-2px;right:-12px;font-size:11px;font-weight:800;color:var(--blue);">™</sup></span></div>
     </div>
@@ -564,71 +657,155 @@ section{padding:88px 0}
       <h2 style="color:#fff;">8-Block Negotiation AI Agent</h2>
       <p style="font-size:18px;color:#DCE8F8;">열린협상연구소의 독자적 협상모델을 구현한 에잇블록 협상 AI 에이전트가 협상 전략 수립부터 보고서 작성까지 전 과정을 지원합니다.</p>
       <div class="feature-grid">
-        <div class="feature-item"><span class="fi"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V9M10 19V5M16 19v-8M22 19H2" stroke="#9AD334" stroke-width="2.4" stroke-linecap="round"/></svg></span>데이터 기반 의사결정</div>
-        <div class="feature-item"><span class="fi"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" stroke="#9AD334" stroke-width="2.2" stroke-linejoin="round"/></svg></span>협상 전략 자동화</div>
-        <div class="feature-item"><span class="fi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 3 19h18L12 3z" stroke="#9AD334" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 10v4M12 16.5v.5" stroke="#9AD334" stroke-width="2.4" stroke-linecap="round"/></svg></span>리스크 분석</div>
-        <div class="feature-item"><span class="fi"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2.5" stroke="#9AD334" stroke-width="2.2"/><path d="M9 8h6M9 12h6M9 16h4" stroke="#9AD334" stroke-width="2.2" stroke-linecap="round"/></svg></span>보고서 자동 생성</div>
+        <div class="feature-item"><span class="fi"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V9M10 19V5M16 19v-8M22 19H2" stroke="#9AD334" stroke-width="2.4" stroke-linecap="round"/></svg></span><span class="fi-txt"><b>데이터 기반 의사결정</b><span>감과 경험이 아닌 정량 분석으로</span></span></div>
+        <div class="feature-item"><span class="fi"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" stroke="#9AD334" stroke-width="2.2" stroke-linejoin="round"/></svg></span><span class="fi-txt"><b>협상 전략 자동 설계</b><span>8-Block 모델로 전략을 구조화</span></span></div>
+        <div class="feature-item"><span class="fi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 3 19h18L12 3z" stroke="#9AD334" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 10v4M12 16.5v.5" stroke="#9AD334" stroke-width="2.4" stroke-linecap="round"/></svg></span><span class="fi-txt"><b>ZOPA · 리스크 진단</b><span>합의 가능 구간과 위험을 사전 점검</span></span></div>
+        <div class="feature-item"><span class="fi"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2.5" stroke="#9AD334" stroke-width="2.2"/><path d="M9 8h6M9 12h6M9 16h4" stroke="#9AD334" stroke-width="2.2" stroke-linecap="round"/></svg></span><span class="fi-txt"><b>협상 산출물 자동 생성</b><span>계획서·보고서·제안서까지 한 번에</span></span></div>
       </div>
       <a href="#contact" style="margin-top:28px;display:inline-flex;padding:14px 20px;border:1px solid rgba(255,255,255,.3);border-radius:12px;color:#fff;font-weight:900;">AI 시스템 문의하기 →</a>
     </div>
 
-    <!-- 실제 AI 앱 화면 목업 -->
+    <!-- 8-Block AI 분석 파이프라인 목업 -->
     <div class="app">
       <div class="app-bar">
         <span class="window-dot"></span><span class="window-dot"></span><span class="window-dot"></span>
         <span class="url"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2" stroke="#9DB1CE" stroke-width="2.2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#9DB1CE" stroke-width="2.2"/></svg>app.opennegolab.ai / 8-block-agent</span>
         <span class="live-pill" style="margin-left:auto"><i></i>LIVE</span>
       </div>
-      <div class="app-body">
-        <div class="app-side">
-          <div class="proj">PROJECT</div>
-          <div class="proj-name">공급사 단가 협상</div>
-          <div class="side-item done"><span class="st"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-11" stroke="#10203D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>B1 현황 분석</div>
-          <div class="side-item done"><span class="st"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-11" stroke="#10203D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>B2 목표 설정</div>
-          <div class="side-item done"><span class="st"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-11" stroke="#10203D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>B3 ZOPA 설정</div>
-          <div class="side-item done"><span class="st"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-11" stroke="#10203D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>B4 BATNA 검토</div>
-          <div class="side-item done"><span class="st"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-11" stroke="#10203D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>B5 욕구 탐색</div>
-          <div class="side-item run"><span class="st"><i></i></span>B6 창조적 대안</div>
-          <div class="side-item wait"><span class="st"></span>B7 ZOPA 최적화</div>
-          <div class="side-item wait"><span class="st"></span>B8 최종안 도출</div>
-        </div>
-        <div class="app-main">
-          <div class="amsg-user">상대 BATNA를 반영해서 ZOPA를 다시 분석해줘.</div>
 
-          <div class="acard">
-            <div class="acard-head"><span class="av">8B</span><b>Block 3 · ZOPA 분석</b><span>방금 전</span></div>
-            <p>당사 수용 범위 <b style="color:#fff">0~5%</b>, 상대 추정 범위 <b style="color:#fff">4~12%</b>로 분석됩니다.</p>
-            <div class="ztrack-d">
-              <div class="zbar ours" style="width:42%"></div>
-              <div class="zbar theirs" style="width:66%"></div>
-              <div class="zbar zone" style="left:34%;width:8%"></div>
-            </div>
-            <div class="zlabel-d"><span>0%</span><span>합의 가능 구간</span><span>12%</span></div>
-            <span class="zopa-tag">● 예상 합의 구간 4~5%</span>
-          </div>
+      <div class="pipe">
 
-          <div class="acard">
-            <div class="acard-head"><span class="av">8B</span><b>Block 6 · Creative Option</b><span>생성 중</span></div>
-            <div class="opt-chips">
-              <span class="opt-chip hot">물량 연동 단가</span>
-              <span class="opt-chip">계약기간 연장 조건</span>
-              <span class="opt-chip">결제조건 단축 교환</span>
-              <span class="opt-chip">품질보증 범위 확대</span>
-            </div>
-            <div class="dots" style="margin-top:8px"><i></i><i></i><i></i></div>
-          </div>
-
-          <div class="acard final">
-            <div class="acard-head"><span class="av">8B</span><b>Block 8 · 최종 협상안 보고서</b><span>대기</span></div>
-            <p>분석 완료 시 임원 보고용 협상안 보고서가 자동 생성됩니다.</p>
-            <span class="dl"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4v11M7 11l5 5 5-5M5 20h14" stroke="#1E4476" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>보고서 다운로드</span>
-          </div>
-
-          <div class="app-input">
-            <span>협상 상황을 입력하세요…</span>
-            <span class="send"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12 20 4l-4 16-5-6-7-2z" stroke="#1E4476" stroke-width="2.2" stroke-linejoin="round"/></svg></span>
+        <!-- STEP 1 : 정보 입력 -->
+        <div class="pstep" id="pStep1">
+          <div class="pstep-head"><span class="pnum">1</span>정보 입력<span class="pstat done" id="pStat1">입력 완료</span></div>
+          <div class="inputcard">
+            <div class="ic-row"><span class="ic-k">협상 건</span><span class="ic-v">공급사 단가 12% 인상 대응</span></div>
+            <div class="ic-row"><span class="ic-k">목표</span><span class="ic-v">인상폭 5% 이내 합의</span></div>
+            <div class="ic-row"><span class="ic-k">제약</span><span class="ic-v">연내 계약 갱신 · 공급 안정성 유지</span></div>
           </div>
         </div>
+
+        <div class="pflow"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4v16M6 14l6 6 6-6" stroke="#9AD334" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+        <!-- STEP 2 : 8-Block 분석 엔진 -->
+        <div class="pstep" id="pStep2">
+          <div class="pstep-head"><span class="pnum">2</span>8-Block 분석<span class="pstat run" id="pStat2"><i></i>분석 중</span></div>
+          <div class="engine">
+            <div class="eng-bar"><div class="eng-fill" id="engFill"></div></div>
+            <div class="blocks" id="blocks">
+              <span class="bk" data-b="B1">B1 현황</span>
+              <span class="bk" data-b="B2">B2 목표</span>
+              <span class="bk" data-b="B3">B3 ZOPA</span>
+              <span class="bk" data-b="B4">B4 BATNA</span>
+              <span class="bk" data-b="B5">B5 욕구</span>
+              <span class="bk" data-b="B6">B6 대안</span>
+              <span class="bk" data-b="B7">B7 최적화</span>
+              <span class="bk" data-b="B8">B8 최종안</span>
+            </div>
+            <div class="eng-now" id="engNow">B3 · ZOPA 합의 가능 구간 산출 중…</div>
+          </div>
+        </div>
+
+        <div class="pflow"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4v16M6 14l6 6 6-6" stroke="#9AD334" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+        <!-- STEP 3 : 산출물 -->
+        <div class="pstep" id="pStep3">
+          <div class="pstep-head"><span class="pnum">3</span>산출물 생성<span class="pstat wait" id="pStat3">대기</span></div>
+
+          <div class="docview" id="docview">
+            <!-- 떠오르는 문서 스택 -->
+            <div class="docstack" id="docstack">
+
+              <!-- 0. 협상 계획서 -->
+              <div class="doc" data-o="0">
+                <div class="doc-page">
+                  <div class="dp-top"><span class="dp-tab plan">협상 계획서</span><span class="dp-meta">PDF · 8p</span></div>
+                  <div class="dp-h">공급사 단가협상 전략 계획서</div>
+                  <div class="dp-rule"></div>
+                  <div class="plan-grid">
+                    <div class="pg-cell"><span class="pg-k">목표</span><span class="pg-v hi">인상 5% 이내</span></div>
+                    <div class="pg-cell"><span class="pg-k">ZOPA</span><span class="pg-v">4~5%</span></div>
+                    <div class="pg-cell"><span class="pg-k">BATNA</span><span class="pg-v">대체 공급선</span></div>
+                    <div class="pg-cell"><span class="pg-k">레버리지</span><span class="pg-v">물량 연동</span></div>
+                  </div>
+                  <div class="dp-steps">
+                    <div class="dst"><span class="dst-n">1</span>탐색<span class="dst-bar"></span></div>
+                    <div class="dst"><span class="dst-n">2</span>제안<span class="dst-bar w70"></span></div>
+                    <div class="dst"><span class="dst-n">3</span>합의<span class="dst-bar w45"></span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 1. 분석 보고서 -->
+              <div class="doc" data-o="1">
+                <div class="doc-page">
+                  <div class="dp-top"><span class="dp-tab report">분석 보고서</span><span class="dp-meta">PDF · 12p</span></div>
+                  <div class="dp-h">ZOPA · BATNA 분석 결과</div>
+                  <div class="dp-rule"></div>
+                  <div class="rep-kpi">
+                    <div class="kpi"><b>4~5%</b><span>합의 구간</span></div>
+                    <div class="kpi"><b>+7%p</b><span>절감 효과</span></div>
+                    <div class="kpi"><b>82</b><span>우위 지수</span></div>
+                  </div>
+                  <div class="rep-chart">
+                    <span style="height:40%"></span><span style="height:62%"></span><span style="height:50%"></span><span style="height:86%"></span><span style="height:58%"></span><span style="height:72%"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. 제안 프레젠테이션 -->
+              <div class="doc" data-o="2">
+                <div class="doc-page">
+                  <div class="dp-top"><span class="dp-tab ppt">제안 PT</span><span class="dp-meta">PPTX · 14매</span></div>
+                  <div class="dp-h">상대 설득용 제안 슬라이드</div>
+                  <div class="dp-rule"></div>
+                  <div class="ppt-slide">
+                    <span class="ps-no">03 / 14</span>
+                    <span class="ps-title">상호 이익 합의안</span>
+                    <span class="ps-li"><i></i>물량 연동 단가 구조</span>
+                    <span class="ps-li"><i></i>계약기간 연장 옵션</span>
+                    <span class="ps-li"><i></i>결제조건 교환</span>
+                  </div>
+                  <div class="ppt-thumbs"><span></span><span class="on"></span><span></span><span></span></div>
+                </div>
+              </div>
+
+              <!-- 3. 계약서 초안 -->
+              <div class="doc" data-o="3">
+                <div class="doc-page">
+                  <div class="dp-top"><span class="dp-tab doc4">계약서 초안</span><span class="dp-meta">DOCX · 6p</span></div>
+                  <div class="dp-h">단가 합의 계약서(안)</div>
+                  <div class="dp-rule"></div>
+                  <div class="ct-clause"><b>제1조</b><span>목적 — 단가 조정 및 공급 조건</span></div>
+                  <div class="ct-clause"><b>제2조</b><span>단가 — 기준가 대비 <em>+4.5%</em></span></div>
+                  <div class="ct-clause"><b>제3조</b><span>계약기간 — <em>24개월</em></span></div>
+                  <div class="ct-clause mut"><b>제4조</b><span>물량 연동 조정 조항</span></div>
+                  <div class="ct-sign"><span class="sg"><i></i>갑 (인)</span><span class="sg"><i></i>을 (인)</span></div>
+                </div>
+              </div>
+
+              <!-- 4. 브리핑 영상 -->
+              <div class="doc" data-o="4">
+                <div class="doc-page video">
+                  <div class="dp-top"><span class="dp-tab video">브리핑 영상</span><span class="dp-meta">MP4 · 2:18</span></div>
+                  <div class="vid-frame">
+                    <div class="vid-grad"></div>
+                    <span class="vid-tag">AI BRIEFING</span>
+                    <span class="vid-play"><svg viewBox="0 0 24 24" fill="none"><path d="M8 5.5v13l11-6.5z" fill="#fff"/></svg></span>
+                    <div class="vid-cap">협상 전략 핵심 요약 브리핑</div>
+                    <div class="vid-ctrl">
+                      <span class="vc-pp"><svg viewBox="0 0 24 24" fill="none"><path d="M8 5.5v13l11-6.5z" fill="#fff"/></svg></span>
+                      <span class="vc-track"><span class="vc-prog"></span></span>
+                      <span class="vc-time">0:42 / 2:18</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -999,6 +1176,124 @@ section{padding:88px 0}
     var sb = document.querySelector('.stats-box');
     if(sb) io.observe(sb);
   } else { countUp(); }
+
+
+  /* ---------- Reveal on scroll (전체 섹션) ---------- */
+  (function(){
+    // hero 제외한 각 section의 내부 콘텐츠를 reveal 대상으로 (섹션 배경은 항상 유지)
+    var secs = document.querySelectorAll('section:not(.hero)');
+    var targets = [];
+    secs.forEach(function(s){
+      // 직계 자식 요소들을 reveal 처리 (배경은 섹션에 그대로 남음)
+      var kids = s.children.length ? Array.prototype.slice.call(s.children) : [s];
+      kids.forEach(function(k){ k.classList.add('reveal'); targets.push(k); });
+    });
+    if(reduced || !('IntersectionObserver' in window)){
+      targets.forEach(function(t){ t.classList.add('in'); });
+      return;
+    }
+    var ro = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); ro.unobserve(e.target); }
+      });
+    },{threshold:.08, rootMargin:'0px 0px -6% 0px'});
+    targets.forEach(function(t){ ro.observe(t); });
+  })();
+
+
+  /* ---------- 8-Block AI 분석 파이프라인 ---------- */
+  (function(){
+    var section = document.getElementById('ai-system');
+    var blocks  = document.querySelectorAll('#blocks .bk');
+    var fill    = document.getElementById('engFill');
+    var now     = document.getElementById('engNow');
+    var stat2   = document.getElementById('pStat2');
+    var stat3   = document.getElementById('pStat3');
+    var step2   = document.getElementById('pStep2');
+    var step3   = document.getElementById('pStep3');
+    var outs    = document.querySelectorAll('#docstack .doc');
+    if(!section || !blocks.length) return;
+
+    var msgs = [
+      'B1 \u00b7 \ud611\uc0c1 \ud604\ud669\uacfc \uc7c1\uc810 \uad6c\uc870\ud654\u2026',
+      'B2 \u00b7 \ubaa9\ud45c\u00b7\uc6b0\uc120\uc21c\uc704 \uc815\ub82c\u2026',
+      'B3 \u00b7 ZOPA \ud569\uc758 \uac00\ub2a5 \uad6c\uac04 \uc0b0\ucd9c\u2026',
+      'B4 \u00b7 \uc591\uce21 BATNA \ube44\uad50 \ud3c9\uac00\u2026',
+      'B5 \u00b7 \ud575\uc2ec \uc695\uad6c \ud0d0\uc0c9\u2026',
+      'B6 \u00b7 \ucc3d\uc870\uc801 \ub300\uc548(\uc635\uc158) \uc0dd\uc131\u2026',
+      'B7 \u00b7 ZOPA \ub0b4 \ucd5c\uc801 \ud569\uc758\uc548 \ucd5c\uc801\ud654\u2026',
+      'B8 \u00b7 \ucd5c\uc885 \ud611\uc0c1\uc548\u00b7\uc0b0\ucd9c\ubb3c \uad6c\uc131\u2026'
+    ];
+    var timers = [];
+    function clearAll(){ timers.forEach(clearTimeout); timers = []; }
+    function T(fn,ms){ timers.push(setTimeout(fn,ms)); }
+
+    function reset(){
+      clearAll();
+      blocks.forEach(function(b){ b.className='bk'; });
+      fill.style.transition='none'; fill.style.width='0';
+      void fill.offsetWidth;
+      fill.style.transition='width .5s linear';
+      now.classList.remove('done'); now.textContent='\ubd84\uc11d \ub300\uae30 \uc911\u2026';
+      stat2.className='pstat wait'; stat2.textContent='\ub300\uae30';
+      step2.classList.remove('active');
+      stat3.className='pstat wait'; stat3.textContent='\ub300\uae30';
+      step3.classList.remove('active');
+      outs.forEach(function(o){ o.classList.remove('show'); });
+    }
+
+    function runOutputs(i){
+      if(i===0){ stat3.className='pstat run'; stat3.innerHTML='<i></i>\uc0dd\uc131 \uc911'; step3.classList.add('active'); }
+      if(i>=outs.length){
+        stat3.className='pstat done'; stat3.textContent='5\uc885 \uc644\ub8cc';
+        T(function(){ reset(); run(); }, 4200);
+        return;
+      }
+      outs[i].classList.add('show');
+      T(function(){ runOutputs(i+1); }, 760);
+    }
+
+    function runBlocks(i){
+      if(i>=blocks.length){
+        now.classList.add('done'); now.textContent='8-Block \ubd84\uc11d \uc644\ub8cc \u00b7 \uc0b0\ucd9c\ubb3c \uc0dd\uc131 \uc2dc\uc791';
+        stat2.className='pstat done'; stat2.textContent='\ubd84\uc11d \uc644\ub8cc';
+        step2.classList.remove('active');
+        T(function(){ runOutputs(0); }, 600);
+        return;
+      }
+      if(i>0) blocks[i-1].className='bk done';
+      blocks[i].className='bk run';
+      now.textContent = msgs[i];
+      fill.style.width = Math.round(((i+1)/blocks.length)*100) + '%';
+      T(function(){ runBlocks(i+1); }, 560);
+    }
+
+    function run(){
+      step2.classList.add('active');
+      stat2.className='pstat run'; stat2.innerHTML='<i></i>\ubd84\uc11d \uc911';
+      now.classList.remove('done');
+      T(function(){ runBlocks(0); }, 500);
+    }
+
+    if(reduced){
+      blocks.forEach(function(b){ b.className='bk done'; });
+      fill.style.width='100%'; now.classList.add('done'); now.textContent='8-Block \ubd84\uc11d \uc644\ub8cc';
+      stat2.className='pstat done'; stat2.textContent='\ubd84\uc11d \uc644\ub8cc';
+      stat3.className='pstat done'; stat3.textContent='5\uc885 \uc644\ub8cc';
+      outs.forEach(function(o){ o.classList.add('show'); });
+      return;
+    }
+
+    var started=false;
+    if('IntersectionObserver' in window){
+      var pio=new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          if(e.isIntersecting && !started){ started=true; reset(); run(); }
+        });
+      },{threshold:.3});
+      pio.observe(section);
+    } else { reset(); run(); }
+  })();
 
 
   /* ---------- REFERENCE CAROUSEL: 5초 정지 후 한 페이지씩 이동 ---------- */
