@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>1학년 배움터</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+
+  :root{
+    --bg:#F6F3EC; --surface:#FFFFFF; --ink:#2B2B33; --ink-soft:#7A7A86; --line:#ECE7DC;
+    --brand:#3B4A7A; --brand-soft:#EEF1F8; --accent:#E8755A; --good:#3FAE8C; --wrong:#E8755A; --gold:#E0A93B;
+    --radius:18px;
+    --shadow:0 1px 2px rgba(43,43,51,.04), 0 8px 24px rgba(43,43,51,.06);
+    --shadow-sm:0 1px 2px rgba(43,43,51,.05), 0 3px 10px rgba(43,43,51,.05);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ background:var(--bg); }
+  body {
+    font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif; color:var(--ink);
+    height:100vh; height:100dvh; display:flex; flex-direction:column; align-items:center;
+    padding:12px 14px; overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ width:100%; max-width:460px; height:100%; display:flex; flex-direction:column; }
+  header{ text-align:center; margin-bottom:10px; flex:none; }
+  .kicker{ font-size:.66rem; letter-spacing:.2em; color:var(--ink-soft); font-weight:600; }
+  h1 { font-size:1.2rem; font-weight:800; color:var(--ink); margin-top:2px; letter-spacing:-.01em; }
+
+  .subjects { display:flex; gap:5px; background:var(--surface); padding:5px; border-radius:12px;
+    box-shadow:var(--shadow-sm); margin-bottom:10px; overflow-x:auto; flex:none; }
+  .subj { flex:1 0 auto; padding:8px 11px; border:none; border-radius:9px; background:transparent;
+    color:var(--ink-soft); font-family:inherit; font-size:.88rem; font-weight:600; cursor:pointer;
+    white-space:nowrap; transition:background .18s,color .18s; }
+  .subj.active { background:var(--brand); color:#fff; }
+
+  .levelbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex:none; }
+  .levels { display:flex; gap:5px; }
+  .lv { width:30px; height:30px; border:1.5px solid var(--line); border-radius:8px; background:var(--surface);
+    color:var(--ink-soft); font-family:inherit; font-size:.88rem; font-weight:700; cursor:pointer; transition:all .18s; }
+  .lv.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .lv-label { font-size:.78rem; color:var(--ink-soft); font-weight:600; margin-bottom:8px; flex:none; }
+
+  .progress{ display:flex; gap:4px; margin-bottom:10px; flex:none; }
+  .dot{ flex:1; height:4px; border-radius:99px; background:var(--line); transition:background .2s; }
+  .dot.done{ background:var(--brand); }
+  .dot.current{ background:var(--accent); }
+
+  /* 카드: 남은 공간을 채우고 내부만 스크롤 */
+  .card { background:var(--surface); border-radius:var(--radius); padding:18px 18px; box-shadow:var(--shadow);
+    text-align:center; flex:1 1 auto; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    display:flex; flex-direction:column; justify-content:safe center; }
+  .emoji { font-size:2.6rem; margin-bottom:8px; display:block; }
+  .big { font-size:1.7rem; font-weight:800; color:var(--ink); line-height:1.25; margin-bottom:4px; letter-spacing:-.01em; }
+  .story { font-size:1.06rem; color:var(--ink); line-height:1.55; margin-bottom:10px; text-align:left;
+    background:var(--bg); padding:13px 14px; border-radius:12px; border:1px solid var(--line); }
+  .meaning { font-size:1rem; color:var(--ink-soft); margin-bottom:12px; }
+  .question { font-size:1.04rem; color:var(--brand); font-weight:700; margin:10px 0; }
+
+  .btn { border:none; border-radius:11px; padding:12px; font-family:inherit; font-size:1rem;
+    font-weight:700; color:#fff; width:100%; cursor:pointer; transition:transform .08s,filter .15s; }
+  .btn:active { transform:translateY(1px); }
+  .btns { display:flex; flex-direction:column; gap:8px; }
+  .listen { background:var(--brand); }
+  .speak { background:var(--accent); }
+  .next-btn{ background:var(--ink); margin-top:10px; }
+
+  .options { display:flex; flex-direction:column; gap:7px; margin-top:4px; }
+  .opt { border:1.5px solid var(--line); border-radius:11px; padding:12px; font-family:inherit;
+    font-size:1.08rem; font-weight:600; background:var(--surface); color:var(--ink); cursor:pointer;
+    transition:border-color .15s,background .15s; text-align:center; }
+  .opt:hover{ border-color:var(--brand); }
+  .opt:active { background:var(--brand-soft); }
+
+  .answer-box { font-size:1.7rem; font-weight:800; color:var(--brand); min-height:40px; margin:4px 0 10px; letter-spacing:.02em; }
+  .numpad { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+  .numpad button { border:1.5px solid var(--line); border-radius:11px; padding:10px; font-family:inherit;
+    font-size:1.2rem; font-weight:700; background:var(--surface); color:var(--ink); cursor:pointer; transition:background .12s; }
+  .numpad button:active { background:var(--brand-soft); }
+  .numpad .ok{ background:var(--brand); border-color:var(--brand); color:#fff; }
+
+  .result { margin-top:10px; font-size:1rem; font-weight:700; min-height:24px; line-height:1.35; }
+  .good { color:var(--good); }
+  .again { color:var(--accent); }
+  .hint { font-size:.76rem; color:var(--ink-soft); margin-top:10px; }
+  .clock { margin:0 auto 8px; display:block; width:140px; height:140px; }
+
+  .score-num{ font-size:2.2rem; font-weight:800; color:var(--ink); }
+  .review-head{ font-weight:700; color:var(--accent); margin:10px 0 8px; text-align:left; font-size:.9rem; letter-spacing:.02em; }
+  .review{ text-align:left; background:var(--bg); border:1px solid var(--line); border-radius:11px; padding:11px 12px; margin-bottom:7px; }
+  .review .q{ font-weight:700; color:var(--ink); font-size:.94rem; }
+  .review .a{ color:var(--good); font-weight:700; margin-top:4px; font-size:.9rem; }
+  .review .e{ color:var(--ink-soft); font-size:.86rem; margin-top:4px; line-height:1.45; }
+
+  /* 시작 화면 */
+  .start{ height:100%; display:flex; flex-direction:column; }
+  .start-card{ background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:28px 22px; text-align:center; margin-top:8px; display:flex; flex-direction:column; }
+  .start-emoji{ font-size:3.4rem; margin-bottom:10px; }
+  .start-title{ font-size:1.2rem; font-weight:800; color:var(--ink); margin-bottom:16px; }
+  .name-input{ font-family:inherit; font-size:1.2rem; font-weight:700; text-align:center; color:var(--ink);
+    padding:14px; border:1.5px solid var(--line); border-radius:12px; background:var(--bg); width:100%; }
+  .name-input:focus{ outline:none; border-color:var(--brand); }
+  .saved-names{ display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin-top:16px; }
+  .saved-name{ display:inline-flex; align-items:center; gap:6px; background:var(--brand-soft); color:var(--brand);
+    border:none; border-radius:999px; padding:8px 14px; font-family:inherit; font-size:.95rem; font-weight:700; cursor:pointer; }
+  .saved-name .del{ color:var(--ink-soft); font-weight:700; font-size:1rem; line-height:1; }
+
+  /* 상단바 (학습자 이름 + 랭킹) */
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex:none; }
+  .topbtn{ border:none; background:var(--surface); box-shadow:var(--shadow-sm); width:38px; height:38px;
+    border-radius:10px; font-size:1.15rem; cursor:pointer; color:var(--ink); }
+  .topbtn:active{ transform:translateY(1px); }
+  .learner{ font-size:1.05rem; font-weight:800; color:var(--ink); }
+
+  /* 랭킹 */
+  .rank-row{ display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:11px;
+    background:var(--bg); border:1px solid var(--line); margin-bottom:7px; text-align:left; }
+  .rank-row.me{ background:var(--brand-soft); border-color:var(--brand); }
+  .rank-medal{ font-size:1.2rem; width:30px; text-align:center; flex:none; }
+  .rank-name{ font-weight:700; color:var(--ink); flex:1; }
+  .rank-score{ font-weight:800; color:var(--brand); }
+  .rank-empty{ color:var(--ink-soft); font-size:.95rem; padding:18px 0; }
+  .rank-tabs{ display:flex; gap:5px; flex-wrap:wrap; justify-content:center; margin-bottom:12px; }
+  .rank-tab{ border:1.5px solid var(--line); background:var(--surface); color:var(--ink-soft);
+    border-radius:9px; padding:7px 11px; font-family:inherit; font-size:.85rem; font-weight:700; cursor:pointer; }
+  .rank-tab.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+
+  /* 세로가 짧은 화면: 숫자패드·여백 더 압축 */
+  @media (max-height:640px){
+    .emoji{ font-size:2.2rem; margin-bottom:5px; }
+    .big{ font-size:1.5rem; }
+    .numpad{ gap:5px; }
+    .numpad button{ padding:9px; font-size:1.1rem; }
+    .card{ padding:14px; }
+    .story{ font-size:.98rem; padding:9px 11px; line-height:1.38; margin-bottom:8px; }
+    .question{ margin:8px 0; font-size:1rem; }
+    .meaning{ margin-bottom:8px; }
+    .opt{ padding:10px; font-size:1.02rem; }
+    .options{ gap:6px; }
+    .btn{ padding:10px; }
+    .btns{ gap:6px; }
+    .hint{ margin-top:7px; }
+  }
+  @media (max-height:560px){
+    .emoji{ font-size:1.8rem; margin-bottom:3px; }
+    .story{ font-size:.92rem; }
+    .numpad button{ padding:7px; font-size:1rem; }
+    .opt{ padding:8px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- 시작 화면 -->
+    <div id="startScreen" class="start">
+      <header>
+        <div class="kicker">초등 1학년</div>
+        <h1>배움터</h1>
+      </header>
+      <div class="start-card">
+        <div class="start-emoji">🎒</div>
+        <div class="start-title">이름을 적어 주세요</div>
+        <input id="nameInput" class="name-input" type="text" maxlength="10" placeholder="이름" autocomplete="off">
+        <button id="startBtn" class="btn listen" style="margin-top:12px">학습 시작</button>
+        <div id="savedNames" class="saved-names"></div>
+      </div>
+    </div>
+
+    <!-- 학습 화면 -->
+    <div id="learnScreen" style="display:none; height:100%; flex-direction:column;">
+      <div class="topbar">
+        <button id="homeBtn" class="topbtn" title="처음으로">↩</button>
+        <div class="learner" id="learnerName"></div>
+        <button id="rankBtn" class="topbtn" title="랭킹">🏆</button>
+      </div>
+      <div class="subjects" id="subjects"></div>
+      <div class="levelbar"><div class="levels" id="levels"></div></div>
+      <div class="lv-label" id="lvLabel"></div>
+      <div class="progress" id="progress"></div>
+      <div class="card" id="card"></div>
+    </div>
+  </div>
+
+
+
+<script>
+/* ============ 데이터 ============ */
+const KOR_LEVELS = [{"name": "1단계", "emoji": "🌧️", "items": [{"story": "지호는 우산을 안 가져왔어요. 그래서 비를 맞고 집에 왔어요. 옷이 다 젖었어요.", "q": "지호의 옷은 왜 젖었나요?", "opts": ["우산이 없어서 ☂️", "물놀이를 해서 🏊", "빨래를 해서 🧺"], "a": 0, "exp": "정답은 '우산이 없어서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "동생이 넘어져서 울었어요. 나는 동생을 일으켜 주었어요. 동생이 웃었어요.", "q": "동생은 왜 울었나요?", "opts": ["넘어져서 😢", "배고파서 🍽️", "졸려서 😴"], "a": 0, "exp": "정답은 '넘어져서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "날이 추워졌어요. 그래서 두꺼운 외투를 입었어요. 따뜻했어요.", "q": "왜 외투를 입었나요?", "opts": ["추워서 🥶", "비가 와서 🌧️", "멋있어서 😎"], "a": 0, "exp": "정답은 '추워서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "민지는 목이 말랐어요. 그래서 시원한 물을 한 컵 마셨어요. 기분이 좋아졌어요.", "q": "민지는 왜 물을 마셨나요?", "opts": ["목이 말라서 💧", "배가 고파서 🍞", "졸려서 😴"], "a": 0, "exp": "정답은 '목이 말라서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "준호는 밤늦게까지 게임을 했어요. 그래서 아침에 늦잠을 잤어요. 학교에 늦을 뻔했어요.", "q": "준호는 왜 늦잠을 잤나요?", "opts": ["늦게까지 게임해서 🎮", "아파서 🤒", "꿈을 꿔서 💭"], "a": 0, "exp": "정답은 '늦게까지 게임해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "비가 와서 운동장이 젖었어요. 그래서 체육 시간에 교실에서 놀았어요.", "q": "왜 교실에서 놀았나요?", "opts": ["운동장이 젖어서 🌧️", "숙제가 많아서 📚", "선생님이 아파서 🤒"], "a": 0, "exp": "정답은 '운동장이 젖어서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "수영이는 손을 깨끗이 씻었어요. 그래서 감기에 걸리지 않았어요.", "q": "수영이가 감기에 안 걸린 까닭은?", "opts": ["손을 잘 씻어서 🧼", "많이 자서 😴", "물을 마셔서 💧"], "a": 0, "exp": "정답은 '손을 잘 씻어서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "불을 끄지 않고 잤어요. 그래서 아침에 눈이 부셨어요.", "q": "왜 눈이 부셨나요?", "opts": ["불을 안 꺼서 💡", "해가 떠서 ☀️", "꿈을 꿔서 💭"], "a": 0, "exp": "정답은 '불을 안 꺼서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "강아지가 배가 고팠어요. 그래서 멍멍 짖었어요. 나는 밥을 주었어요.", "q": "강아지는 왜 짖었나요?", "opts": ["배가 고파서 🍖", "무서워서 😨", "졸려서 😴"], "a": 0, "exp": "정답은 '배가 고파서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "길이 미끄러웠어요. 그래서 천천히 걸었어요. 넘어지지 않았어요.", "q": "왜 천천히 걸었나요?", "opts": ["길이 미끄러워서 🧊", "다리가 아파서 🦵", "구경하려고 👀"], "a": 0, "exp": "정답은 '길이 미끄러워서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "화분에 물을 안 줬어요. 그래서 꽃이 시들었어요.", "q": "꽃이 시든 까닭은?", "opts": ["물을 안 줘서 🥀", "햇빛이 세서 ☀️", "바람이 불어서 💨"], "a": 0, "exp": "정답은 '물을 안 줘서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "민수는 아침을 안 먹었어요. 그래서 배에서 꼬르륵 소리가 났어요.", "q": "왜 배에서 소리가 났나요?", "opts": ["아침을 안 먹어서 🍞", "많이 뛰어서 🏃", "물을 마셔서 💧"], "a": 0, "exp": "정답은 '아침을 안 먹어서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "창문을 열어 두었어요. 그래서 시원한 바람이 들어왔어요.", "q": "왜 바람이 들어왔나요?", "opts": ["창문을 열어서 🪟", "문을 닫아서 🚪", "에어컨을 켜서 ❄️"], "a": 0, "exp": "정답은 '창문을 열어서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "신발 끈이 풀렸어요. 그래서 다시 묶었어요. 넘어지지 않았어요.", "q": "왜 신발 끈을 묶었나요?", "opts": ["끈이 풀려서 👟", "발이 아파서 🦶", "멋있어서 😎"], "a": 0, "exp": "정답은 '끈이 풀려서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "동생이 그림을 잘 그렸어요. 그래서 엄마가 칭찬해 주셨어요.", "q": "엄마는 왜 칭찬했나요?", "opts": ["그림을 잘 그려서 🎨", "청소를 해서 🧹", "밥을 먹어서 🍚"], "a": 0, "exp": "정답은 '그림을 잘 그려서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "비가 그쳤어요. 그래서 하늘에 무지개가 떴어요.", "q": "무지개는 언제 떴나요?", "opts": ["비가 그친 뒤 🌈", "밤에 🌙", "눈이 온 뒤 ❄️"], "a": 0, "exp": "정답은 '비가 그친 뒤'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "숙제를 미리 했어요. 그래서 주말에 마음껏 놀았어요.", "q": "왜 마음껏 놀 수 있었나요?", "opts": ["숙제를 미리 해서 ✏️", "날씨가 좋아서 ☀️", "친구가 와서 👬"], "a": 0, "exp": "정답은 '숙제를 미리 해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "길에서 쓰레기를 주웠어요. 그래서 길이 깨끗해졌어요.", "q": "길이 깨끗해진 까닭은?", "opts": ["쓰레기를 주워서 🗑️", "비가 와서 🌧️", "바람이 불어서 💨"], "a": 0, "exp": "정답은 '쓰레기를 주워서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "늦게 일어났어요. 그래서 버스를 놓쳤어요.", "q": "왜 버스를 놓쳤나요?", "opts": ["늦게 일어나서 ⏰", "버스가 고장 나서 🚌", "길이 막혀서 🚗"], "a": 0, "exp": "정답은 '늦게 일어나서 ⏰'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "우유를 쏟았어요. 그래서 걸레로 닦았어요. 바닥이 깨끗해졌어요.", "q": "왜 걸레로 닦았나요?", "opts": ["우유를 쏟아서 🥛", "청소 시간이라서 🧹", "심심해서 😐"], "a": 0, "exp": "정답은 '우유를 쏟아서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}]}, {"name": "2단계", "emoji": "🎁", "items": [{"story": "수아는 생일 선물로 자전거를 받았어요. 아빠가 타는 법을 알려 주셨어요. 처음엔 무서웠지만 곧 신나게 탔어요.", "q": "수아의 기분은 어떻게 바뀌었나요?", "opts": ["무서움 → 신남 😀", "신남 → 슬픔 😢", "화남 → 무서움 😠"], "a": 0, "exp": "정답은 '무서움 → 신남'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "친구가 내 그림을 칭찬해 주었어요. 나는 어깨가 으쓱했어요. 더 열심히 그리고 싶어졌어요.", "q": "칭찬을 들은 나의 마음은?", "opts": ["뿌듯함 😊", "속상함 😞", "무서움 😨"], "a": 0, "exp": "정답은 '뿌듯함'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "키우던 화분의 싹이 났어요. 매일 물을 주며 기다린 보람이 있었어요. 정말 기뻤어요.", "q": "왜 기뻤나요?", "opts": ["싹이 나서 🌱", "비가 와서 🌧️", "숙제가 끝나서 📚"], "a": 0, "exp": "정답은 '싹이 나서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "소풍 가는 날 비가 왔어요. 가족과 집에서 부침개를 부쳐 먹었어요. 소풍보다 더 즐거웠어요.", "q": "가족의 마음은 어땠나요?", "opts": ["즐거웠다 😄", "화났다 😡", "무서웠다 😨"], "a": 0, "exp": "정답은 '즐거웠다'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "동생이 내 장난감을 망가뜨렸어요. 처음엔 화가 났지만, 동생이 미안하다고 하자 마음이 풀렸어요.", "q": "나의 마음은 어떻게 바뀌었나요?", "opts": ["화남 → 풀림 😌", "기쁨 → 슬픔 😢", "무서움 → 화남 😠"], "a": 0, "exp": "정답은 '화남 → 풀림'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "발표를 앞두고 가슴이 콩닥콩닥 뛰었어요. 막상 발표를 끝내자 마음이 후련했어요.", "q": "발표를 끝낸 뒤의 마음은?", "opts": ["후련함 😌", "무서움 😨", "슬픔 😢"], "a": 0, "exp": "정답은 '후련함'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "강아지가 아파서 동물병원에 갔어요. 약을 먹고 다시 건강해지자 너무 안심이 되었어요.", "q": "강아지가 나은 뒤 나의 마음은?", "opts": ["안심 😊", "화남 😡", "무서움 😨"], "a": 0, "exp": "정답은 '안심'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "줄넘기를 백 번 넘기로 했어요. 자꾸 걸렸지만 포기하지 않았어요. 드디어 성공하자 뿌듯했어요.", "q": "성공했을 때의 마음은?", "opts": ["뿌듯함 💪", "속상함 😞", "지루함 😑"], "a": 0, "exp": "정답은 '뿌듯함'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "새 학교로 전학을 왔어요. 처음엔 외로웠지만 친구가 먼저 말을 걸어 주어 마음이 따뜻해졌어요.", "q": "나의 마음은 어떻게 바뀌었나요?", "opts": ["외로움 → 따뜻함 🥰", "기쁨 → 슬픔 😢", "화남 → 무서움 😠"], "a": 0, "exp": "정답은 '외로움 → 따뜻함'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "아끼던 인형을 잃어버려 슬펐어요. 며칠 뒤 침대 밑에서 찾자 정말 반가웠어요.", "q": "인형을 찾았을 때의 마음은?", "opts": ["반가움 😄", "화남 😡", "무서움 😨"], "a": 0, "exp": "정답은 '반가움'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "동생이 처음으로 걸음마를 했어요. 온 가족이 손뼉을 치며 기뻐했어요.", "q": "가족의 마음은 어땠나요?", "opts": ["기쁨 🥳", "슬픔 😢", "화남 😡"], "a": 0, "exp": "정답은 '기쁨'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "비밀로 준비한 선물을 친구에게 주었어요. 친구가 활짝 웃자 나도 기분이 좋아졌어요.", "q": "친구가 웃자 나의 마음은?", "opts": ["기쁨 😊", "속상함 😞", "무서움 😨"], "a": 0, "exp": "정답은 '기쁨'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "높은 미끄럼틀이 무서웠어요. 용기를 내어 타 보니 생각보다 재미있었어요.", "q": "타 본 뒤의 마음은?", "opts": ["재미있음 😄", "무서움 😨", "슬픔 😢"], "a": 0, "exp": "정답은 '재미있음'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "내가 만든 종이비행기가 가장 멀리 날았어요. 어깨가 으쓱하고 자랑스러웠어요.", "q": "나의 마음은?", "opts": ["자랑스러움 😎", "속상함 😞", "지루함 😑"], "a": 0, "exp": "정답은 '자랑스러움'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "엄마가 늦게 오셔서 걱정했어요. 문 여는 소리가 나자 마음이 놓였어요.", "q": "엄마가 오자 나의 마음은?", "opts": ["안심 😌", "화남 😡", "무서움 😨"], "a": 0, "exp": "정답은 '안심'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "친구와 다투고 집에 왔어요. 마음이 무거웠는데, 친구가 먼저 사과해서 다시 사이가 좋아졌어요.", "q": "나의 마음은 어떻게 바뀌었나요?", "opts": ["무거움 → 가벼움 😊", "기쁨 → 슬픔 😢", "화남 → 무서움 😠"], "a": 0, "exp": "정답은 '무거움 → 가벼움'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "처음 자전거 페달을 밟았어요. 넘어질까 봐 떨렸지만 끝까지 달리자 신이 났어요.", "q": "끝까지 달린 뒤의 마음은?", "opts": ["신남 😀", "무서움 😨", "슬픔 😢"], "a": 0, "exp": "정답은 '신남'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "아빠와 등산을 했어요. 힘들어서 그만두고 싶었지만, 정상에 오르니 가슴이 뻥 뚫렸어요.", "q": "정상에 오른 뒤의 마음은?", "opts": ["시원함 😄", "화남 😡", "지루함 😑"], "a": 0, "exp": "정답은 '시원함'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "내 짝이 색연필을 안 가져왔어요. 나는 색연필을 나눠 주었어요. 짝이 고마워하자 뿌듯했어요.", "q": "나눠 준 뒤 나의 마음은?", "opts": ["뿌듯함 😊", "속상함 😞", "무서움 😨"], "a": 0, "exp": "정답은 '뿌듯함'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "키우던 병아리가 닭이 되었어요. 그동안 돌본 일이 생각나서 대견하고 기뻤어요.", "q": "나의 마음은?", "opts": ["대견함 🥰", "슬픔 😢", "화남 😡"], "a": 0, "exp": "정답은 '대견함'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}]}, {"name": "3단계", "emoji": "🐜", "items": [{"story": "개미들은 여름 내내 부지런히 먹이를 모았어요. 베짱이는 노래만 불렀지요. 겨울이 오자 베짱이는 먹을 것이 없어 추위에 떨었어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["미리 준비하면 좋아요 🐜", "노래는 나빠요 🎵", "겨울은 무서워요 ❄️"], "a": 0, "exp": "정답은 '미리 준비하면 좋아요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "거북이와 토끼가 달리기를 했어요. 토끼는 자기가 빠르다고 낮잠을 잤어요. 거북이는 쉬지 않고 걸어서 결국 일등을 했어요.", "q": "왜 거북이가 이겼나요?", "opts": ["꾸준히 해서 🐢", "빨라서 🏃", "운이 좋아서 🍀"], "a": 0, "exp": "정답은 '꾸준히 해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "아이가 거짓말로 늑대가 왔다고 외쳤어요. 사람들이 두 번 속았어요. 진짜 늑대가 왔을 땐 아무도 오지 않았어요.", "q": "왜 아무도 안 왔나요?", "opts": ["거짓말을 해서 🤥", "늑대가 무서워서 🐺", "날이 어두워서 🌙"], "a": 0, "exp": "정답은 '거짓말을 해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "해와 바람이 누가 센지 다투었어요. 바람은 나그네의 옷을 세게 불었지만 벗기지 못했어요. 해가 따뜻하게 비추자 나그네가 스스로 옷을 벗었어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["따뜻함이 더 힘이 세요 ☀️", "바람은 나빠요 💨", "옷을 벗으면 안 돼요 👕"], "a": 0, "exp": "정답은 '따뜻함이 더 힘이 세요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "욕심쟁이 개가 입에 고기를 물고 다리를 건넜어요. 물에 비친 자기 모습을 보고 더 큰 고기인 줄 알고 짖었어요. 그 바람에 물고 있던 고기를 물에 빠뜨렸어요.", "q": "개는 왜 고기를 잃었나요?", "opts": ["욕심을 부려서 🤤", "배가 불러서 🍖", "다리가 무너져서 🌉"], "a": 0, "exp": "정답은 '욕심을 부려서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "개미가 물에 빠졌어요. 비둘기가 나뭇잎을 떨어뜨려 개미를 구했어요. 나중에 사냥꾼이 비둘기를 노리자, 개미가 사냥꾼을 물어 비둘기를 구했어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["도움을 주면 도움을 받아요 🤝", "개미는 작아요 🐜", "비둘기는 날아요 🕊️"], "a": 0, "exp": "정답은 '도움을 주면 도움을 받아요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "여우가 높이 달린 포도를 따려다 실패했어요. 그러자 '저 포도는 어차피 실 거야'라며 돌아섰어요.", "q": "여우는 왜 그렇게 말했나요?", "opts": ["따지 못해서 핑계를 대려고 🦊", "포도를 싫어해서 🍇", "배가 불러서 🍽️"], "a": 0, "exp": "정답은 '따지 못해서 핑계를 대려고'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "양치기 소년이 심심해서 거짓으로 늑대가 왔다고 외쳤어요. 마을 사람들이 헛걸음했지요. 진짜 늑대가 오자 아무도 믿지 않았어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["거짓말을 하면 믿음을 잃어요 🤥", "늑대는 무서워요 🐺", "양은 약해요 🐑"], "a": 0, "exp": "정답은 '거짓말을 하면 믿음을 잃어요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "두루미가 여우를 초대해 목이 긴 병에 음식을 담아 주었어요. 전에 여우가 납작한 접시에 음식을 줘서 두루미가 못 먹었거든요.", "q": "두루미는 왜 그렇게 했나요?", "opts": ["여우가 한 대로 갚으려고 🦊", "음식이 없어서 🍽️", "병이 예뻐서 🏺"], "a": 0, "exp": "정답은 '여우가 한 대로 갚으려고'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "황소를 본 개구리가 부러워 배에 바람을 넣어 몸을 부풀렸어요. 자꾸 부풀리다가 그만 배가 터지고 말았어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["남을 무리하게 따라하면 안 돼요 🐸", "황소는 커요 🐂", "개구리는 작아요 🐸"], "a": 0, "exp": "정답은 '남을 무리하게 따라하면 안 돼요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "사자가 잠을 자는데 생쥐가 밟고 지나갔어요. 사자는 화가 났지만 생쥐를 살려 주었어요. 나중에 사자가 그물에 걸리자 생쥐가 그물을 갉아 구해 주었어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["작은 친구도 큰 도움이 돼요 🐭", "사자는 무서워요 🦁", "그물은 튼튼해요 🕸️"], "a": 0, "exp": "정답은 '작은 친구도 큰 도움이 돼요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "바람에 흔들리는 갈대를 떡갈나무가 비웃었어요. 큰 폭풍이 불자, 휘어진 갈대는 멀쩡했지만 뻣뻣한 떡갈나무는 뽑히고 말았어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["때로는 부드러움이 강해요 🌾", "나무는 약해요 🌳", "바람은 나빠요 💨"], "a": 0, "exp": "정답은 '때로는 부드러움이 강해요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "부자 아버지가 아들들에게 화살 한 개는 쉽게 부러지지만 여러 개를 묶으면 안 부러진다고 보여 주었어요.", "q": "아버지가 알려 주려 한 것은?", "opts": ["힘을 합치면 강해요 🤝", "화살은 약해요 🏹", "아들이 많아요 👦"], "a": 0, "exp": "정답은 '힘을 합치면 강해요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "여우가 두루미를 납작한 접시에 초대했어요. 부리가 긴 두루미는 한 입도 먹지 못했어요.", "q": "두루미가 못 먹은 까닭은?", "opts": ["접시가 납작해서 🦢", "음식이 없어서 🍽️", "배가 불러서 😋"], "a": 0, "exp": "정답은 '접시가 납작해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "나그네가 외투를 단단히 여몄어요. 바람이 세게 불수록 더 꽉 잡았지만, 해가 따뜻하게 비추자 스스로 벗었어요.", "q": "나그네는 왜 외투를 벗었나요?", "opts": ["햇볕이 따뜻해서 ☀️", "바람이 세서 💨", "비가 와서 🌧️"], "a": 0, "exp": "정답은 '햇볕이 따뜻해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "개미가 곡식을 나르는 걸 보고 비둘기가 도왔어요. 서로 도우니 일이 금방 끝났어요.", "q": "일이 금방 끝난 까닭은?", "opts": ["서로 도와서 🤝", "곡식이 적어서 🌾", "날씨가 좋아서 ☀️"], "a": 0, "exp": "정답은 '서로 도와서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "토끼가 자기 빠른 발을 자랑하며 거북이를 놀렸어요. 하지만 방심해 낮잠을 자다 거북이에게 졌어요.", "q": "토끼가 진 까닭은?", "opts": ["방심하고 잠을 자서 😴", "느려서 🐢", "길을 잃어서 🗺️"], "a": 0, "exp": "정답은 '방심하고 잠을 자서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "까마귀가 치즈를 물고 있었어요. 여우가 노래를 청하자 까마귀가 입을 열었고, 치즈가 떨어졌어요.", "q": "까마귀가 치즈를 잃은 까닭은?", "opts": ["칭찬에 넘어가 입을 열어서 🧀", "배가 불러서 😋", "날아가서 🐦"], "a": 0, "exp": "정답은 '칭찬에 넘어가 입을 열어서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "개미와 베짱이 이야기에서, 겨울에 개미는 따뜻한 집에서 먹이를 먹었어요.", "q": "개미가 겨울을 잘 난 까닭은?", "opts": ["여름에 미리 모아서 🐜", "운이 좋아서 🍀", "집이 커서 🏠"], "a": 0, "exp": "정답은 '여름에 미리 모아서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "사자가 생쥐를 비웃었어요. 하지만 작은 생쥐가 나중에 큰 사자를 구해 주었어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["작다고 무시하면 안 돼요 🐭", "사자는 세요 🦁", "생쥐는 빨라요 🐁"], "a": 0, "exp": "정답은 '작다고 무시하면 안 돼요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}]}, {"name": "4단계", "emoji": "🌳", "items": [{"story": "나무꾼이 연못에 도끼를 빠뜨렸어요. 산신령이 금도끼를 보여 주며 네 것이냐 물었지만, 나무꾼은 아니라고 했어요. 정직한 나무꾼에게 산신령은 금도끼와 은도끼를 모두 주었어요.", "q": "나무꾼은 왜 상을 받았나요?", "opts": ["정직해서 😇", "힘이 세서 💪", "빨라서 🏃"], "a": 0, "exp": "정답은 '정직해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "시골 쥐가 도시 쥐의 집에 놀러 갔어요. 맛있는 음식이 많았지만, 사람과 고양이 때문에 늘 불안했어요. 시골 쥐는 소박해도 마음 편한 시골이 좋다며 돌아갔어요.", "q": "시골 쥐가 시골로 돌아간 까닭은?", "opts": ["마음이 편해서 😌", "음식이 더 많아서 🍚", "길을 잃어서 🗺️"], "a": 0, "exp": "정답은 '마음이 편해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "형제가 밭을 똑같이 나눠 가졌어요. 형은 동생이 걱정돼 몰래 자기 곡식을 동생 밭에 옮겼어요. 동생도 형을 생각해 똑같이 했지요. 다음 날 두 밭의 곡식은 그대로였어요.", "q": "곡식이 줄지 않은 까닭은?", "opts": ["서로 위해서 옮겨서 ❤️", "도둑이 없어서 🔒", "비가 와서 🌧️"], "a": 0, "exp": "정답은 '서로 위해서 옮겨서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "까마귀가 목이 말라 물병을 찾았지만 물이 바닥에 조금만 있었어요. 부리가 닿지 않자, 까마귀는 작은 돌멩이를 하나씩 넣었어요. 물이 위로 올라와 마실 수 있었어요.", "q": "까마귀는 어떻게 물을 마셨나요?", "opts": ["돌을 넣어서 🪨", "병을 깨서 💥", "기다려서 ⏳"], "a": 0, "exp": "정답은 '돌을 넣어서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "양치기 소년이 늑대가 나타나면 종을 치기로 했어요. 심심해서 거짓으로 종을 쳤더니 마을 사람들이 헛걸음을 했어요. 진짜 늑대가 왔을 때 종을 쳤지만 아무도 믿지 않았어요.", "q": "사람들이 믿지 않은 까닭은?", "opts": ["전에 거짓말을 해서 🔔", "늑대가 안 무서워서 🐺", "종이 고장 나서 🛠️"], "a": 0, "exp": "정답은 '전에 거짓말을 해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "흥부는 다친 제비의 다리를 정성껏 고쳐 주었어요. 이듬해 제비가 박씨를 물어다 주었고, 그 박에서 금은보화가 쏟아졌어요.", "q": "흥부가 복을 받은 까닭은?", "opts": ["제비를 도와줘서 🐦", "부자라서 💰", "힘이 세서 💪"], "a": 0, "exp": "정답은 '제비를 도와줘서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "놀부는 일부러 제비 다리를 부러뜨린 뒤 고쳐 주었어요. 욕심내어 받은 박에서는 도깨비가 나와 놀부를 혼냈어요.", "q": "놀부가 혼난 까닭은?", "opts": ["욕심을 부려서 😈", "제비가 미워서 🐦", "박이 작아서 🍈"], "a": 0, "exp": "정답은 '욕심을 부려서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "콩쥐는 깨진 항아리에 물을 채워야 했어요. 두꺼비가 나타나 항아리 구멍을 막아 주어서 물을 다 채울 수 있었어요.", "q": "콩쥐가 물을 채운 까닭은?", "opts": ["두꺼비가 도와줘서 🐸", "비가 와서 🌧️", "항아리가 새것이라서 🏺"], "a": 0, "exp": "정답은 '두꺼비가 도와줘서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "토끼가 용궁에 잡혀갔어요. 간을 빼앗길 위기에 처하자, 간을 육지에 두고 왔다고 꾀를 내어 무사히 도망쳤어요.", "q": "토끼가 살아난 까닭은?", "opts": ["꾀를 내어서 🧠", "힘이 세서 💪", "빨라서 🏃"], "a": 0, "exp": "정답은 '꾀를 내어서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "혹부리 영감이 노래를 부르자 도깨비들이 혹에서 노래가 나온다고 믿고 혹을 떼어 갔어요. 영감은 혹도 없애고 보물도 받았어요.", "q": "영감이 복을 받은 까닭은?", "opts": ["노래로 도깨비를 즐겁게 해서 🎵", "혹이 커서 😮", "욕심을 부려서 😈"], "a": 0, "exp": "정답은 '노래로 도깨비를 즐겁게 해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "심청이는 아버지의 눈을 뜨게 하려고 공양미 삼백 석에 몸을 바쳤어요. 그 효심에 하늘이 감동해 심청이는 왕비가 되었어요.", "q": "심청이가 복을 받은 까닭은?", "opts": ["아버지를 위한 효심 때문에 ❤️", "예뻐서 👸", "힘이 세서 💪"], "a": 0, "exp": "정답은 '아버지를 위한 효심 때문에'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "여우가 호랑이에게 잡혔어요. 여우는 자기가 숲의 왕이라며 따라와 보라 했어요. 동물들이 도망치자 호랑이는 정말 여우가 왕인 줄 알았어요.", "q": "동물들이 도망친 진짜 까닭은?", "opts": ["호랑이가 무서워서 🐯", "여우가 왕이라서 🦊", "비가 와서 🌧️"], "a": 0, "exp": "정답은 '호랑이가 무서워서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "개미가 베짱이에게 먹이를 나눠 주며, 다음 여름엔 함께 모으자고 했어요. 베짱이는 부끄러워하며 고마워했어요.", "q": "베짱이가 부끄러워한 까닭은?", "opts": ["여름에 준비를 안 해서 🎻", "노래를 못해서 🎵", "먹이가 많아서 🍞"], "a": 0, "exp": "정답은 '여름에 준비를 안 해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "나그네가 우물가에서 두레박으로 물을 떠 마셨어요. 다 마신 뒤 다음 사람을 위해 두레박을 가지런히 걸어 두었어요.", "q": "나그네는 왜 두레박을 걸어 두었나요?", "opts": ["다음 사람을 위해서 🤝", "무거워서 💪", "심심해서 😐"], "a": 0, "exp": "정답은 '다음 사람을 위해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "의좋은 형제가 서로 볏단을 더 주려고 밤마다 옮겼어요. 어느 밤 두 사람이 볏단을 안고 가다 마주쳤고, 서로의 마음을 알고 부둥켜안았어요.", "q": "형제가 부둥켜안은 까닭은?", "opts": ["서로 위하는 마음을 알아서 ❤️", "볏단이 무거워서 🌾", "길을 잃어서 🗺️"], "a": 0, "exp": "정답은 '서로 위하는 마음을 알아서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "개구리 아들이 늘 반대로만 했어요. 엄마는 죽기 전 산에 묻어 달라 하면 강가에 묻겠지 싶어 강가에 묻어 달라 했어요. 아들은 그제야 말을 듣고 강가에 묻었지요.", "q": "엄마가 강가에 묻어 달라 한 까닭은?", "opts": ["아들이 반대로 할 줄 알고 🐸", "강을 좋아해서 🌊", "산이 멀어서 ⛰️"], "a": 0, "exp": "정답은 '아들이 반대로 할 줄 알고'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "금도끼를 탐낸 옆집 나무꾼이 일부러 도끼를 연못에 던졌어요. 산신령이 금도끼냐 묻자 그렇다고 거짓말했고, 산신령은 아무것도 주지 않았어요.", "q": "옆집 나무꾼이 빈손이 된 까닭은?", "opts": ["거짓말을 해서 🤥", "도끼가 낡아서 🪓", "연못이 깊어서 🌊"], "a": 0, "exp": "정답은 '거짓말을 해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "토끼가 거북이에게 다시 달리기를 청했어요. 이번엔 토끼가 한 번도 쉬지 않고 달려 이겼어요.", "q": "이번에 토끼가 이긴 까닭은?", "opts": ["쉬지 않고 달려서 🏃", "거북이가 느려서 🐢", "길이 짧아서 📏"], "a": 0, "exp": "정답은 '쉬지 않고 달려서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "가난한 농부가 길에서 주운 지갑을 주인에게 돌려주었어요. 주인은 고마워하며 사례를 했고, 농부는 마음이 뿌듯했어요.", "q": "농부가 사례를 받은 까닭은?", "opts": ["지갑을 돌려줘서 😇", "가난해서 💰", "힘이 세서 💪"], "a": 0, "exp": "정답은 '지갑을 돌려줘서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "사또가 두 여인에게 아이를 반으로 나누라 했어요. 진짜 엄마는 울며 포기하려 했고, 사또는 그 마음을 보고 진짜 엄마를 찾아 주었어요.", "q": "사또가 진짜 엄마를 알아본 까닭은?", "opts": ["아이를 살리려 포기해서 ❤️", "목소리가 커서 🗣️", "옷이 좋아서 👗"], "a": 0, "exp": "정답은 '아이를 살리려 포기해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}]}, {"name": "5단계", "emoji": "📜", "items": [{"story": "한 농부에게 황금 알을 낳는 거위가 있었어요. 매일 알을 하나씩 얻었지만 농부는 더 욕심이 났어요. 거위 배 속에 알이 가득할 거라 생각해 배를 갈랐지만, 아무것도 없었고 거위만 죽고 말았어요.", "q": "농부가 모든 것을 잃은 까닭은?", "opts": ["지나친 욕심 때문에 💰", "거위가 늙어서 🪶", "날씨가 추워서 ❄️"], "a": 0, "exp": "정답은 '지나친 욕심 때문에'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "여행자 둘이 길을 가다 곰을 만났어요. 한 사람은 혼자 나무 위로 숨었고, 다른 사람은 죽은 척했어요. 곰이 떠난 뒤, 그는 '위험할 때 도망가는 친구는 멀리하라더라'고 답했어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["참된 친구는 어려울 때 함께해요 🤝", "곰은 말을 해요 🐻", "나무에 잘 올라야 해요 🌲"], "a": 0, "exp": "정답은 '참된 친구는 어려울 때 함께해요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "사자가 잠을 자는데 생쥐가 몸 위를 지나갔어요. 화가 난 사자는 생쥐를 잡았지만 살려 주었어요. 며칠 뒤 사자가 사냥꾼의 그물에 걸리자, 생쥐가 와서 그물을 갉아 사자를 구해 주었어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["작은 친구도 큰 도움이 돼요 🐭", "사자는 무서워요 🦁", "그물은 튼튼해요 🕸️"], "a": 0, "exp": "정답은 '작은 친구도 큰 도움이 돼요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "개구리들이 임금님을 보내 달라고 빌었어요. 신은 통나무를 던져 주었지만 너무 조용하다고 불평했지요. 그래서 황새를 보냈더니, 황새는 개구리들을 모두 잡아먹었어요.", "q": "개구리들이 곤란해진 까닭은?", "opts": ["불평하며 더 바라서 🐸", "통나무가 커서 🪵", "물이 말라서 💧"], "a": 0, "exp": "정답은 '불평하며 더 바라서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "바람에 흔들리는 갈대를 떡갈나무가 비웃었어요. 자기는 튼튼해서 끄떡없다고요. 그런데 큰 폭풍이 불자, 휘어지던 갈대는 멀쩡했지만 뻣뻣한 떡갈나무는 뿌리째 뽑히고 말았어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["때로는 부드러움이 강해요 🌾", "나무는 약해요 🌳", "바람은 나빠요 💨"], "a": 0, "exp": "정답은 '때로는 부드러움이 강해요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "한 노인이 길에 나무를 심었어요. 지나가던 사람이 '그 열매는 못 드실 텐데요'라고 하자, 노인은 '내가 어릴 때 먹은 열매도 누군가 심은 것이지요'라고 답했어요.", "q": "노인이 나무를 심은 까닭은?", "opts": ["다음 세대를 위해서 🌳", "배가 고파서 🍎", "심심해서 😐"], "a": 0, "exp": "정답은 '다음 세대를 위해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "개미가 비둘기를 구해 주고, 비둘기도 개미를 구해 주었어요. 그 뒤로 둘은 서로 어려울 때마다 도왔어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["은혜는 돌고 돌아요 🤝", "개미는 작아요 🐜", "비둘기는 날아요 🕊️"], "a": 0, "exp": "정답은 '은혜는 돌고 돌아요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "왕이 신하들에게 가장 귀한 것을 가져오라 했어요. 한 신하는 보석을, 다른 신하는 '백성의 웃음'을 가져왔어요. 왕은 백성의 웃음을 가장 귀하게 여겼어요.", "q": "왕이 가장 귀하게 여긴 것은?", "opts": ["백성의 웃음 😊", "보석 💎", "황금 🪙"], "a": 0, "exp": "정답은 '백성의 웃음'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "두 형제가 길에서 금덩이를 주웠어요. 욕심이 생겨 다투던 둘은, 결국 우애가 금보다 소중하다며 금덩이를 강에 던졌어요.", "q": "형제가 금덩이를 던진 까닭은?", "opts": ["우애를 더 소중히 여겨서 ❤️", "금이 가짜라서 🪙", "무거워서 💪"], "a": 0, "exp": "정답은 '우애를 더 소중히 여겨서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "한 소년이 바닷가에서 밀려온 불가사리를 하나씩 바다로 던졌어요. '다 못 구한다'는 말에 소년은 '이 한 마리에겐 중요해요'라고 답했어요.", "q": "소년의 마음으로 알맞은 것은?", "opts": ["작은 일도 소중히 여김 🌟", "불가사리를 싫어함 ⭐", "바다를 무서워함 🌊"], "a": 0, "exp": "정답은 '작은 일도 소중히 여김'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "늙은 사자가 병든 척하며 동물들을 동굴로 불러 잡아먹었어요. 여우는 발자국이 들어가기만 하고 나온 게 없는 걸 보고 들어가지 않았어요.", "q": "여우가 무사한 까닭은?", "opts": ["흔적을 보고 조심해서 🦊", "빨라서 🏃", "사자가 친구라서 🦁"], "a": 0, "exp": "정답은 '흔적을 보고 조심해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "농부가 뱀에게 물려 죽을 뻔한 여우를 구해 주었어요. 여우는 은혜를 갚으려 농부의 밭을 지켜 주었어요.", "q": "여우가 밭을 지킨 까닭은?", "opts": ["은혜를 갚으려고 🤝", "밭이 좋아서 🌾", "배가 고파서 🍽️"], "a": 0, "exp": "정답은 '은혜를 갚으려고'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "세 마리 아기 돼지가 각각 짚, 나무, 벽돌로 집을 지었어요. 늑대가 불자 짚과 나무 집은 무너졌지만, 튼튼한 벽돌 집은 끄떡없었어요.", "q": "벽돌 집이 무너지지 않은 까닭은?", "opts": ["튼튼하게 지어서 🧱", "늑대가 약해서 🐺", "바람이 약해서 💨"], "a": 0, "exp": "정답은 '튼튼하게 지어서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "피리 부는 사나이가 약속한 돈을 못 받자, 피리로 마을 아이들을 데려갔어요. 어른들은 약속을 어긴 것을 뉘우쳤어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["약속은 지켜야 해요 🤝", "피리는 신기해요 🎵", "아이들은 빨라요 🏃"], "a": 0, "exp": "정답은 '약속은 지켜야 해요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "개미와 비둘기처럼, 작은 친절이 큰 도움으로 돌아오는 일이 많아요. 누군가를 도우면 그 마음이 다시 나에게 와요.", "q": "이 글이 말하려는 것은?", "opts": ["작은 친절도 소중해요 🤝", "개미는 부지런해요 🐜", "비둘기는 빨라요 🕊️"], "a": 0, "exp": "정답은 '작은 친절도 소중해요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "임금님이 옷을 짓는다는 사기꾼에게 속아 보이지 않는 옷을 입고 행차했어요. 한 아이가 '임금님이 벗고 있다!'고 외치자 모두 진실을 알았어요.", "q": "아이가 외친 까닭은?", "opts": ["본 대로 솔직히 말해서 👦", "임금님이 미워서 😠", "옷이 예뻐서 👕"], "a": 0, "exp": "정답은 '본 대로 솔직히 말해서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "여우가 황새를 골탕 먹이려 납작한 접시에 음식을 주었어요. 황새는 되갚아 목 긴 병에 음식을 담아 주었지요. 여우는 자기 잘못을 깨달았어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["남에게 한 대로 돌아와요 🔁", "황새는 영리해요 🦢", "여우는 빨라요 🦊"], "a": 0, "exp": "정답은 '남에게 한 대로 돌아와요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "나그네가 사막에서 마지막 물 한 모금을 쓰러진 사람에게 주었어요. 그 사람은 기운을 차려 함께 마을을 찾아냈어요.", "q": "두 사람이 살아난 까닭은?", "opts": ["물을 나눠서 서로 도와서 💧", "길이 가까워서 🗺️", "비가 와서 🌧️"], "a": 0, "exp": "정답은 '물을 나눠서 서로 도와서'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "부지런한 농부가 자식들에게 '밭에 보물이 있다'는 유언을 남겼어요. 자식들이 밭을 샅샅이 파헤치자 농사가 잘되어 큰 수확을 얻었어요.", "q": "진짜 보물은 무엇이었나요?", "opts": ["부지런히 일한 노력 🌾", "숨겨 둔 금 🪙", "오래된 항아리 🏺"], "a": 0, "exp": "정답은 '부지런히 일한 노력'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}, {"story": "사슴이 연못에 비친 자기 뿔은 자랑하고 가는 다리는 부끄러워했어요. 사냥꾼을 피해 달릴 땐 다리가 도움이 됐지만, 멋진 뿔이 나뭇가지에 걸려 위험에 빠졌어요.", "q": "이 이야기가 알려 주는 것은?", "opts": ["겉모습보다 쓸모가 중요해요 🦌", "뿔은 멋져요 ✨", "다리는 약해요 🦵"], "a": 0, "exp": "정답은 '겉모습보다 쓸모가 중요해요'예요. 글을 다시 읽어 보면 까닭을 찾을 수 있어요."}]}];
+const ENG_LEVELS = [{"name": "1단계", "desc": "인사", "items": [{"s": "Hello!", "m": "안녕!", "e": "👋", "exp": "'Hello!'는 '안녕!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Hi, friend!", "m": "안녕, 친구!", "e": "🙂", "exp": "'Hi, friend!'는 '안녕, 친구!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "How are you?", "m": "잘 지내?", "e": "😊", "exp": "'How are you?'는 '잘 지내?'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am fine.", "m": "나는 좋아.", "e": "👍", "exp": "'I am fine.'는 '나는 좋아.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Thank you!", "m": "고마워!", "e": "🙏", "exp": "'Thank you!'는 '고마워!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "You are welcome.", "m": "천만에.", "e": "😊", "exp": "'You are welcome.'는 '천만에.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "See you!", "m": "또 봐!", "e": "👋", "exp": "'See you!'는 '또 봐!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Good morning!", "m": "좋은 아침!", "e": "🌅", "exp": "'Good morning!'는 '좋은 아침!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Good night!", "m": "잘 자!", "e": "🌙", "exp": "'Good night!'는 '잘 자!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Nice to meet you.", "m": "만나서 반가워.", "e": "🤝", "exp": "'Nice to meet you.'는 '만나서 반가워.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Have a good day!", "m": "좋은 하루 보내!", "e": "☀️", "exp": "'Have a good day!'는 '좋은 하루 보내!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Goodbye!", "m": "잘 가!", "e": "👋", "exp": "'Goodbye!'는 '잘 가!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "How is it going?", "m": "어떻게 지내?", "e": "😄", "exp": "'How is it going?'는 '어떻게 지내?'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am okay.", "m": "나는 괜찮아.", "e": "🙆", "exp": "'I am okay.'는 '나는 괜찮아.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Long time no see.", "m": "오랜만이야.", "e": "😮", "exp": "'Long time no see.'는 '오랜만이야.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Welcome!", "m": "환영해!", "e": "🎉", "exp": "'Welcome!'는 '환영해!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Take care!", "m": "몸조심해!", "e": "💚", "exp": "'Take care!'는 '몸조심해!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Excuse me.", "m": "실례합니다.", "e": "🙋", "exp": "'Excuse me.'는 '실례합니다.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Good afternoon!", "m": "좋은 오후!", "e": "🌤️", "exp": "'Good afternoon!'는 '좋은 오후!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "See you tomorrow!", "m": "내일 봐!", "e": "📅", "exp": "'See you tomorrow!'는 '내일 봐!'라는 뜻이에요. 천천히 따라 말해 보세요."}]}, {"name": "2단계", "desc": "나 소개", "items": [{"s": "My name is Sam.", "m": "내 이름은 샘이야.", "e": "🙋", "exp": "'My name is Sam.'는 '내 이름은 샘이야.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am six.", "m": "나는 여섯 살이야.", "e": "6️⃣", "exp": "'I am six.'는 '나는 여섯 살이야.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am seven.", "m": "나는 일곱 살이야.", "e": "7️⃣", "exp": "'I am seven.'는 '나는 일곱 살이야.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am a boy.", "m": "나는 남자아이야.", "e": "👦", "exp": "'I am a boy.'는 '나는 남자아이야.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am a girl.", "m": "나는 여자아이야.", "e": "👧", "exp": "'I am a girl.'는 '나는 여자아이야.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am happy.", "m": "나는 행복해.", "e": "😄", "exp": "'I am happy.'는 '나는 행복해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "This is my mom.", "m": "이쪽은 우리 엄마야.", "e": "👩", "exp": "'This is my mom.'는 '이쪽은 우리 엄마야.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "This is my dad.", "m": "이쪽은 우리 아빠야.", "e": "👨", "exp": "'This is my dad.'는 '이쪽은 우리 아빠야.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I love my family.", "m": "나는 가족을 사랑해.", "e": "❤️", "exp": "'I love my family.'는 '나는 가족을 사랑해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I have a dog.", "m": "나는 강아지가 있어.", "e": "🐶", "exp": "'I have a dog.'는 '나는 강아지가 있어.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I have a cat.", "m": "나는 고양이가 있어.", "e": "🐱", "exp": "'I have a cat.'는 '나는 고양이가 있어.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am a student.", "m": "나는 학생이야.", "e": "🎒", "exp": "'I am a student.'는 '나는 학생이야.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "This is my friend.", "m": "이쪽은 내 친구야.", "e": "👬", "exp": "'This is my friend.'는 '이쪽은 내 친구야.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am from Korea.", "m": "나는 한국에서 왔어.", "e": "🇰🇷", "exp": "'I am from Korea.'는 '나는 한국에서 왔어.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I have a sister.", "m": "나는 여동생이 있어.", "e": "👧", "exp": "'I have a sister.'는 '나는 여동생이 있어.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I have a brother.", "m": "나는 남동생이 있어.", "e": "👦", "exp": "'I have a brother.'는 '나는 남동생이 있어.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "My favorite color is red.", "m": "내가 좋아하는 색은 빨강이야.", "e": "🟥", "exp": "'My favorite color is red.'는 '내가 좋아하는 색은 빨강이야.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I live in a house.", "m": "나는 집에 살아.", "e": "🏠", "exp": "'I live in a house.'는 '나는 집에 살아.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I go to school.", "m": "나는 학교에 가.", "e": "🏫", "exp": "'I go to school.'는 '나는 학교에 가.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Nice day, right?", "m": "좋은 날이지?", "e": "😊", "exp": "'Nice day, right?'는 '좋은 날이지?'라는 뜻이에요. 천천히 따라 말해 보세요."}]}, {"name": "3단계", "desc": "좋아해요", "items": [{"s": "I like apples.", "m": "나는 사과를 좋아해.", "e": "🍎", "exp": "'I like apples.'는 '나는 사과를 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like bananas.", "m": "나는 바나나를 좋아해.", "e": "🍌", "exp": "'I like bananas.'는 '나는 바나나를 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like dogs.", "m": "나는 강아지를 좋아해.", "e": "🐶", "exp": "'I like dogs.'는 '나는 강아지를 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like cats.", "m": "나는 고양이를 좋아해.", "e": "🐱", "exp": "'I like cats.'는 '나는 고양이를 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like blue.", "m": "나는 파랑을 좋아해.", "e": "🟦", "exp": "'I like blue.'는 '나는 파랑을 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like to play.", "m": "나는 노는 걸 좋아해.", "e": "⚽", "exp": "'I like to play.'는 '나는 노는 걸 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "It is yummy!", "m": "맛있어!", "e": "😋", "exp": "'It is yummy!'는 '맛있어!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like music.", "m": "나는 음악을 좋아해.", "e": "🎵", "exp": "'I like music.'는 '나는 음악을 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like to read.", "m": "나는 읽는 걸 좋아해.", "e": "📚", "exp": "'I like to read.'는 '나는 읽는 걸 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like ice cream.", "m": "나는 아이스크림을 좋아해.", "e": "🍦", "exp": "'I like ice cream.'는 '나는 아이스크림을 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like to sing.", "m": "나는 노래하는 걸 좋아해.", "e": "🎤", "exp": "'I like to sing.'는 '나는 노래하는 걸 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like to draw.", "m": "나는 그리는 걸 좋아해.", "e": "🎨", "exp": "'I like to draw.'는 '나는 그리는 걸 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like the sun.", "m": "나는 해를 좋아해.", "e": "☀️", "exp": "'I like the sun.'는 '나는 해를 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like flowers.", "m": "나는 꽃을 좋아해.", "e": "🌸", "exp": "'I like flowers.'는 '나는 꽃을 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like to run.", "m": "나는 달리는 걸 좋아해.", "e": "🏃", "exp": "'I like to run.'는 '나는 달리는 걸 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like books.", "m": "나는 책을 좋아해.", "e": "📖", "exp": "'I like books.'는 '나는 책을 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like to swim.", "m": "나는 수영하는 걸 좋아해.", "e": "🏊", "exp": "'I like to swim.'는 '나는 수영하는 걸 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like candy.", "m": "나는 사탕을 좋아해.", "e": "🍬", "exp": "'I like candy.'는 '나는 사탕을 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like to dance.", "m": "나는 춤추는 걸 좋아해.", "e": "💃", "exp": "'I like to dance.'는 '나는 춤추는 걸 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I like my teacher.", "m": "나는 선생님을 좋아해.", "e": "👩‍🏫", "exp": "'I like my teacher.'는 '나는 선생님을 좋아해.'라는 뜻이에요. 천천히 따라 말해 보세요."}]}, {"name": "4단계", "desc": "교실", "items": [{"s": "Sit down, please.", "m": "앉아 주세요.", "e": "🪑", "exp": "'Sit down, please.'는 '앉아 주세요.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Stand up, please.", "m": "일어나 주세요.", "e": "🧍", "exp": "'Stand up, please.'는 '일어나 주세요.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Look at me.", "m": "나를 봐.", "e": "👀", "exp": "'Look at me.'는 '나를 봐.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Open your book.", "m": "책을 펴.", "e": "📖", "exp": "'Open your book.'는 '책을 펴.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Close your book.", "m": "책을 덮어.", "e": "📕", "exp": "'Close your book.'는 '책을 덮어.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Let's go!", "m": "가자!", "e": "🏃", "exp": "'Let's go!'는 '가자!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Raise your hand.", "m": "손을 들어요.", "e": "✋", "exp": "'Raise your hand.'는 '손을 들어요.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Listen carefully.", "m": "잘 들어요.", "e": "👂", "exp": "'Listen carefully.'는 '잘 들어요.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Be quiet, please.", "m": "조용히 해 주세요.", "e": "🤫", "exp": "'Be quiet, please.'는 '조용히 해 주세요.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Let's read together.", "m": "함께 읽어요.", "e": "📚", "exp": "'Let's read together.'는 '함께 읽어요.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Write your name.", "m": "이름을 써요.", "e": "✏️", "exp": "'Write your name.'는 '이름을 써요.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Line up, please.", "m": "줄을 서요.", "e": "🚶", "exp": "'Line up, please.'는 '줄을 서요.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Good job!", "m": "잘했어요!", "e": "👍", "exp": "'Good job!'는 '잘했어요!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Try again.", "m": "다시 해 봐요.", "e": "🔁", "exp": "'Try again.'는 '다시 해 봐요.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "May I go out?", "m": "나가도 될까요?", "e": "🚪", "exp": "'May I go out?'는 '나가도 될까요?'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Let's count.", "m": "세어 봐요.", "e": "🔢", "exp": "'Let's count.'는 '세어 봐요.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Clean your desk.", "m": "책상을 정리해요.", "e": "🧹", "exp": "'Clean your desk.'는 '책상을 정리해요.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Show me your hand.", "m": "손을 보여 줘요.", "e": "🖐️", "exp": "'Show me your hand.'는 '손을 보여 줘요.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Repeat after me.", "m": "따라 말해요.", "e": "🗣️", "exp": "'Repeat after me.'는 '따라 말해요.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "It's time to start.", "m": "시작할 시간이에요.", "e": "⏰", "exp": "'It's time to start.'는 '시작할 시간이에요.'라는 뜻이에요. 천천히 따라 말해 보세요."}]}, {"name": "5단계", "desc": "기분", "items": [{"s": "I am happy.", "m": "나는 행복해.", "e": "😄", "exp": "'I am happy.'는 '나는 행복해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am sad.", "m": "나는 슬퍼.", "e": "😢", "exp": "'I am sad.'는 '나는 슬퍼.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am hungry.", "m": "나는 배고파.", "e": "🍽️", "exp": "'I am hungry.'는 '나는 배고파.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am thirsty.", "m": "나는 목말라.", "e": "💧", "exp": "'I am thirsty.'는 '나는 목말라.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am sleepy.", "m": "나는 졸려.", "e": "😴", "exp": "'I am sleepy.'는 '나는 졸려.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Yes, I can!", "m": "응, 할 수 있어!", "e": "💪", "exp": "'Yes, I can!'는 '응, 할 수 있어!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am sorry.", "m": "미안해.", "e": "😅", "exp": "'I am sorry.'는 '미안해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am tired.", "m": "나는 피곤해.", "e": "😮‍💨", "exp": "'I am tired.'는 '나는 피곤해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am excited!", "m": "나는 신나!", "e": "🤩", "exp": "'I am excited!'는 '나는 신나!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "Don't worry.", "m": "걱정 마.", "e": "😌", "exp": "'Don't worry.'는 '걱정 마.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am scared.", "m": "나는 무서워.", "e": "😨", "exp": "'I am scared.'는 '나는 무서워.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am angry.", "m": "나는 화났어.", "e": "😠", "exp": "'I am angry.'는 '나는 화났어.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I feel good.", "m": "기분이 좋아.", "e": "😊", "exp": "'I feel good.'는 '기분이 좋아.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am proud.", "m": "나는 뿌듯해.", "e": "😎", "exp": "'I am proud.'는 '나는 뿌듯해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I love you.", "m": "사랑해.", "e": "❤️", "exp": "'I love you.'는 '사랑해.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am okay now.", "m": "이제 괜찮아.", "e": "🙂", "exp": "'I am okay now.'는 '이제 괜찮아.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "That is fun!", "m": "재미있어!", "e": "🎉", "exp": "'That is fun!'는 '재미있어!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am surprised!", "m": "나는 놀랐어!", "e": "😲", "exp": "'I am surprised!'는 '나는 놀랐어!'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am hot.", "m": "나는 더워.", "e": "🥵", "exp": "'I am hot.'는 '나는 더워.'라는 뜻이에요. 천천히 따라 말해 보세요."}, {"s": "I am cold.", "m": "나는 추워.", "e": "🥶", "exp": "'I am cold.'는 '나는 추워.'라는 뜻이에요. 천천히 따라 말해 보세요."}]}];
+const SUBJECTS = {
+  "국어 📖": { type:"reading", levels:KOR_LEVELS },
+
+  "산수 🔢": { type:"math", levels:[
+    { name:"1단계", desc:"한 자리 덧셈", gen:()=>{ const a=rand(1,5),b=rand(1,4); return { big:`${a} + ${b} = ?`, a:a+b }; } },
+    { name:"2단계", desc:"한 자리 뺄셈", gen:()=>{ const a=rand(3,9),b=rand(1,a-1); return { big:`${a} − ${b} = ?`, a:a-b }; } },
+    { name:"3단계", desc:"10 만들기", gen:()=>{ const a=rand(1,9); return { big:`${a} + ? = 10`, a:10-a }; } },
+    { name:"4단계", desc:"받아올림 덧셈", gen:()=>{ const a=rand(5,9),b=rand(2,9); return { big:`${a} + ${b} = ?`, a:a+b }; } },
+    { name:"5단계", desc:"받아내림 뺄셈", gen:()=>{ const a=rand(11,18), b=rand(a-9,9); return { big:`${a} − ${b} = ?`, a:a-b }; } },
+  ]},
+
+  "시계 ⏰": { type:"clock", levels:[
+    { name:"1단계", desc:"정각 읽기", gen:()=>{ const h=rand(1,12); return { h, m:0, q:"몇 시일까요?", opts:makeOpts(h+"시", ()=>rand(1,12)+"시"), ans:h+"시" }; } },
+    { name:"2단계", desc:"30분 읽기", gen:()=>{ const h=rand(1,12), m=pick([0,30]); const t=fmtTime(h,m); return { h, m, q:"몇 시 몇 분일까요?", opts:makeOpts(t, ()=>{ const hh=rand(1,12); return fmtTime(hh, pick([0,30])); }), ans:t }; } },
+    { name:"3단계", desc:"10분 단위 읽기", gen:()=>{ const h=rand(1,12), m=pick([0,10,20,30,40,50]); const t=fmtTime(h,m); return { h, m, q:"몇 시 몇 분일까요?", opts:makeOpts(t, ()=>fmtTime(h, pick([0,10,20,30,40,50]))), ans:t }; } },
+    { name:"4단계", desc:"15분 단위 읽기", gen:()=>{ const h=rand(1,12), m=pick([0,15,30,45]); const t=fmtTime(h,m); return { h, m, q:"몇 시 몇 분일까요?", opts:makeOpts(t, ()=>fmtTime(h, pick([0,15,30,45]))), ans:t }; } },
+    { name:"5단계", desc:"5분 단위 읽기", gen:()=>{ const h=rand(1,12), m=pick([0,5,10,15,20,25,30,35,40,45,50,55]); const t=fmtTime(h,m); return { h, m, q:"몇 시 몇 분일까요?", opts:makeOpts(t, ()=>fmtTime(h, pick([0,5,10,15,20,25,30,35,40,45,50,55]))), ans:t }; } },
+  ]},
+
+  "영어 🎤": { type:"speak", levels:ENG_LEVELS },
+
+  "돈 계산 💰": { type:"money", levels:[
+    { name:"1단계", desc:"100원 세기", gen:()=>{ const n=rand(2,5); return { coins:"🟡".repeat(n), label:"100원짜리 "+n+"개", q:"모두 얼마일까요?", a:n*100 }; } },
+    { name:"2단계", desc:"500원·100원 세기", gen:()=>{ const f=rand(1,2), h=rand(1,4); return { coins:"🟠".repeat(f)+"🟡".repeat(h), label:"500원 "+f+"개, 100원 "+h+"개", q:"모두 얼마일까요?", a:f*500+h*100 }; } },
+    { name:"3단계", desc:"지폐+동전", gen:()=>{ const t=rand(1,2), h=rand(1,4); return { coins:"💵".repeat(t)+"🟡".repeat(h), label:"1000원 "+t+"장, 100원 "+h+"개", q:"모두 얼마일까요?", a:t*1000+h*100 }; } },
+    { name:"4단계", desc:"물건 값 더하기", gen:()=>{ const items=[["🍬사탕",300],["🍪과자",500],["🥤음료",700],["🍫초콜릿",800],["✏️연필",200]]; const a=pick(items), b=pick(items); return { line1:`${a[0]} ${a[1]}원 + ${b[0]} ${b[1]}원`, line2:"", q:"두 개를 사면 얼마일까요?", a:a[1]+b[1] }; } },
+    { name:"5단계", desc:"거스름돈", gen:()=>{ const price=pick([300,400,600,700,800]); return { line1:`🍪 과자값 ${price}원`, line2:"💵 1000원 냈어요", q:"거스름돈은 얼마일까요?", a:1000-price }; } },
+  ]},
+};
+
+/* ============ 유틸 ============ */
+function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function shuffleOpts(correct, wrongs){ const all=[correct,...wrongs]; for(let i=all.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [all[i],all[j]]=[all[j],all[i]]; } return all; }
+// 정답과 겹치지 않는 보기 3개 생성 (genWrong: 오답 후보를 만드는 함수)
+function makeOpts(correct, genWrong){
+  const set=new Set([correct]);
+  let guard=0;
+  while(set.size<3 && guard<100){ set.add(genWrong()); guard++; }
+  const arr=[...set];
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return arr;
+}
+function shuffleArr(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+// 시각을 "○시" 또는 "○시 ○분"으로 표시
+function fmtTime(h,m){ return m===0 ? h+"시" : h+"시 "+m+"분"; }
+
+/* ============ 상태 ============ */
+let subjKey = Object.keys(SUBJECTS)[0];
+let level = 0;
+// 영어 녹음 관련 (앞에서 참조되므로 미리 선언)
+let speakScore=false;
+let myVoiceUrl=null;
+let mediaRec=null;
+let micStream=null;
+let isRecording=false;
+
+/* ============ 메뉴 렌더 ============ */
+const subjEl = document.getElementById('subjects');
+Object.keys(SUBJECTS).forEach(k=>{
+  const b=document.createElement('button');
+  b.className='subj'+(k===subjKey?' active':'');
+  b.textContent=k;
+  b.onclick=()=>{ subjKey=k; level=0; quiz=[]; speechSynthesis.cancel(); if(mediaRec&&mediaRec.state==='recording'){try{mediaRec.stop();}catch(e){}} isRecording=false; document.querySelectorAll('.subj').forEach(s=>s.classList.toggle('active',s.textContent===k)); renderLevels(); render(); };
+  subjEl.appendChild(b);
+});
+
+function renderLevels(){
+  const lvEl=document.getElementById('levels');
+  lvEl.innerHTML='';
+  SUBJECTS[subjKey].levels.forEach((lv,i)=>{
+    const b=document.createElement('button');
+    b.className='lv'+(i===level?' active':'');
+    b.textContent=i+1;
+    b.onclick=()=>{ level=i; quiz=[]; speechSynthesis.cancel(); document.querySelectorAll('.lv').forEach((x,xi)=>x.classList.toggle('active',xi===i)); render(); };
+    lvEl.appendChild(b);
+  });
+  const lv=SUBJECTS[subjKey].levels[level];
+  document.getElementById('lvLabel').textContent='⭐ '+(lv.desc||lv.name);
+}
+
+/* ============ 퀴즈 엔진 ============ */
+const SET_SIZE = 10;   // 한 챕터(세트) 문제 수
+let quiz = [];          // 이번 세트 문제 배열
+let qi = 0;             // 현재 문제 번호
+let answers = [];       // 사용자의 답 기록
+
+// 단계 진입 시 세트 구성
+function buildQuiz(){
+  const subj = SUBJECTS[subjKey];
+  const lv = subj.levels[level];
+  quiz = [];
+  if(subj.type==='reading' || subj.type==='speak'){
+    // 보유 문제에서 섞어 SET_SIZE개 뽑기
+    let pool = shuffleArr(lv.items);
+    if(pool.length < SET_SIZE){ // 모자라면 반복 채움
+      while(pool.length < SET_SIZE) pool = pool.concat(shuffleArr(lv.items));
+    }
+    pool = pool.slice(0, SET_SIZE);
+    if(subj.type==='reading'){
+      quiz = pool.map(it=>{
+        const order = shuffleArr(it.opts.map((o,i)=>i));
+        return { kind:'reading', story:it.story, q:it.q, exp:it.exp,
+                 opts:order.map(i=>it.opts[i]), a:order.indexOf(it.a) };
+      });
+    } else {
+      quiz = pool.map(it=>({ kind:'speak', s:it.s, m:it.m, e:it.e, exp:it.exp }));
+    }
+  } else {
+    // 산수/시계/돈: gen()으로 SET_SIZE개 생성
+    for(let i=0;i<SET_SIZE;i++){
+      const g = lv.gen();
+      g.kind = subj.type;
+      quiz.push(g);
+    }
+  }
+  qi = 0;
+  answers = new Array(SET_SIZE).fill(null);
+}
+
+function renderProgress(){
+  const p=document.getElementById('progress');
+  let h='';
+  for(let i=0;i<SET_SIZE;i++){
+    const cls = i<qi ? 'dot done' : (i===qi ? 'dot current' : 'dot');
+    h+=`<span class="${cls}"></span>`;
+  }
+  p.innerHTML=h;
+}
+function render(){
+  const lv = SUBJECTS[subjKey].levels[level];
+  document.getElementById('lvLabel').textContent = (lv.desc||lv.name)+' · '+(qi+1)+'/'+SET_SIZE+'문제';
+  if(!quiz.length) buildQuiz();
+  renderProgress();
+  const item = quiz[qi];
+  if(item.kind==='reading') renderReading(item);
+  else if(item.kind==='math') renderMath(item);
+  else if(item.kind==='clock') renderClock(item);
+  else if(item.kind==='speak') renderSpeak(item);
+  else if(item.kind==='money') renderMoney(item);
+}
+
+// 답 기록 후 다음으로 (정답/오답 표시 없이 바로 진행)
+function recordAndNext(userAns){
+  answers[qi] = userAns;
+  speechSynthesis.cancel();
+  if(qi+1 >= SET_SIZE){ showResult(); }
+  else { qi++; render(); }
+}
+
+/* ---- 국어: 책 읽기 + 내용 파악 ---- */
+function renderReading(item){
+  document.getElementById('card').innerHTML=`
+    <span class="emoji">${SUBJECTS[subjKey].levels[level].emoji||'📖'}</span>
+    <div class="story">${item.story}</div>
+    <button class="btn listen" onclick="readStory()">🔊 읽어주기</button>
+    <div class="question">${item.q}</div>
+    <div class="options">${item.opts.map((o,i)=>`<button class="opt" onclick="recordAndNext(${i})">${o}</button>`).join('')}</div>
+    <div class="hint">답을 누르면 다음 문제로 넘어가요!</div>`;
+}
+
+/* ---- 산수 ---- */
+let numInput='';
+function renderMath(item){
+  numInput='';
+  const display = item.emoji
+    ? `<div class="big" style="font-size:2.4rem;line-height:1.5">${item.emoji}</div><div class="question">${item.q}</div>`
+    : `<div class="big" style="font-size:2.6rem">${item.big}</div>`;
+  document.getElementById('card').innerHTML=`
+    ${display}
+    <div class="answer-box" id="ansBox">_</div>
+    <div class="numpad">
+      ${[1,2,3,4,5,6,7,8,9].map(n=>`<button onclick="pushNum(${n})">${n}</button>`).join('')}
+      <button onclick="clearNum()">↺</button>
+      <button onclick="pushNum(0)">0</button>
+      <button class="ok" onclick="submitNum()">✓</button>
+    </div>
+    <div class="hint">숫자를 누르고 ✓로 넘어가요!</div>`;
+}
+function pushNum(n){ if(numInput.length<3){ numInput+=n; document.getElementById('ansBox').textContent=numInput; } }
+function clearNum(){ numInput=''; document.getElementById('ansBox').textContent='_'; }
+function submitNum(){ if(numInput===''){ return; } recordAndNext(parseInt(numInput)); }
+
+/* ---- 시계 ---- */
+function renderClock(item){
+  document.getElementById('card').innerHTML=`
+    ${clockSVG(item.h, item.m)}
+    <div class="question">${item.q}</div>
+    <div class="options">${item.opts.map(o=>`<button class="opt" onclick="recordAndNext('${o}')">${o}</button>`).join('')}</div>
+    <div class="hint">답을 누르면 다음 문제로 넘어가요!</div>`;
+}
+function clockSVG(h,m,size){
+  size = size || 170;
+  const hourAngle=(h%12)*30 + m*0.5;
+  const minAngle=m*6;
+  // 각도(12시=0도, 시계방향)에서 끝점 좌표 계산
+  const pt=(deg,len)=>{ const rad=(deg-90)*Math.PI/180; return { x:80+len*Math.cos(rad), y:80+len*Math.sin(rad) }; };
+  const he=pt(hourAngle,40);   // 시침 끝 (짧게)
+  const me=pt(minAngle,60);    // 분침 끝 (길게)
+  let ticks='';
+  for(let i=1;i<=12;i++){ const rad=(i*30-90)*Math.PI/180; const x=80+62*Math.cos(rad),y=80+62*Math.sin(rad); ticks+=`<text x="${x}" y="${y+5}" font-size="13" text-anchor="middle" fill="#9A958A" font-weight="700">${i}</text>`; }
+  return `<svg class="clock" width="${size}" height="${size}" viewBox="0 0 160 160" style="margin:0">
+    <circle cx="80" cy="80" r="74" fill="#FFFFFF" stroke="var(--gold)" stroke-width="3"/>
+    ${ticks}
+    <line x1="80" y1="80" x2="${me.x}" y2="${me.y}" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
+    <line x1="80" y1="80" x2="${he.x}" y2="${he.y}" stroke="var(--brand)" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="80" cy="80" r="4.5" fill="var(--ink)"/>
+  </svg>`;
+}
+
+/* ---- 돈 계산 ---- */
+let moneyInput='';
+function renderMoney(item){
+  moneyInput='';
+  let display;
+  if(item.coins){
+    display=`<div style="font-size:1.5rem;line-height:1.15;margin-bottom:2px">${item.coins}</div>`
+          +`<div class="meaning" style="margin-bottom:4px;font-size:.92rem">${item.label}</div>`
+          +`<div class="question" style="margin:4px 0">${item.q}</div>`;
+  } else {
+    const body = item.line2 ? `${item.line1} · ${item.line2}` : item.line1;
+    display=`<div class="story" style="text-align:center;font-size:1.04rem;margin-bottom:6px;padding:9px 11px;line-height:1.45">${body}</div>`
+          +`<div class="question" style="margin:4px 0">${item.q}</div>`;
+  }
+  document.getElementById('card').innerHTML=`
+    ${display}
+    <div class="answer-box" id="ansBox" style="min-height:30px;margin:2px 0 6px;font-size:1.5rem">_ 원</div>
+    <div class="numpad">
+      ${[1,2,3,4,5,6,7,8,9].map(n=>`<button onclick="pushMoney(${n})">${n}</button>`).join('')}
+      <button onclick="clearMoney()">↺</button>
+      <button onclick="pushMoney(0)">0</button>
+      <button class="ok" onclick="submitMoney()">✓</button>
+    </div>
+    <div class="hint" style="margin-top:8px">금액을 쓰고 ✓로 넘어가요!</div>`;
+}
+function pushMoney(n){ if(moneyInput.length<5){ moneyInput+=n; document.getElementById('ansBox').textContent=Number(moneyInput).toLocaleString()+' 원'; } }
+function clearMoney(){ moneyInput=''; document.getElementById('ansBox').textContent='_ 원'; }
+function submitMoney(){ if(moneyInput===''){ return; } recordAndNext(parseInt(moneyInput)); }
+
+/* ---- 영어 말하기 ---- */
+function renderSpeak(item){
+  speakScore=false;  // 새 문제마다 초기화
+  myVoiceUrl=null;
+  if(isRecording && mediaRec && mediaRec.state==='recording'){ try{ mediaRec.stop(); }catch(e){} }
+  isRecording=false;
+  document.getElementById('card').innerHTML=`
+    <span class="emoji">${item.e}</span>
+    <div class="big">${item.s}</div>
+    <div class="meaning">${item.m}</div>
+    <div class="btns">
+      <button class="btn listen" onclick="speakEn('${item.s.replace(/'/g,"\\'")}')">🔊 들어보기</button>
+      <button class="btn speak" id="recBtn" onclick="toggleRec()">🎙️ 따라 말하기</button>
+      <button class="btn" id="playMine" style="background:var(--good);display:none" onclick="playMyVoice()">▶ 내 목소리 듣기</button>
+    </div>
+    <div class="result" id="result"></div>
+    <button class="btn next-btn" onclick="recordAndNext(speakScore)">다음 문제</button>
+    <div class="hint">🎙️를 눌러 말하고, 다시 눌러 멈춰요. 그다음 들어볼 수 있어요!</div>`;
+}
+
+/* ============ 채점 ============ */
+function isCorrect(item, ans){
+  if(item.kind==='reading') return ans===item.a;
+  if(item.kind==='math') return ans===item.a;
+  if(item.kind==='money') return ans===item.a;
+  if(item.kind==='clock') return ans===item.ans;
+  if(item.kind==='speak') return ans===true;   // 말하기 성공 여부
+  return false;
+}
+function showResult(){
+  let correct=0;
+  const wrong=[];
+  quiz.forEach((item,i)=>{
+    if(isCorrect(item, answers[i])) correct++;
+    else wrong.push({item, ans:answers[i], no:i+1});
+  });
+  const score=Math.round(correct/SET_SIZE*100);
+  recordScore(subjKey, level, correct, SET_SIZE);   // 랭킹 기록
+  let face = score===100?'🏆': score>=70?'😄': score>=40?'🙂':'💪';
+  let msg  = score===100?'모두 맞았어요! 최고예요!': score>=70?'아주 잘했어요!': score>=40?'잘하고 있어요!':'다시 한 번 해볼까요?';
+
+  let html=`<span class="emoji">${face}</span>
+    <div class="score-num">${correct} / ${SET_SIZE}</div>
+    <div class="meaning">${msg}</div>`;
+
+  if(wrong.length){
+    html+=`<div class="review-head">다시 볼 문제 ${wrong.length}개</div>`;
+    wrong.forEach(w=>{
+      const it=w.item;
+      let qtext, correctText, expText, extra='';
+      if(it.kind==='reading'){ qtext=it.q; correctText=it.opts[it.a]; expText=it.exp; }
+      else if(it.kind==='speak'){ qtext=it.s+' ('+it.m+')'; correctText='따라 말하기'; expText=it.exp; }
+      else if(it.kind==='clock'){ qtext=it.q; correctText=it.ans; expText="정답 시각의 시계예요. 바늘 위치를 살펴봐요."; extra=`<div style="margin-top:8px;display:flex;justify-content:center">${clockSVG(it.h,it.m,90)}</div>`; }
+      else if(it.kind==='math'){ qtext=it.big; correctText=it.a+''; expText="천천히 다시 세어 보면 답을 찾을 수 있어요."; }
+      else if(it.kind==='money'){ qtext=(it.label||((it.line1||'')+' / '+(it.line2||''))); correctText=it.a.toLocaleString()+'원'; expText="동전과 지폐를 하나씩 더해 보세요."; }
+      html+=`<div class="review">
+        <div class="q">${w.no}. ${qtext}</div>
+        <div class="a">정답 · ${correctText}</div>
+        <div class="e">${expText}</div>
+        ${extra}
+      </div>`;
+    });
+  }
+
+  const lastLevel = SUBJECTS[subjKey].levels.length - 1;
+  if(level < lastLevel){
+    html+=`<button class="btn next-btn" style="margin-top:16px" onclick="goNextLevel()">다음 단계로 ▶</button>`;
+    html+=`<button class="btn listen" style="margin-top:8px" onclick="restartQuiz()">다시 풀기</button>`;
+  } else {
+    html+=`<div style="margin-top:14px;font-weight:700;color:var(--good)">🎊 마지막 단계까지 모두 끝냈어요!</div>`;
+    html+=`<button class="btn next-btn" style="margin-top:12px" onclick="goLevel(0)">처음 단계로</button>`;
+    html+=`<button class="btn listen" style="margin-top:8px" onclick="restartQuiz()">다시 풀기</button>`;
+  }
+  html+=`<button class="btn" style="background:var(--gold);margin-top:8px" onclick="rankView={subj:subjKey,lv:level};showRanking()">🏆 랭킹 보기</button>`;
+  document.getElementById('card').innerHTML=html;
+  document.getElementById('progress').innerHTML='';
+  document.getElementById('lvLabel').textContent=(SUBJECTS[subjKey].levels[level].desc||'')+' · 채점 완료';
+}
+function goLevel(i){
+  level=i; quiz=[];
+  document.querySelectorAll('.lv').forEach((x,xi)=>x.classList.toggle('active', xi===level));
+  render();
+}
+function goNextLevel(){
+  const lastLevel = SUBJECTS[subjKey].levels.length - 1;
+  if(level < lastLevel) goLevel(level+1);
+}
+function restartQuiz(){ buildQuiz(); render(); }
+
+/* ============ 음성 ============ */
+function speakKo(t){ const u=new SpeechSynthesisUtterance(t); u.lang='ko-KR'; u.rate=0.85; speechSynthesis.cancel(); speechSynthesis.speak(u); }
+function readStory(){
+  const item=quiz[qi];
+  speechSynthesis.cancel();
+  const u1=new SpeechSynthesisUtterance(item.story); u1.lang='ko-KR'; u1.rate=0.85;
+  const u2=new SpeechSynthesisUtterance(item.q); u2.lang='ko-KR'; u2.rate=0.85;
+  speechSynthesis.speak(u1); speechSynthesis.speak(u2);
+}
+function speakEn(t){ const u=new SpeechSynthesisUtterance(t); u.lang='en-US'; u.rate=0.72; speechSynthesis.cancel(); speechSynthesis.speak(u); }
+
+function clean(t){ return t.toLowerCase().replace(/[.,!?'"]/g,'').replace(/\s+/g,' ').trim(); }
+
+// 마이크 스트림을 한 번만 요청하고 보관 (권한 팝업 1회)
+function getMic(){
+  if(micStream) return Promise.resolve(micStream);
+  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia))
+    return Promise.reject('unsupported');
+  return navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{ micStream=s; return s; });
+}
+
+function toggleRec(){
+  const res=document.getElementById('result');
+  const btn=document.getElementById('recBtn');
+  if(isRecording){ stopRec(); return; }   // 녹음 중이면 멈춤
+  if(!window.MediaRecorder){ res.textContent='😢 크롬(Chrome) 앱에서 열어주세요!'; res.className='result again'; return; }
+
+  getMic().then(stream=>{
+    let chunks=[];
+    try{
+      mediaRec=new MediaRecorder(stream);
+    }catch(e){ res.textContent='😅 녹음을 시작할 수 없어요. 다시 눌러보세요.'; res.className='result again'; return; }
+    mediaRec.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
+    mediaRec.onstop=()=>{
+      isRecording=false;
+      if(btn) btn.textContent='🎙️ 따라 말하기';
+      if(chunks.length){
+        if(myVoiceUrl) URL.revokeObjectURL(myVoiceUrl);
+        myVoiceUrl=URL.createObjectURL(new Blob(chunks,{type:mediaRec.mimeType||'audio/webm'}));
+        speakScore=true;   // 녹음을 했으면 칭찬
+        const pm=document.getElementById('playMine'); if(pm) pm.style.display='block';
+        res.textContent='🎉 잘했어요! 내 목소리를 들어볼까요?'; res.className='result good';
+      } else {
+        res.textContent='🔇 소리가 녹음되지 않았어요. 다시 해볼까요?'; res.className='result again';
+      }
+    };
+    mediaRec.start();
+    isRecording=true;
+    if(btn) btn.textContent='⏹️ 멈추기';
+    res.textContent='🎧 녹음 중이에요... 또박또박 말해요!'; res.className='result';
+  }).catch(err=>{
+    if(err==='unsupported') res.textContent='😢 이 브라우저는 녹음을 지원하지 않아요. 크롬을 써보세요!';
+    else res.textContent='🎤 마이크 권한이 필요해요. 주소창 왼쪽 자물쇠 → 마이크 → 허용으로 바꿔주세요!';
+    res.className='result again';
+  });
+}
+
+function stopRec(){
+  if(mediaRec && mediaRec.state==='recording'){ mediaRec.stop(); }
+}
+
+function playMyVoice(){
+  if(!myVoiceUrl) return;
+  const a=new Audio(myVoiceUrl);
+  a.play();
+}
+
+
+/* ============ 저장소 (기기 저장; 나중에 클라우드로 교체 가능) ============ */
+const STORE_KEY='baeumteo_v1';
+function loadStore(){
+  try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || {names:[], ranks:{}}; }
+  catch(e){ return {names:[], ranks:{}}; }   // 저장 불가 환경이면 메모리만
+}
+function saveStore(s){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(s)); }catch(e){ /* 무시 */ }
+}
+let store = loadStore();
+let learner = '';
+
+// 랭킹 키: 과목|단계  →  [{name, score, ts}]
+function rankKey(subj, lv){ return subj+'|'+lv; }
+function recordScore(subj, lv, correct, total){
+  const score=Math.round(correct/total*100);
+  const key=rankKey(subj, lv);
+  if(!store.ranks[key]) store.ranks[key]=[];
+  const list=store.ranks[key];
+  const mine=list.find(r=>r.name===learner);
+  if(mine){ if(score>mine.score){ mine.score=score; mine.ts=Date.now(); } }
+  else { list.push({name:learner, score, ts:Date.now()}); }
+  // 정렬: 점수 높은 순, 같으면 먼저 달성한 순
+  list.sort((a,b)=> b.score-a.score || a.ts-b.ts);
+  saveStore(store);
+}
+
+/* ============ 시작 화면 ============ */
+function renderStart(){
+  document.getElementById('startScreen').style.display='flex';
+  document.getElementById('learnScreen').style.display='none';
+  const sn=document.getElementById('savedNames');
+  sn.innerHTML='';
+  if(store.names.length){
+    store.names.forEach(n=>{
+      const b=document.createElement('span');
+      b.className='saved-name';
+      b.innerHTML=`<span class="pick">${n}</span> <span class="del">✕</span>`;
+      b.querySelector('.pick').onclick=()=>startLearning(n);
+      b.querySelector('.del').onclick=(e)=>{ e.stopPropagation(); store.names=store.names.filter(x=>x!==n); saveStore(store); renderStart(); };
+      sn.appendChild(b);
+    });
+  }
+}
+function startLearning(name){
+  name=(name||'').trim();
+  if(!name){ const inp=document.getElementById('nameInput'); inp.focus(); inp.style.borderColor='var(--accent)'; return; }
+  learner=name;
+  if(!store.names.includes(name)){ store.names.unshift(name); store.names=store.names.slice(0,8); saveStore(store); }
+  document.getElementById('learnerName').textContent=name+' 님';
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('learnScreen').style.display='flex';
+  subjKey=Object.keys(SUBJECTS)[0]; level=0; quiz=[];
+  document.querySelectorAll('.subj').forEach(s=>s.classList.toggle('active', s.textContent===subjKey));
+  renderLevels(); render();
+}
+
+/* ============ 랭킹 화면 ============ */
+let rankView={subj:Object.keys(SUBJECTS)[0], lv:0};
+function showRanking(){
+  speechSynthesis.cancel();
+  const subj=rankView.subj, lv=rankView.lv;
+  const list=(store.ranks[rankKey(subj,lv)]||[]).slice(0,10);
+  const subjBtns=Object.keys(SUBJECTS).map(k=>`<button class="rank-tab${k===subj?' active':''}" onclick="setRankSubj('${k}')">${k}</button>`).join('');
+  const lvBtns=SUBJECTS[subj].levels.map((L,i)=>`<button class="rank-tab${i===lv?' active':''}" onclick="setRankLv(${i})">${i+1}단계</button>`).join('');
+  const medals=['🥇','🥈','🥉'];
+  let rows;
+  if(list.length){
+    rows=list.map((r,i)=>`<div class="rank-row${r.name===learner?' me':''}">
+      <span class="rank-medal">${medals[i]||(i+1)}</span>
+      <span class="rank-name">${r.name}</span>
+      <span class="rank-score">${r.score}점</span>
+    </div>`).join('');
+  } else {
+    rows=`<div class="rank-empty">아직 기록이 없어요. 먼저 풀어 볼까요?</div>`;
+  }
+  document.getElementById('card').innerHTML=`
+    <div style="font-size:1.3rem;font-weight:800;margin-bottom:12px">🏆 랭킹</div>
+    <div class="rank-tabs">${subjBtns}</div>
+    <div class="rank-tabs">${lvBtns}</div>
+    <div style="margin-top:4px">${rows}</div>
+    <button class="btn next-btn" onclick="exitRanking()">학습으로 돌아가기</button>`;
+  // 학습 화면 위쪽 요소 숨김 (랭킹 볼 때)
+  document.getElementById('subjects').style.display='none';
+  document.querySelector('.levelbar').style.display='none';
+  document.getElementById('lvLabel').style.display='none';
+  document.getElementById('progress').style.display='none';
+}
+function setRankSubj(k){ rankView.subj=k; rankView.lv=0; showRanking(); }
+function setRankLv(i){ rankView.lv=i; showRanking(); }
+function exitRanking(){
+  document.getElementById('subjects').style.display='';
+  document.querySelector('.levelbar').style.display='';
+  document.getElementById('lvLabel').style.display='';
+  document.getElementById('progress').style.display='';
+  quiz=[]; render();
+}
+
+/* ============ 버튼 연결 ============ */
+document.getElementById('startBtn').onclick=()=>startLearning(document.getElementById('nameInput').value);
+document.getElementById('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter') startLearning(e.target.value); });
+document.getElementById('homeBtn').onclick=()=>{ speechSynthesis.cancel(); if(mediaRec&&mediaRec.state==='recording'){try{mediaRec.stop();}catch(e){}} renderStart(); };
+document.getElementById('rankBtn').onclick=()=>{ rankView={subj:subjKey, lv:level}; showRanking(); };
+
+/* ============ 시작 ============ */
+renderStart();
+</script>
+</body>
+</html>
