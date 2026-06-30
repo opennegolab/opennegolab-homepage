@@ -235,8 +235,31 @@ const SUBJECTS = {
 
   "돈 계산 💰": { type:"money", levels:[
     { name:"1단계", desc:"500원·100원 세기", gen:()=>{ const f=rand(1,2), h=rand(1,4); return { coins:"🟠".repeat(f)+"🟡".repeat(h), label:"500원 "+f+"개, 100원 "+h+"개", q:"모두 얼마일까요?", a:f*500+h*100 }; } },
-    { name:"2단계", desc:"지폐+동전", gen:()=>{ const t=rand(1,2), h=rand(1,4); return { coins:"💵".repeat(t)+"🟡".repeat(h), label:"1000원 "+t+"장, 100원 "+h+"개", q:"모두 얼마일까요?", a:t*1000+h*100 }; } },
-    { name:"3단계", desc:"500원·1000원 모으기", gen:()=>{ const t=rand(1,2), f=rand(1,2), h=rand(0,3); return { coins:"💵".repeat(t)+"🟠".repeat(f)+"🟡".repeat(h), label:"1000원 "+t+"장, 500원 "+f+"개"+(h?", 100원 "+h+"개":""), q:"모두 얼마일까요?", a:t*1000+f*500+h*100 }; } },
+    { name:"2단계", desc:"사고 더하기", gen:()=>{
+        const names=["민이","수아","지호","하니","도윤"];
+        const nm=pick(names);
+        const type=rand(1,2);
+        if(type===1){ // 두 개 더하기 (작은 금액, 받아올림 적음)
+          const a=pick([100,200,300,400]), b=pick([100,200,300,400,500]);
+          return { line1:`${josa(nm,"이","가")} 사탕 ${a}원과`, line2:`초콜릿 ${b}원을 샀어요.`, q:"모두 얼마일까요?", a:a+b };
+        } else { // 거스름돈 (500/1000원 내기, 단순)
+          const price=pick([100,200,300,400,600,700,800,900]);
+          const paid=price<500?500:1000;
+          return { line1:`${josa(nm,"이","가")} ${price}원짜리 사탕을 사고`, line2:`${paid}원을 냈어요.`, q:"거스름돈은 얼마일까요?", a:paid-price };
+        }
+    } },
+    { name:"3단계", desc:"받아올림 더하기", gen:()=>{
+        const names=["민이","수아","지호","하니","도윤"];
+        const nm=pick(names);
+        const type=rand(1,2);
+        if(type===1){ // 두 개 더하기 (받아올림 있는 금액)
+          const a=pick([300,400,500,600,700]), b=pick([400,500,600,700,800]);
+          return { line1:`${josa(nm,"이","가")} 빵 ${a}원과`, line2:`우유 ${b}원을 샀어요.`, q:"모두 얼마일까요?", a:a+b };
+        } else { // 1000원 거스름돈 (큰 금액)
+          const price=pick([600,700,800,900]);
+          return { line1:`${josa(nm,"이","가")} ${price}원짜리 주스를 사고`, line2:`1000원을 냈어요.`, q:"거스름돈은 얼마일까요?", a:1000-price };
+        }
+    } },
     { name:"4단계", desc:"여러 개 사기", gen:()=>{
         const names=["민이","수아","지호","하니","도윤"];
         const nm=pick(names);
