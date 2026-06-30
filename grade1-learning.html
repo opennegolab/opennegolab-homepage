@@ -3,7 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>1학년 배움터</title>
+<title>초등 1학년 공부방</title>
+<meta name="description" content="초등 1학년 국어·산수·시계·영어·돈 계산을 재미있게 배우는 학습터">
+
+<!-- 링크 공유 미리보기 (Open Graph) -->
+<meta property="og:title" content="초등 1학년 공부방">
+<meta property="og:description" content="국어·산수·시계·영어·돈 계산을 재미있게! 초등 1학년 학습터">
+<meta property="og:type" content="website">
+<meta property="og:image" content="baeumteo-og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="초등 1학년 공부방">
+<meta name="twitter:description" content="국어·산수·시계·영어·돈 계산을 재미있게! 초등 1학년 학습터">
+<meta name="twitter:image" content="baeumteo-og.png">
+
+<!-- 홈 화면 아이콘 -->
+<link rel="icon" type="image/png" href="baeumteo-icon.png">
+<link rel="apple-touch-icon" href="baeumteo-icon.png">
+<meta name="apple-mobile-web-app-title" content="공부방">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#3B4A7A">
+
 <style>
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
@@ -95,9 +114,10 @@
   /* 시작 화면 */
   .start{ height:100%; display:flex; flex-direction:column; }
   .start-card{ background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow);
-    padding:28px 22px; text-align:center; margin-top:8px; display:flex; flex-direction:column; }
-  .start-emoji{ font-size:3.4rem; margin-bottom:10px; }
-  .start-title{ font-size:1.2rem; font-weight:800; color:var(--ink); margin-bottom:16px; }
+    padding:40px 24px; text-align:center; margin-top:8px; display:flex; flex-direction:column; }
+  .start-eyebrow{ font-size:.8rem; letter-spacing:.16em; color:var(--accent); font-weight:700; margin-bottom:10px; }
+  .start-greeting{ font-size:1.18rem; font-weight:700; color:var(--ink); line-height:1.5; margin-bottom:18px; word-break:keep-all; }
+  .start-title{ font-size:1.05rem; font-weight:700; color:var(--ink-soft); margin-bottom:14px; letter-spacing:-.01em; }
   .name-input{ font-family:inherit; font-size:1.2rem; font-weight:700; text-align:center; color:var(--ink);
     padding:14px; border:1.5px solid var(--line); border-radius:12px; background:var(--bg); width:100%; }
   .name-input:focus{ outline:none; border-color:var(--brand); }
@@ -158,10 +178,11 @@
     <div id="startScreen" class="start">
       <header>
         <div class="kicker">초등 1학년</div>
-        <h1>배움터</h1>
+        <h1>공부방</h1>
       </header>
       <div class="start-card">
-        <div class="start-emoji">🎒</div>
+        <div class="start-eyebrow">반가워요</div>
+        <div class="start-greeting" id="startGreeting"></div>
         <div class="start-title">이름을 적어 주세요</div>
         <input id="nameInput" class="name-input" type="text" maxlength="10" placeholder="이름" autocomplete="off">
         <button id="startBtn" class="btn listen" style="margin-top:12px">학습 시작</button>
@@ -212,11 +233,18 @@ const SUBJECTS = {
   "영어 🎤": { type:"speak", levels:ENG_LEVELS },
 
   "돈 계산 💰": { type:"money", levels:[
-    { name:"1단계", desc:"100원 세기", gen:()=>{ const n=rand(2,5); return { coins:"🟡".repeat(n), label:"100원짜리 "+n+"개", q:"모두 얼마일까요?", a:n*100 }; } },
-    { name:"2단계", desc:"500원·100원 세기", gen:()=>{ const f=rand(1,2), h=rand(1,4); return { coins:"🟠".repeat(f)+"🟡".repeat(h), label:"500원 "+f+"개, 100원 "+h+"개", q:"모두 얼마일까요?", a:f*500+h*100 }; } },
-    { name:"3단계", desc:"지폐+동전", gen:()=>{ const t=rand(1,2), h=rand(1,4); return { coins:"💵".repeat(t)+"🟡".repeat(h), label:"1000원 "+t+"장, 100원 "+h+"개", q:"모두 얼마일까요?", a:t*1000+h*100 }; } },
-    { name:"4단계", desc:"물건 값 더하기", gen:()=>{ const items=[["🍬사탕",300],["🍪과자",500],["🥤음료",700],["🍫초콜릿",800],["✏️연필",200]]; const a=pick(items), b=pick(items); return { line1:`${a[0]} ${a[1]}원 + ${b[0]} ${b[1]}원`, line2:"", q:"두 개를 사면 얼마일까요?", a:a[1]+b[1] }; } },
-    { name:"5단계", desc:"거스름돈", gen:()=>{ const price=pick([300,400,600,700,800]); return { line1:`🍪 과자값 ${price}원`, line2:"💵 1000원 냈어요", q:"거스름돈은 얼마일까요?", a:1000-price }; } },
+    { name:"1단계", desc:"500원·100원 세기", gen:()=>{ const f=rand(1,2), h=rand(1,4); return { coins:"🟠".repeat(f)+"🟡".repeat(h), label:"500원 "+f+"개, 100원 "+h+"개", q:"모두 얼마일까요?", a:f*500+h*100 }; } },
+    { name:"2단계", desc:"지폐+동전", gen:()=>{ const t=rand(1,2), h=rand(1,4); return { coins:"💵".repeat(t)+"🟡".repeat(h), label:"1000원 "+t+"장, 100원 "+h+"개", q:"모두 얼마일까요?", a:t*1000+h*100 }; } },
+    { name:"3단계", desc:"500원·1000원 모으기", gen:()=>{ const t=rand(1,2), f=rand(1,2), h=rand(0,3); return { coins:"💵".repeat(t)+"🟠".repeat(f)+"🟡".repeat(h), label:"1000원 "+t+"장, 500원 "+f+"개"+(h?", 100원 "+h+"개":""), q:"모두 얼마일까요?", a:t*1000+f*500+h*100 }; } },
+    { name:"4단계", desc:"사고 더하기", gen:()=>{
+        const items=[["사탕",300],["과자",500],["빵",800],["우유",600],["젤리",400],["주스",700]];
+        const a=pick(items); let b=pick(items); while(b===a) b=pick(items);
+        return { line1:`민이가 ${a[0]} ${a[1]}원과`, line2:`${b[0]} ${b[1]}원을 샀어요.`, q:"모두 얼마를 썼을까요?", a:a[1]+b[1] }; } },
+    { name:"5단계", desc:"거스름돈 받기", gen:()=>{
+        const price=pick([300,400,600,700,800]); const paid=1000;
+        const things=["사탕","과자","빵","우유","젤리"];
+        const t=pick(things);
+        return { line1:`수아가 ${price}원짜리 ${t}을 사고`, line2:`${paid}원을 냈어요.`, q:"거스름돈은 얼마일까요?", a:paid-price }; } },
   ]},
 };
 
@@ -246,6 +274,8 @@ let myVoiceUrl=null;
 let mediaRec=null;
 let micStream=null;
 let isRecording=false;
+let autoStopTimer=null;
+let endDetector=null;
 
 /* ============ 메뉴 렌더 ============ */
 const subjEl = document.getElementById('subjects');
@@ -410,7 +440,7 @@ function renderMoney(item){
           +`<div class="meaning" style="margin-bottom:4px;font-size:.92rem">${item.label}</div>`
           +`<div class="question" style="margin:4px 0">${item.q}</div>`;
   } else {
-    const body = item.line2 ? `${item.line1} · ${item.line2}` : item.line1;
+    const body = item.line2 ? `${item.line1}<br>${item.line2}` : item.line1;
     display=`<div class="story" style="text-align:center;font-size:1.04rem;margin-bottom:6px;padding:9px 11px;line-height:1.45">${body}</div>`
           +`<div class="question" style="margin:4px 0">${item.q}</div>`;
   }
@@ -434,6 +464,8 @@ function renderSpeak(item){
   speakScore=false;  // 새 문제마다 초기화
   myVoiceUrl=null;
   if(isRecording && mediaRec && mediaRec.state==='recording'){ try{ mediaRec.stop(); }catch(e){} }
+  if(autoStopTimer){ clearTimeout(autoStopTimer); autoStopTimer=null; }
+  if(endDetector){ try{ endDetector.stop(); }catch(e){} endDetector=null; }
   isRecording=false;
   document.getElementById('card').innerHTML=`
     <span class="emoji">${item.e}</span>
@@ -446,7 +478,7 @@ function renderSpeak(item){
     </div>
     <div class="result" id="result"></div>
     <button class="btn next-btn" onclick="recordAndNext(speakScore)">다음 문제</button>
-    <div class="hint">🎙️를 눌러 말하고, 다시 눌러 멈춰요. 그다음 들어볼 수 있어요!</div>`;
+    <div class="hint">🎙️를 눌러 말하면 자동으로 멈춰요. 그다음 들어볼 수 있어요!</div>`;
 }
 
 /* ============ 채점 ============ */
@@ -502,7 +534,7 @@ function showResult(){
     html+=`<button class="btn next-btn" style="margin-top:12px" onclick="goLevel(0)">처음 단계로</button>`;
     html+=`<button class="btn listen" style="margin-top:8px" onclick="restartQuiz()">다시 풀기</button>`;
   }
-  html+=`<button class="btn" style="background:var(--gold);margin-top:8px" onclick="rankView={subj:subjKey,lv:level};showRanking()">🏆 랭킹 보기</button>`;
+  html+=`<button class="btn" style="background:var(--gold);margin-top:8px" onclick="openRanking()">🏆 랭킹 보기</button>`;
   document.getElementById('card').innerHTML=html;
   document.getElementById('progress').innerHTML='';
   document.getElementById('lvLabel').textContent=(SUBJECTS[subjKey].levels[level].desc||'')+' · 채점 완료';
@@ -542,7 +574,7 @@ function getMic(){
 function toggleRec(){
   const res=document.getElementById('result');
   const btn=document.getElementById('recBtn');
-  if(isRecording){ stopRec(); return; }   // 녹음 중이면 멈춤
+  if(isRecording){ stopRec(); return; }   // 녹음 중이면 수동 멈춤도 가능
   if(!window.MediaRecorder){ res.textContent='😢 크롬(Chrome) 앱에서 열어주세요!'; res.className='result again'; return; }
 
   getMic().then(stream=>{
@@ -553,11 +585,13 @@ function toggleRec(){
     mediaRec.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
     mediaRec.onstop=()=>{
       isRecording=false;
+      if(autoStopTimer){ clearTimeout(autoStopTimer); autoStopTimer=null; }
+      if(endDetector){ try{ endDetector.stop(); }catch(e){} endDetector=null; }
       if(btn) btn.textContent='🎙️ 따라 말하기';
       if(chunks.length){
         if(myVoiceUrl) URL.revokeObjectURL(myVoiceUrl);
         myVoiceUrl=URL.createObjectURL(new Blob(chunks,{type:mediaRec.mimeType||'audio/webm'}));
-        speakScore=true;   // 녹음을 했으면 칭찬
+        speakScore=true;
         const pm=document.getElementById('playMine'); if(pm) pm.style.display='block';
         res.textContent='🎉 잘했어요! 내 목소리를 들어볼까요?'; res.className='result good';
       } else {
@@ -567,7 +601,21 @@ function toggleRec(){
     mediaRec.start();
     isRecording=true;
     if(btn) btn.textContent='⏹️ 멈추기';
-    res.textContent='🎧 녹음 중이에요... 또박또박 말해요!'; res.className='result';
+    res.textContent='🎧 듣고 있어요... 또박또박 말해요!'; res.className='result';
+
+    // 자동 멈춤 1: 음성 인식으로 말이 끝나면 멈춤
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(SR){
+      try{
+        endDetector=new SR();
+        endDetector.lang='en-US'; endDetector.continuous=false; endDetector.interimResults=false;
+        endDetector.onend=()=>{ if(isRecording) stopRec(); };   // 말 끝나면 자동 멈춤
+        endDetector.onerror=()=>{};
+        endDetector.start();
+      }catch(e){ endDetector=null; }
+    }
+    // 자동 멈춤 2: 안전장치 - 최대 5초 뒤 멈춤
+    autoStopTimer=setTimeout(()=>{ if(isRecording) stopRec(); }, 5000);
   }).catch(err=>{
     if(err==='unsupported') res.textContent='😢 이 브라우저는 녹음을 지원하지 않아요. 크롬을 써보세요!';
     else res.textContent='🎤 마이크 권한이 필요해요. 주소창 왼쪽 자물쇠 → 마이크 → 허용으로 바꿔주세요!';
@@ -614,9 +662,24 @@ function recordScore(subj, lv, correct, total){
 }
 
 /* ============ 시작 화면 ============ */
+const GREETINGS = [
+  {eye:"반가워요", msg:"오늘도 한 걸음 더 똑똑해지는 날!<br>같이 시작해 볼까요?"},
+  {eye:"안녕!", msg:"어제보다 오늘 더 멋진 너!<br>오늘도 잘할 수 있어요."},
+  {eye:"오늘도!", msg:"조금씩 매일매일,<br>그게 바로 최고의 비결이에요!"},
+  {eye:"걱정 마요", msg:"틀려도 괜찮아요.<br>다시 해 보면 점점 잘하게 돼요!"},
+  {eye:"자, 출발!", msg:"공부 준비 됐나요?<br>오늘도 신나게 배워 봐요!"},
+  {eye:"화이팅!", msg:"천천히, 하지만 꾸준히!<br>오늘도 잘 해낼 거예요."},
+  {eye:"넌 할 수 있어", msg:"어떤 문제든 해낼 수 있어요.<br>준비됐으면 출발!"},
+  {eye:"또 왔네요!", msg:"오늘 배운 건 모두 네 거예요.<br>같이 채워 볼까요?"},
+];
 function renderStart(){
   document.getElementById('startScreen').style.display='flex';
   document.getElementById('learnScreen').style.display='none';
+  const pickG = GREETINGS[Math.floor(Math.random()*GREETINGS.length)];
+  const eye=document.querySelector('.start-eyebrow');
+  const g=document.getElementById('startGreeting');
+  if(eye) eye.textContent = pickG.eye;
+  if(g) g.innerHTML = pickG.msg;
   const sn=document.getElementById('savedNames');
   sn.innerHTML='';
   if(store.names.length){
@@ -676,6 +739,7 @@ function showRanking(){
 }
 function setRankSubj(k){ rankView.subj=k; rankView.lv=0; showRanking(); }
 function setRankLv(i){ rankView.lv=i; showRanking(); }
+function openRanking(){ rankView={subj:subjKey, lv:level}; showRanking(); }
 function exitRanking(){
   document.getElementById('subjects').style.display='';
   document.querySelector('.levelbar').style.display='';
@@ -689,6 +753,13 @@ document.getElementById('startBtn').onclick=()=>startLearning(document.getElemen
 document.getElementById('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter') startLearning(e.target.value); });
 document.getElementById('homeBtn').onclick=()=>{ speechSynthesis.cancel(); if(mediaRec&&mediaRec.state==='recording'){try{mediaRec.stop();}catch(e){}} renderStart(); };
 document.getElementById('rankBtn').onclick=()=>{ rankView={subj:subjKey, lv:level}; showRanking(); };
+
+/* ============ 전역 등록 (모바일 onclick 보장) ============ */
+Object.assign(window, {
+  clearMoney, clearNum, exitRanking, goLevel, goNextLevel, playMyVoice,
+  pushMoney, pushNum, readStory, recordAndNext, restartQuiz,
+  setRankLv, setRankSubj, speakEn, submitMoney, submitNum, toggleRec, showRanking, openRanking
+});
 
 /* ============ 시작 ============ */
 renderStart();
