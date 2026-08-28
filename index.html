@@ -184,16 +184,12 @@ header.solid .hd .ask:hover{background:#173763}
 .tm{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--navy);
     background:#F2F6FC;border:1px solid #DCE6F4;border-radius:999px;padding:6px 14px;margin-top:20px}
 
-/* 저서 — 표지 비율이 제각각(3D 목업·평면)이라 흰 카드 안에 contain으로 앉힌다 */
-.books{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-.bk{margin:0}
-.bkimg{background:#fff;border:1px solid var(--line);border-radius:16px;height:210px;
-       display:flex;align-items:center;justify-content:center;padding:16px;transition:.2s ease}
-.bk:hover .bkimg{transform:translateY(-4px);box-shadow:0 18px 40px rgba(26,29,33,.10)}
-.bkimg img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
-.bk figcaption{margin-top:14px}
-.bk figcaption b{display:block;font-size:15px;font-weight:700;letter-spacing:-.4px;line-height:1.4}
-.bk figcaption span{display:block;margin-top:4px;font-size:12.5px;color:var(--ink-3);font-weight:600}
+/* 저서 — 표지 각도가 제각각이라, 같은 크기 칸에 contain 으로 앉혀 크기를 맞춘다 */
+.books{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(16px,2.4vw,32px);align-items:center}
+.bk{display:flex;align-items:center;justify-content:center;height:clamp(200px,20vw,280px);transition:.25s ease}
+.bk:hover{transform:translateY(-6px)}
+.bk img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;
+        filter:drop-shadow(0 18px 34px rgba(26,29,33,.18))}
 
 /* 레퍼런스 */
 .refnum{display:flex;gap:clamp(28px,5vw,64px);flex-wrap:wrap;margin-bottom:clamp(32px,4vw,48px)}
@@ -265,7 +261,7 @@ header.solid .hd .ask:hover{background:#173763}
 .demoframe.ready .ph{display:none}
 .demovid{width:100%;height:auto;display:block;border:1px solid var(--line-c);border-radius:16px;background:#000}
 
-.feat{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:clamp(32px,4vw,48px)}
+.feat{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:clamp(32px,4vw,48px)}
 .fcard{background:rgba(255,255,255,.045);border:1px solid var(--line-d);border-radius:20px;padding:32px 30px;
        transition:.22s ease}
 .fcard:hover{background:rgba(255,255,255,.075);border-color:rgba(154,211,52,.32);transform:translateY(-3px)}
@@ -389,7 +385,7 @@ footer a:hover{color:#C9D4E1}
   <div class="wrap hero-in">
     <div class="badge"><i></i>오직 협상만 연구합니다</div>
     <h1>담당자가 바뀌어도<br>협상의 질은 그대로</h1>
-    <p class="lead">협상을 감과 경험의 영역에서 구조의 영역으로 옮깁니다. 15년간 다듬은 8-Block 협상모델과, 그 모델을 그대로 담은 AI 시뮬레이터로 준비 과정을 표준화합니다.</p>
+    <p class="lead">협상을 감과 경험의 영역에서 구조의 영역으로 옮깁니다. 8-Block 협상모델과, 그 모델을 그대로 담은 AI 시뮬레이터로 준비 과정을 표준화합니다.</p>
     <div class="acts">
       <a class="btn fill" href="#education">협상 교육 보기</a>
       <a class="btn ghost" href="#simulator">시뮬레이터 보기</a>
@@ -411,7 +407,7 @@ footer a:hover{color:#C9D4E1}
       <div class="portrait"><img src="/img/portrait.jpg" alt="열린협상연구소 대표 오명호" /></div>
       <div>
         <div class="fname"><strong>오명호</strong><span>열린협상연구소 대표 · 협상 전문 강사</span></div>
-        <p class="lead">협상은 배워서 아는 것으로 끝나지 않습니다. 우리 상황에 맞는 판을 만들어 직접 겪어봐야 남습니다. 그 판을 만드는 일을 15년째 하고 있습니다.</p>
+        <p class="lead">협상은 배워서 아는 것으로 끝나지 않습니다. 우리 상황에 맞는 판을 만들어 직접 겪어봐야 남습니다. 그 판을 만드는 일만 해 왔습니다.</p>
         <ul class="pillars">
           <li>
             <span class="no">01</span>
@@ -437,7 +433,7 @@ footer a:hover{color:#C9D4E1}
     <div class="shead only">
       <div class="eyebrow">Our Framework</div>
       <h2>협상을 여덟 개의<br>질문으로 나눕니다</h2>
-      <p class="lead">순서대로 답하고 나면 협상 준비가 끝나 있습니다. 무엇을 물어야 하는지가 정해져 있으니, 누가 맡든 준비의 수준이 같아집니다. 15년간 다듬어 상표로 등록한 독자 모델입니다.</p>
+      <p class="lead">순서대로 답하고 나면 협상 준비가 끝나 있습니다. 무엇을 물어야 하는지가 정해져 있으니, 누가 맡든 준비의 수준이 같아집니다. 오래 다듬어 상표로 등록한 독자 모델입니다.</p>
       <div class="tm">8-Block Negotiation Model&trade; · 상표 등록 제 40-2458489 호</div>
     </div>
 
@@ -447,33 +443,11 @@ footer a:hover{color:#C9D4E1}
 <!-- ===================== 저서 ===================== -->
 <section>
   <div class="wrap rv">
-    <div class="shead">
-      <div class="eyebrow">Books</div>
-      <h2>연구의 결과는<br>네 권의 책으로 남았습니다</h2>
-      <p class="lead">협상을 설득의 기술이 아니라 설계의 문제로 다시 놓는 작업. 2016년부터 지금까지 이어져 온 기록입니다.</p>
-    </div>
-
     <div class="books">
-      <figure class="bk">
-        <div class="bkimg"><img src="/img/books/book-2016.jpg" alt="협상의 한 수" loading="lazy"></div>
-        <figcaption><b>협상의 한 수</b><span>2016</span></figcaption>
-      </figure>
-      <figure class="bk">
-        <div class="bkimg"><img src="/img/books/book-2020.jpg" alt="협상이 이렇게 유용할 줄이야" loading="lazy"></div>
-        <figcaption><b>협상이 이렇게 유용할 줄이야</b><span>2020</span></figcaption>
-      </figure>
-      <figure class="bk">
-        <div class="bkimg"><img src="/img/books/book-2024.jpg" alt="에잇 블록 협상 모델" loading="lazy"></div>
-        <figcaption><b>에잇 블록 협상 모델</b><span>2024 · 8-BNM의 탄생</span></figcaption>
-      </figure>
-      <figure class="bk">
-        <div class="bkimg"><img src="/img/books/book-2026.jpg" alt="협상 레볼루션" loading="lazy"></div>
-        <figcaption><b>협상 레볼루션</b><span>2026 · AI 시대, 협상을 다시 설계하다</span></figcaption>
-      </figure>
-    </div>
-
-    <div class="acts">
-      <a class="btn ghost" href="https://youtu.be/wTUhbmvMwjg" target="_blank" rel="noopener">저자 인터뷰 보기</a>
+      <div class="bk"><img src="/img/books/book-2016.jpg" alt="협상의 한 수" loading="lazy"></div>
+      <div class="bk"><img src="/img/books/book-2020.jpg" alt="협상이 이렇게 유용할 줄이야" loading="lazy"></div>
+      <div class="bk"><img src="/img/books/book-2024.jpg" alt="에잇 블록 협상 모델" loading="lazy"></div>
+      <div class="bk"><img src="/img/books/book-2026.jpg" alt="협상 레볼루션" loading="lazy"></div>
     </div>
   </div>
 </section>
@@ -524,7 +498,6 @@ footer a:hover{color:#C9D4E1}
     </div>
     <div class="rdots" aria-hidden="true"></div>
     </div>
-    <p class="refnote">＊ 가나다순이 아닌 임의 배열입니다. 로고 추가·교체는 언제든 가능합니다.</p>
   </div>
 </section>
 
@@ -578,11 +551,6 @@ footer a:hover{color:#C9D4E1}
     <div class="feat">
       <div class="fcard">
         <div class="fnum">FEATURE 01</div>
-        <h3>5단계 훈련 흐름</h3>
-        <p>케이스를 고르는 순간부터 평가를 받기까지, 협상 전 과정이 하나의 훈련이 됩니다.</p>
-      </div>
-      <div class="fcard">
-        <div class="fnum">FEATURE 02</div>
         <h3>결과가 아니라 과정을 평가</h3>
         <p>합의 여부만 보지 않습니다. 세운 전략을 실제로 지켰는지까지 리포트로 확인합니다.</p>
         <ul>
@@ -593,7 +561,7 @@ footer a:hover{color:#C9D4E1}
         </ul>
       </div>
       <div class="fcard">
-        <div class="fnum">FEATURE 03</div>
+        <div class="fnum">FEATURE 02</div>
         <h3>사람과 사람의 협상</h3>
         <p>AI를 넘어 팀원과 직접 붙습니다. 1:1부터 2:2까지, 진영별로 관전도 가능합니다.</p>
         <ul>
@@ -602,7 +570,7 @@ footer a:hover{color:#C9D4E1}
         </ul>
       </div>
       <div class="fcard">
-        <div class="fnum">FEATURE 04</div>
+        <div class="fnum">FEATURE 03</div>
         <h3>우리 회사의 협상으로</h3>
         <p>준비 중인 실제 협상을 훈련용 케이스로 만들고, 팀 단위로 나누어 운영합니다.</p>
         <ul>
