@@ -48,8 +48,17 @@ http.createServer((req, res) => {
 
   if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, "index.html");
 
-  /* 없는 주소는 404 대신 홈페이지 — 링크가 깨져도 방문자는 홈을 본다 */
-  if (!fs.existsSync(file)) file = home();
+  /* 없는 주소 처리
+     - 확장자가 있는 요청(이미지·PDF 등)은 진짜 404. 홈페이지 HTML을 대신 내보내면
+       <img>가 그걸 받아 파일 크기만 낭비하고, 브라우저는 어차피 깨진 이미지로 처리한다.
+     - 확장자가 없는 주소는 홈페이지로 — 링크가 어긋나도 방문자는 홈을 본다. */
+  if (!fs.existsSync(file)) {
+    if (path.extname(file)) {
+      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      return res.end("404 Not Found");
+    }
+    file = home();
+  }
 
   const ext = path.extname(file).toLowerCase();
   res.writeHead(200, {
