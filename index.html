@@ -172,11 +172,13 @@ header.solid .hd .ask:hover{background:#173763}
 .fname{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .fname strong{font-size:clamp(24px,2.6vw,30px);font-weight:800;letter-spacing:-1.2px}
 .fname span{font-size:14px;color:var(--ink-2);font-weight:600}
-/* 교육을 이루는 세 기둥 — 02는 아래 8-BNM 섹션이, 03은 뒤쪽 시뮬레이터 섹션이 이어받는다 */
+/* 교육 과정 구성 — 인원·시간·교재 같은 스펙은 두지 않는다. 이름과 대상까지만 */
 .pillars{list-style:none;margin-top:28px;border-top:1px solid var(--line)}
 .pillars li{display:grid;grid-template-columns:auto 1fr;gap:20px;padding:22px 0;border-bottom:1px solid var(--line)}
 .pillars .no{font-size:12px;font-weight:800;color:var(--lime);letter-spacing:.1em;padding-top:6px}
-.pillars b{display:block;font-size:17.5px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
+.pillars b{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:17.5px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
+.pillars b em{font-style:normal;font-size:12px;font-weight:700;color:var(--ink-2);letter-spacing:0;
+              background:var(--warm-2);border:1px solid var(--line);border-radius:999px;padding:4px 11px}
 .pillars p{margin:0;font-size:14.5px;color:var(--ink-2);font-weight:500;line-height:1.7}
 
 /* 8-BNM */
@@ -479,8 +481,8 @@ footer a:hover{color:#C9D4E1}
   <div class="wrap rv">
     <div class="shead">
       <div class="eyebrow">Negotiation Education</div>
-      <h2>우리 교육은<br>세 가지로 만들어집니다</h2>
-      <p class="lead">어느 하나만 있어도 협상 교육이라고 부를 수는 있습니다. 열린협상연구소는 셋이 다 있어야 협상력이 남는다고 봅니다.</p>
+      <h2>대상에 따라<br>세 가지로 엽니다</h2>
+      <p class="lead">같은 협상이라도 실무자가 마주하는 판과 임원이 마주하는 판은 다릅니다. 직무와 직급에 맞춰 다르게 구성합니다.</p>
     </div>
 
     <div class="founder">
@@ -491,15 +493,15 @@ footer a:hover{color:#C9D4E1}
         <ul class="pillars">
           <li>
             <span class="no">01</span>
-            <div><b>커스터마이징</b><p>남의 사례가 아니라 그 기업의 산업과 직무로 실습 시나리오를 새로 만듭니다.</p></div>
+            <div><b>Standard <em>공통 직무</em></b><p>협상의 기본 개념과 실전 활용의 기초를 다집니다. 협상을 처음 배우는 구성원에게 공통 언어를 만들어 주는 과정입니다.</p></div>
           </li>
           <li>
             <span class="no">02</span>
-            <div><b>프레임워크</b><p>감각에 맡겨져 있던 협상을 여덟 개 블록의 구조로 옮깁니다. 누가 맡아도 준비의 수준이 같아집니다.</p></div>
+            <div><b>Pro <em>구매 · 영업 실무자</em></b><p>매일 협상 테이블에 앉는 직무를 위한 과정입니다. 원리와 사례를 실전 중심으로 다루고, 시간의 대부분을 실습과 피드백에 씁니다.</p></div>
           </li>
           <li>
             <span class="no">03</span>
-            <div><b>AI 시뮬레이터</b><p>강의장에서 끝나던 실습을, 언제든 다시 할 수 있는 훈련으로 이어갑니다.</p></div>
+            <div><b>Executive <em>직책자 · 임원</em></b><p>판을 짜고 결정을 내리는 자리를 위한 고급 과정입니다. 복합 쟁점과 이해관계가 얽힌 협상을 다룹니다.</p></div>
           </li>
         </ul>
       </div>
