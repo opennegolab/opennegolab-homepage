@@ -113,13 +113,6 @@ nav a:hover:after{right:0}
              background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 15px;margin-bottom:28px}
 .hero .badge i{width:6px;height:6px;border-radius:50%;background:var(--lime);display:block}
 
-/* 지표 */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.stats > div{padding:30px 0 30px 28px;border-left:1px solid var(--line)}
-.stats > div:first-child{padding-left:0;border-left:0}
-.stats b{display:block;font-size:clamp(24px,2.9vw,34px);font-weight:800;letter-spacing:-1.4px;line-height:1.2}
-.stats span{font-size:13px;color:var(--ink-2);font-weight:600}
-
 /* 섹션 헤드 */
 .shead{max-width:640px;margin-bottom:clamp(38px,5vw,62px)}
 .shead .lead{margin-top:18px}
@@ -206,17 +199,6 @@ nav a:hover:after{right:0}
         animation:blip 1.8s ease-in-out infinite}
 @keyframes blip{0%,100%{opacity:1}50%{opacity:.25}}
 
-.shot{margin-top:clamp(34px,4vw,52px);border:1px solid var(--line-c);border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 24px 60px rgba(20,40,70,.10)}
-.shot .bar{height:40px;display:flex;align-items:center;gap:7px;padding:0 16px;background:#F7F9FC;border-bottom:1px solid var(--line-c)}
-.shot .bar i{width:9px;height:9px;border-radius:50%;background:#D6DEE9;display:block}
-.shot .bar span{margin-left:10px;font-size:11.5px;color:var(--ink-3);font-weight:600}
-/* 기본은 안내 박스가 자리를 잡고 있고, 캡처가 실제로 뜨면 그때 교체된다.
-   (반대로 하면 이미지가 없을 때 높이가 0이 되어 칸 자체가 사라진다) */
-.shot .frame{position:relative}
-.shot .frame img{width:100%;height:auto;display:none}
-.shot .frame.ok img{display:block}
-.shot .frame.ok .ph{display:none}
-.shot-duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
 /* 시연 영상 */
 .demo{margin-top:clamp(34px,4vw,52px)}
 .demohead{margin-bottom:18px}
@@ -230,11 +212,6 @@ nav a:hover:after{right:0}
 .demoframe.ready{cursor:pointer}
 .demoframe.ready .ph{display:none}
 .demovid{width:100%;height:auto;display:block;border:1px solid var(--line-c);border-radius:16px;background:#000}
-.shot-duo .shot{margin-top:0}
-.shot .ph{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;
-          background:repeating-linear-gradient(45deg,#F7F9FC,#F7F9FC 12px,#F2F5F9 12px,#F2F5F9 24px);
-          color:var(--ink-3);font-size:13.5px;font-weight:600;line-height:1.8}
-.shot img{width:100%;height:auto}
 
 .feat{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:clamp(32px,4vw,48px)}
 .fcard{background:#fff;border:1px solid var(--line-c);border-radius:16px;padding:30px 28px}
@@ -245,13 +222,6 @@ nav a:hover:after{right:0}
 .fcard li{position:relative;padding-left:16px;font-size:13.5px;color:var(--ink-2);font-weight:600;line-height:1.6}
 .fcard li:before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--lime-b)}
 
-.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line-c);
-      border:1px solid var(--line-c);border-radius:14px;overflow:hidden;margin-top:20px}
-.stp{background:#fff;padding:24px 20px}
-.stp b{font-size:11px;font-weight:800;color:var(--navy);letter-spacing:.12em}
-.stp h4{margin:11px 0 7px;font-size:15.5px;font-weight:700;letter-spacing:-.4px}
-.stp p{font-size:12.5px;color:var(--ink-2);font-weight:500;line-height:1.6}
-
 .simcta{background:linear-gradient(150deg,#16345C,#1E4476);border-radius:20px;color:#fff;
         padding:clamp(34px,5vw,56px);margin-top:clamp(32px,4vw,48px);
         display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap}
@@ -261,14 +231,11 @@ nav a:hover:after{right:0}
 
 /* 문의 */
 .contact{background:var(--warm);border-top:1px solid var(--line)}
-.cgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(30px,5vw,72px);align-items:start}
+.cbox{max-width:620px}
 .ways{list-style:none;border-top:1px solid var(--line)}
 .ways li{display:grid;grid-template-columns:88px 1fr;gap:18px;padding:17px 0;border-bottom:1px solid var(--line);font-size:15px;font-weight:600;line-height:1.6}
 .ways li b{font-size:13px;color:var(--ink-3);font-weight:700}
 .ways a:hover{color:var(--navy)}
-.biz{background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px 26px;font-size:13.5px;color:var(--ink-2);font-weight:500;line-height:2}
-.biz b{display:block;font-size:15px;color:var(--ink);font-weight:700;margin-bottom:12px}
-
 footer{background:#151A20;color:#8C97A5;padding:40px 0;font-size:13px;font-weight:500;line-height:1.9}
 .fgrid{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:center}
 footer strong{color:#fff;font-size:15px;font-weight:800;letter-spacing:-.3px}
@@ -310,12 +277,12 @@ footer a:hover{color:#C9D4E1}
   nav{display:none}
   .stats{grid-template-columns:repeat(2,1fr)}
   .stats > div:nth-child(3){border-left:0;padding-left:0}
-  .founder,.cgrid{grid-template-columns:1fr}
+  .founder{grid-template-columns:1fr}
   .books{grid-template-columns:repeat(2,1fr)}
   .cover{max-width:220px}
   .blocks{grid-template-columns:repeat(2,1fr)}
   .rl{flex-basis:33.333%}
-  .videos,.feat,.flow,.shot-duo{grid-template-columns:1fr}
+  .videos,.feat{grid-template-columns:1fr}
 }
 @media(max-width:620px){
   .stats{grid-template-columns:1fr}
@@ -360,14 +327,6 @@ footer a:hover{color:#C9D4E1}
   </div>
 </section>
 
-<div class="wrap">
-  <div class="stats rv">
-    <div><b>15년+</b><span>협상 전문 연구</span></div>
-    <div><b>100개+</b><span>기업 교육 · 컨설팅</span></div>
-    <div><b>20,000명+</b><span>협상 역량 강화</span></div>
-    <div><b>8-BNM</b><span>독자 협상모델 · 상표 등록</span></div>
-  </div>
-</div>
 
 <!-- ===================== 협상 교육 : 대표 ===================== -->
 <section id="education">
@@ -535,37 +494,7 @@ footer a:hover{color:#C9D4E1}
       <p class="lead">교육에서 배운 8-Block을 실제로 써 보는 AI 협상 훈련 도구입니다. 전략을 여덟 개 블록으로 설계하고, 성향이 다른 AI 협상가와 제한 시간 안에서 실제로 협상하고, 그 과정을 데이터로 돌려받습니다.</p>
     </div>
 
-    <!-- 캡처 교체 방법 : img/shots/ 폴더에 아래 파일명으로 넣으면 자동으로 붙습니다.
-         파일이 없으면 회색 안내 박스가 대신 보입니다(사이트는 깨지지 않음).
-           shot-simulation.png  실전 협상 화면
-           shot-design.png      8-BNM 설계 화면
-           shot-report.png      평가 리포트 화면 -->
-    <div class="shot">
-      <div class="bar"><i></i><i></i><i></i><span>ai.opennegolab.com</span></div>
-      <div class="frame">
-        <img src="/img/shots/shot-simulation.png" alt="에잇블록 협상 시뮬레이터 실전 협상 화면" loading="lazy">
-        <div class="ph">［ 실전 협상 화면 ］<br>img/shots/shot-simulation.png</div>
-      </div>
-    </div>
-
-    <div class="shot-duo">
-      <div class="shot">
-        <div class="bar"><i></i><i></i><i></i><span>8-BNM 설계</span></div>
-        <div class="frame">
-          <img src="/img/shots/shot-design.png" alt="8-BNM 설계 화면" loading="lazy">
-          <div class="ph">［ 8-BNM 설계 화면 ］<br>img/shots/shot-design.png</div>
-        </div>
-      </div>
-      <div class="shot">
-        <div class="bar"><i></i><i></i><i></i><span>평가 리포트</span></div>
-        <div class="frame">
-          <img src="/img/shots/shot-report.png" alt="협상 평가 리포트 화면" loading="lazy">
-          <div class="ph">［ 평가 리포트 화면 ］<br>img/shots/shot-report.png</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 시연 영상 자리 ─────────────────────────────────────────────
+ ─────────────────────────────────────────────
          받는 형태에 따라 둘 중 하나로 채우면 됩니다.
          (1) 유튜브면  : 아래 div 의 data-yt="영상ID" 만 채우기
          (2) 파일이면  : div 를 통째로 아래로 교체
@@ -573,10 +502,6 @@ footer a:hover{color:#C9D4E1}
                     poster="/img/shots/demo-poster.jpg"></video>
          비워 두면 안내 박스가 자리를 지키고, 사이트는 깨지지 않습니다. -->
     <div class="demo">
-      <div class="demohead">
-        <h3>시연 영상</h3>
-        <p>설계부터 협상, 평가까지 실제 사용 흐름을 그대로 보여드립니다.</p>
-      </div>
       <div class="demoframe" data-yt="">
         <div class="ph">［ 시뮬레이터 시연 영상 자리 ］<br>영상 주시면 이 자리에 넣습니다</div>
       </div>
@@ -619,13 +544,6 @@ footer a:hover{color:#C9D4E1}
       </div>
     </div>
 
-    <div class="flow">
-      <div class="stp"><b>STEP 1</b><h4>케이스 선택</h4><p>업종과 난이도를 고르고 맡을 입장을 정합니다</p></div>
-      <div class="stp"><b>STEP 2</b><h4>8-BNM 설계</h4><p>코치와 대화하며 여덟 개 블록을 채웁니다</p></div>
-      <div class="stp"><b>STEP 3</b><h4>상대 선택</h4><p>분석형 · 관계형 · 강압형 중에서 고릅니다</p></div>
-      <div class="stp"><b>STEP 4</b><h4>실전 협상</h4><p>제한 시간 안에서 실제 대화로 협상합니다</p></div>
-      <div class="stp"><b>STEP 5</b><h4>평가 리포트</h4><p>등급 · 설계 이행도 · 코칭을 받습니다</p></div>
-    </div>
 
     <div class="simcta">
       <div>
@@ -649,8 +567,7 @@ footer a:hover{color:#C9D4E1}
       <p class="lead">교육 도입도, 시뮬레이터 데모도 편하게 문의해 주세요. 영업일 기준 1~2일 안에 회신드립니다.</p>
     </div>
 
-    <div class="cgrid">
-      <div>
+    <div class="cbox">
         <ul class="ways">
           <li><b>문의 접수</b><span><a href="javascript:void(0)" onclick="openInquiry()" style="color:var(--navy);font-weight:800">문의 양식 작성하기 →</a></span></li>
           <li><b>이메일</b><span><a href="mailto:negomaster@opennegolab.com">negomaster@opennegolab.com</a></span></li>
@@ -659,14 +576,6 @@ footer a:hover{color:#C9D4E1}
         <div class="acts">
           <a class="btn navy" href="javascript:void(0)" onclick="openInquiry()">문의하기</a>
         </div>
-      </div>
-      <div class="biz">
-        <b>사업자 정보</b>
-        주식회사 열린협상연구소<br>
-        대표이사 오명호<br>
-        사업자등록번호 360-87-02920<br>
-        경기도 양평군 양평읍 남북로 53-5, 502호(로현빌딩)
-      </div>
     </div>
   </div>
 </section>
@@ -783,15 +692,6 @@ footer a:hover{color:#C9D4E1}
     });
     render();
   })();
-
-  /* ---------- 캡처 : 파일이 실제로 있을 때만 안내 박스를 대체한다 ---------- */
-  [].slice.call(document.querySelectorAll('.shot .frame')).forEach(function(f){
-    var img = f.querySelector('img');
-    if (!img) return;
-    var ok = function(){ f.classList.add('ok'); };
-    img.addEventListener('load', ok);
-    if (img.complete && img.naturalWidth > 0) ok();
-  });
 
   /* ---------- 유튜브 : 썸네일만 먼저, 누르면 그때 재생 ---------- */
   [].slice.call(document.querySelectorAll('.vthumb')).forEach(function(el){
