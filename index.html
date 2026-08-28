@@ -86,7 +86,15 @@ section{padding:clamp(72px,10vw,140px) 0}
 section[id]{scroll-margin-top:84px}   /* 고정 헤더에 제목이 가리지 않게 */
 
 /* 타이포 위계 */
-.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-bottom:24px}
+/* eyebrow — 브랜드 두 색을 그라디언트로 흘려 글자에 입힌다.
+   background-clip:text 를 못 쓰는 브라우저에서는 글자가 사라지므로 지원할 때만 입힌다 */
+.eyebrow{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;
+         margin-bottom:22px;color:var(--navy)}
+.simsec .eyebrow,.contact .eyebrow{color:var(--lime-b)}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  .eyebrow{background:linear-gradient(90deg,var(--navy),var(--lime));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .simsec .eyebrow,.contact .eyebrow{background:linear-gradient(90deg,#9DB6D8,var(--lime-b));-webkit-background-clip:text;background-clip:text;color:transparent}
+}
 h1{font-size:clamp(38px,6.2vw,76px);font-weight:800;letter-spacing:-3.2px;line-height:1.08}
 h2{font-size:clamp(28px,3.8vw,48px);font-weight:800;letter-spacing:-1.9px;line-height:1.2}
 h3{font-size:clamp(18px,1.9vw,21px);font-weight:700;letter-spacing:-.6px;line-height:1.4}
@@ -135,20 +143,20 @@ header.solid .hd .ask:hover{background:#173763}
       background:linear-gradient(158deg,var(--dark-2) 0%,var(--dark) 46%,var(--dark-3) 100%);
       padding:clamp(140px,17vw,210px) 0 clamp(88px,11vw,150px)}
 .hero-bg{position:absolute;inset:0;pointer-events:none}
-.hero-glow{position:absolute;right:-14%;top:-26%;width:64vw;height:64vw;border-radius:50%;
-           background:radial-gradient(circle,rgba(154,211,52,.16),rgba(154,211,52,0) 62%)}
-.hero-blocks{position:absolute;right:5%;top:50%;transform:translateY(-46%);
-             display:grid;grid-template-columns:repeat(4,1fr);gap:16px;width:min(440px,36vw)}
-.hero-blocks i{aspect-ratio:1;border-radius:14px;border:1px solid rgba(255,255,255,.15);
+.hero-glow{position:absolute;left:50%;top:-30%;transform:translateX(-50%);width:82vw;height:82vw;border-radius:50%;
+           background:radial-gradient(circle,rgba(154,211,52,.13),rgba(154,211,52,0) 60%)}
+.hero-blocks{display:flex;justify-content:center;gap:clamp(8px,1.1vw,14px);margin-top:clamp(44px,6vw,72px)}
+.hero-blocks i{width:clamp(30px,4.4vw,54px);aspect-ratio:1;border-radius:12px;border:1px solid rgba(255,255,255,.15);
                background:rgba(255,255,255,.035);animation:blkOn 7s ease-in-out infinite;
                animation-delay:calc(var(--i) * .42s)}
 @keyframes blkOn{
   0%,60%,100%{background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.15);box-shadow:none}
   14%,34%{background:rgba(154,211,52,.16);border-color:rgba(154,211,52,.55);box-shadow:0 0 26px rgba(154,211,52,.18)}
 }
-.hero-in{position:relative}
-.hero h1{max-width:15ch}
-.hero .lead{margin-top:30px;max-width:46ch;color:var(--on-dark-2)}
+.hero-in{position:relative;text-align:center}
+.hero h1{max-width:16ch;margin:0 auto}
+.hero .lead{margin:30px auto 0;max-width:52ch;color:var(--on-dark-2)}
+.hero .acts{justify-content:center}
 .hero .badge{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:700;color:#DCE8F8;
              background:rgba(255,255,255,.07);border:1px solid var(--line-d);border-radius:999px;padding:8px 16px;margin-bottom:28px}
 .hero .badge i{width:6px;height:6px;border-radius:50%;background:var(--lime-b);display:block;
@@ -159,10 +167,11 @@ header.solid .hd .ask:hover{background:#173763}
 .hero .btn.ghost{border-color:rgba(255,255,255,.34);color:#fff}
 .hero .btn.ghost:hover{background:rgba(255,255,255,.1)}
 
-/* 섹션 헤드 */
-.shead{max-width:640px;margin-bottom:clamp(38px,5vw,62px)}
+/* 섹션 헤드 — 가운데로 모은다 */
+.shead{max-width:720px;margin:0 auto clamp(38px,5vw,62px);text-align:center}
 .shead .lead{margin-top:18px}
 .shead.only{margin-bottom:0}   /* 아래에 아무것도 없는 섹션 */
+.shead .tm{margin-left:auto;margin-right:auto}
 
 /* 대표 소개 */
 .founder{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(28px,5vw,72px);align-items:start}
@@ -188,9 +197,12 @@ header.solid .hd .ask:hover{background:#173763}
 
 /* 왜 우리인가 — 히어로의 주장을 받는 세 장. 흰 카드로 다크 히어로 다음의 첫 밝은 면을 만든다 */
 .why{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.wcard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:34px 30px;transition:.22s ease}
+.wcard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:38px 30px;text-align:center;transition:.22s ease}
 .wcard:hover{transform:translateY(-4px);box-shadow:0 20px 46px rgba(26,29,33,.09)}
-.wnum{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--lime);margin-bottom:16px}
+/* 아이콘은 이모지로 — 그림을 따로 만들 것 없이 뜻이 바로 읽힌다 */
+.ico{width:56px;height:56px;margin:0 auto 18px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+     font-size:26px;line-height:1;background:linear-gradient(150deg,#F2F6FC,#EEF6DC);border:1px solid var(--line)}
+.wnum{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--lime);margin-bottom:10px}
 .wcard h3{margin-bottom:12px;letter-spacing:-.7px}
 .wcard p{font-size:14.5px;color:var(--ink-2);font-weight:500;line-height:1.75}
 
@@ -202,8 +214,11 @@ header.solid .hd .ask:hover{background:#173763}
         filter:drop-shadow(0 18px 34px rgba(26,29,33,.18))}
 
 /* 레퍼런스 */
-.refnum{display:flex;gap:clamp(28px,5vw,64px);flex-wrap:wrap;margin-bottom:clamp(32px,4vw,48px)}
-.refnum div b{display:block;font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1.8px;line-height:1.15}
+.refnum{display:flex;gap:clamp(28px,5vw,72px);flex-wrap:wrap;justify-content:center;text-align:center;margin-bottom:clamp(32px,4vw,48px)}
+.refnum div b{display:block;font-size:clamp(30px,3.8vw,48px);font-weight:800;letter-spacing:-2px;line-height:1.15;color:var(--navy)}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  .refnum div b{background:linear-gradient(160deg,var(--navy),var(--lime));-webkit-background-clip:text;background-clip:text;color:transparent}
+}
 .refnum div span{font-size:13.5px;color:var(--ink-2);font-weight:600}
 /* 레퍼런스 — 한 화면에 4개, 나머지는 넘겨서 */
 .refcar{display:flex;align-items:center;gap:14px}
@@ -238,7 +253,7 @@ header.solid .hd .ask:hover{background:#173763}
 .vplay span{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.94);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.3);transition:.2s}
 .vthumb:hover .vplay span{transform:scale(1.08)}
 .vplay svg{width:20px;height:20px;margin-left:3px}
-.vmeta{padding:18px 20px 20px}
+.vmeta{padding:18px 20px 22px;text-align:center}
 .vmeta h4{font-size:15.5px;font-weight:700;letter-spacing:-.4px;line-height:1.45}
 .vmeta p{margin-top:6px;font-size:13px;color:var(--ink-2);font-weight:500;line-height:1.6}
 
@@ -272,13 +287,14 @@ header.solid .hd .ask:hover{background:#173763}
 .demovid{width:100%;height:auto;display:block;border:1px solid var(--line-c);border-radius:16px;background:#000}
 
 .feat{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:clamp(32px,4vw,48px)}
-.fcard{background:rgba(255,255,255,.045);border:1px solid var(--line-d);border-radius:20px;padding:32px 30px;
-       transition:.22s ease}
+.fcard{background:rgba(255,255,255,.045);border:1px solid var(--line-d);border-radius:20px;padding:36px 30px;
+       text-align:center;transition:.22s ease}
+.fcard .ico{background:rgba(255,255,255,.07);border-color:var(--line-d)}
 .fcard:hover{background:rgba(255,255,255,.075);border-color:rgba(154,211,52,.32);transform:translateY(-3px)}
 .fcard .fnum{font-size:11.5px;font-weight:800;letter-spacing:.14em;color:var(--lime-b);margin-bottom:14px}
 .fcard h3{margin-bottom:10px;color:#fff}
 .fcard p{font-size:14px;color:var(--on-dark-2);font-weight:500;line-height:1.7}
-.fcard ul{list-style:none;margin-top:16px;display:flex;flex-direction:column;gap:9px}
+.fcard ul{list-style:none;margin-top:18px;display:flex;flex-direction:column;gap:9px;text-align:left}
 .fcard li{position:relative;padding-left:16px;font-size:13.5px;color:var(--on-dark-2);font-weight:600;line-height:1.6}
 .fcard li:before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--lime-b)}
 
@@ -338,9 +354,9 @@ footer a:hover{color:#C9D4E1}
 
 @media(max-width:980px){
   nav{display:none}
-  .hero-blocks{display:none}
   .hero{padding:clamp(120px,20vw,160px) 0 clamp(72px,10vw,110px)}
   .hero h1,.hero .lead{max-width:none}
+  .hero-blocks{gap:6px}   /* 여덟 칸이 한 줄에 들어오도록 */
   .stats{grid-template-columns:repeat(2,1fr)}
   .stats > div:nth-child(3){border-left:0;padding-left:0}
   .founder{grid-template-columns:1fr}
@@ -383,10 +399,7 @@ footer a:hover{color:#C9D4E1}
 
 <!-- ===================== HERO ===================== -->
 <section class="hero" id="top">
-  <div class="hero-bg" aria-hidden="true">
-    <div class="hero-glow"></div>
-    <div class="hero-blocks"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i></div>
-  </div>
+  <div class="hero-bg" aria-hidden="true"><div class="hero-glow"></div></div>
   <div class="wrap hero-in">
     <div class="badge"><i></i>8-Block Negotiation Model&trade;</div>
     <h1>오직 협상만<br>연구합니다</h1>
@@ -395,6 +408,7 @@ footer a:hover{color:#C9D4E1}
       <a class="btn fill" href="#education">협상 교육 보기</a>
       <a class="btn ghost" href="#simulator">시뮬레이터 보기</a>
     </div>
+    <div class="hero-blocks" aria-hidden="true"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i></div>
   </div>
 </section>
 
@@ -409,16 +423,19 @@ footer a:hover{color:#C9D4E1}
 
     <div class="why">
       <div class="wcard">
+        <div class="ico">🔬</div>
         <div class="wnum">01</div>
         <h3>15년간 연구하고<br>검증한 협상 방법론</h3>
         <p>다른 주제를 곁들이지 않고 협상 하나만 파고들었습니다. 그 결과가 네 권의 책과, 상표로 등록한 독자 모델입니다.</p>
       </div>
       <div class="wcard">
+        <div class="ico">🧩</div>
         <div class="wnum">02</div>
         <h3>기업의 현장을<br>그대로 담은 커스터마이징</h3>
         <p>남의 사례로 배우지 않습니다. 그 기업의 산업과 직무를 그대로 옮겨 실습 시나리오를 새로 만듭니다.</p>
       </div>
       <div class="wcard">
+        <div class="ico">📊</div>
         <div class="wnum">03</div>
         <h3>프로세스와 데이터로<br>완성한 협상 프레임워크</h3>
         <p>감각에 맡기지 않습니다. 여덟 개 블록으로 준비를 구조화하고, 훈련한 결과를 데이터로 되돌려 줍니다.</p>
@@ -583,6 +600,7 @@ footer a:hover{color:#C9D4E1}
 
     <div class="feat">
       <div class="fcard">
+        <div class="ico">📈</div>
         <div class="fnum">FEATURE 01</div>
         <h3>결과가 아니라 과정을 평가</h3>
         <p>합의 여부만 보지 않습니다. 세운 전략을 실제로 지켰는지까지 리포트로 확인합니다.</p>
@@ -594,6 +612,7 @@ footer a:hover{color:#C9D4E1}
         </ul>
       </div>
       <div class="fcard">
+        <div class="ico">🤝</div>
         <div class="fnum">FEATURE 02</div>
         <h3>사람과 사람의 협상</h3>
         <p>AI를 넘어 팀원과 직접 붙습니다. 1:1부터 2:2까지, 진영별로 관전도 가능합니다.</p>
@@ -603,6 +622,7 @@ footer a:hover{color:#C9D4E1}
         </ul>
       </div>
       <div class="fcard">
+        <div class="ico">🏢</div>
         <div class="fnum">FEATURE 03</div>
         <h3>우리 회사의 협상으로</h3>
         <p>준비 중인 실제 협상을 훈련용 케이스로 만들고, 팀 단위로 나누어 운영합니다.</p>
@@ -636,7 +656,7 @@ footer a:hover{color:#C9D4E1}
       <p class="lead">교육 도입도, 시뮬레이터 데모도 편하게 문의해 주세요. 영업일 기준 1~2일 안에 회신드립니다.</p>
     </div>
 
-    <div class="acts">
+    <div class="acts" style="justify-content:center">
       <a class="btn navy" href="javascript:void(0)" onclick="openInquiry()">문의하기</a>
     </div>
   </div>
