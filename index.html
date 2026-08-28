@@ -142,9 +142,28 @@ header.solid .hd .ask:hover{background:#173763}
 .hero{position:relative;overflow:hidden;color:#fff;
       background:linear-gradient(158deg,var(--dark-2) 0%,var(--dark) 46%,var(--dark-3) 100%);
       padding:clamp(140px,17vw,210px) 0 clamp(88px,11vw,150px)}
-.hero-bg{position:absolute;inset:0;pointer-events:none}
-.hero-glow{position:absolute;left:50%;top:-30%;transform:translateX(-50%);width:82vw;height:82vw;border-radius:50%;
-           background:radial-gradient(circle,rgba(154,211,52,.13),rgba(154,211,52,0) 60%)}
+.hero-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+
+/* 도면 격자 — "협상은 설계"라는 말을 배경이 대신한다.
+   가운데는 진하게, 가장자리로 갈수록 사라지도록 마스크를 씌운다 */
+.hero-grid{position:absolute;inset:-2px;
+  background-image:linear-gradient(to right,rgba(255,255,255,.06) 1px,transparent 1px),
+                   linear-gradient(to bottom,rgba(255,255,255,.06) 1px,transparent 1px);
+  background-size:clamp(40px,4.6vw,64px) clamp(40px,4.6vw,64px);
+  -webkit-mask-image:radial-gradient(ellipse 68% 62% at 50% 44%,#000 26%,transparent 76%);
+          mask-image:radial-gradient(ellipse 68% 62% at 50% 44%,#000 26%,transparent 76%)}
+
+/* 도면 위를 천천히 훑고 지나가는 빛 — 설계를 검토하는 손길처럼 */
+.hero-sweep{position:absolute;top:-20%;bottom:-20%;left:-30%;right:-30%;
+  background:linear-gradient(104deg,transparent 44%,rgba(154,211,52,.10) 50%,transparent 56%);
+  animation:sweep 11s ease-in-out infinite}
+@keyframes sweep{
+  0%,100%{transform:translateX(-26%)}
+  50%{transform:translateX(26%)}
+}
+
+.hero-glow{position:absolute;left:50%;top:-34%;transform:translateX(-50%);width:80vw;height:80vw;border-radius:50%;
+           background:radial-gradient(circle,rgba(154,211,52,.10),rgba(154,211,52,0) 58%)}
 .hero-blocks{display:flex;justify-content:center;gap:clamp(8px,1.1vw,14px);margin-top:clamp(44px,6vw,72px)}
 .hero-blocks i{width:clamp(30px,4.4vw,54px);aspect-ratio:1;border-radius:12px;border:1px solid rgba(255,255,255,.15);
                background:rgba(255,255,255,.035);animation:blkOn 7s ease-in-out infinite;
@@ -399,7 +418,11 @@ footer a:hover{color:#C9D4E1}
 
 <!-- ===================== HERO ===================== -->
 <section class="hero" id="top">
-  <div class="hero-bg" aria-hidden="true"><div class="hero-glow"></div></div>
+  <div class="hero-bg" aria-hidden="true">
+    <div class="hero-grid"></div>
+    <div class="hero-sweep"></div>
+    <div class="hero-glow"></div>
+  </div>
   <div class="wrap hero-in">
     <h1>오직 협상만<br>연구합니다</h1>
     <p class="lead">비즈니스 협상 교육의 신세계를 경험하세요.</p>
