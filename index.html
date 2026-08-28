@@ -162,6 +162,7 @@ header.solid .hd .ask:hover{background:#173763}
 /* 섹션 헤드 */
 .shead{max-width:640px;margin-bottom:clamp(38px,5vw,62px)}
 .shead .lead{margin-top:18px}
+.shead.only{margin-bottom:0}   /* 아래에 아무것도 없는 섹션 */
 
 /* 대표 소개 */
 .founder{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(28px,5vw,72px);align-items:start}
@@ -171,21 +172,17 @@ header.solid .hd .ask:hover{background:#173763}
 .fname{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .fname strong{font-size:clamp(24px,2.6vw,30px);font-weight:800;letter-spacing:-1.2px}
 .fname span{font-size:14px;color:var(--ink-2);font-weight:600}
-.facts{list-style:none;margin-top:26px;border-top:1px solid var(--line)}
-.facts li{display:grid;grid-template-columns:96px 1fr;gap:18px;padding:15px 0;border-bottom:1px solid var(--line);font-size:14.5px;font-weight:500;color:var(--ink-2);line-height:1.7}
-.facts li b{font-size:13px;font-weight:700;color:var(--ink);letter-spacing:-.2px}
+/* 교육을 이루는 세 기둥 — 02는 아래 8-BNM 섹션이, 03은 뒤쪽 시뮬레이터 섹션이 이어받는다 */
+.pillars{list-style:none;margin-top:28px;border-top:1px solid var(--line)}
+.pillars li{display:grid;grid-template-columns:auto 1fr;gap:20px;padding:22px 0;border-bottom:1px solid var(--line)}
+.pillars .no{font-size:12px;font-weight:800;color:var(--lime);letter-spacing:.1em;padding-top:6px}
+.pillars b{display:block;font-size:17.5px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
+.pillars p{margin:0;font-size:14.5px;color:var(--ink-2);font-weight:500;line-height:1.7}
 
 /* 8-BNM */
 .model{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .tm{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--navy);
     background:#F2F6FC;border:1px solid #DCE6F4;border-radius:999px;padding:6px 14px;margin-top:20px}
-.blocks{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
-        border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-top:clamp(34px,4vw,52px)}
-.blk{background:#fff;padding:26px 22px;min-height:142px;transition:background .2s}
-.blk:hover{background:#FBFAF7}
-.blk b{font-size:11.5px;font-weight:800;color:var(--navy);letter-spacing:.12em}
-.blk h4{margin:12px 0 7px;font-size:16.5px;font-weight:700;letter-spacing:-.5px}
-.blk p{font-size:13px;color:var(--ink-2);font-weight:500;line-height:1.65}
 
 /* 저서 — 표지 비율이 제각각(3D 목업·평면)이라 흰 카드 안에 contain으로 앉힌다 */
 .books{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
@@ -348,18 +345,16 @@ footer a:hover{color:#C9D4E1}
   .founder{grid-template-columns:1fr}
   .books{grid-template-columns:repeat(2,1fr)}
   .cover{max-width:220px}
-  .blocks{grid-template-columns:repeat(2,1fr)}
   .rl{flex-basis:33.333%}
   .videos,.feat{grid-template-columns:1fr}
 }
 @media(max-width:620px){
   .stats{grid-template-columns:1fr}
   .stats > div{border-left:0;padding-left:0}
-  .blocks{grid-template-columns:1fr}
   .rl{flex-basis:50%}
   .rnav{display:none}
   .frow,.ftype{grid-template-columns:1fr}
-  .facts li,.ways li{grid-template-columns:1fr;gap:4px}
+  .ways li{grid-template-columns:1fr;gap:4px}
 }
 @media(prefers-reduced-motion:reduce){
   *,*:before,*:after{animation:none!important;transition:none!important}
@@ -392,9 +387,9 @@ footer a:hover{color:#C9D4E1}
     <div class="hero-blocks"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i></div>
   </div>
   <div class="wrap hero-in">
-    <div class="badge"><i></i>8-Block Negotiation Model&trade;</div>
-    <h1>오직 협상만 연구하고,<br>AI로 훈련까지 시킵니다</h1>
-    <p class="lead">15년간 협상 하나만 연구해 만든 8-Block 협상모델로 기업 협상 교육을 하고, 그 모델을 그대로 구현한 AI 협상 시뮬레이터로 강의장 밖에서도 훈련이 이어지게 합니다.</p>
+    <div class="badge"><i></i>오직 협상만 연구합니다</div>
+    <h1>담당자가 바뀌어도<br>협상의 질은 그대로</h1>
+    <p class="lead">협상을 감과 경험의 영역에서 구조의 영역으로 옮깁니다. 15년간 다듬은 8-Block 협상모델과, 그 모델을 그대로 담은 AI 시뮬레이터로 준비 과정을 표준화합니다.</p>
     <div class="acts">
       <a class="btn fill" href="#education">협상 교육 보기</a>
       <a class="btn ghost" href="#simulator">시뮬레이터 보기</a>
@@ -408,20 +403,28 @@ footer a:hover{color:#C9D4E1}
   <div class="wrap rv">
     <div class="shead">
       <div class="eyebrow">Negotiation Education</div>
-      <h2>협상을 가르치는 사람이<br>협상만 연구해 왔습니다</h2>
-      <p class="lead">협상 교육은 강사의 경험 폭이 곧 교육의 깊이가 됩니다. 열린협상연구소는 다른 주제를 함께 다루지 않습니다.</p>
+      <h2>우리 교육은<br>세 가지로 만들어집니다</h2>
+      <p class="lead">어느 하나만 있어도 협상 교육이라고 부를 수는 있습니다. 열린협상연구소는 셋이 다 있어야 협상력이 남는다고 봅니다.</p>
     </div>
 
     <div class="founder">
       <div class="portrait"><img src="/img/portrait.jpg" alt="열린협상연구소 대표 오명호" /></div>
       <div>
         <div class="fname"><strong>오명호</strong><span>열린협상연구소 대표 · 협상 전문 강사</span></div>
-        <p class="lead">협상은 설득이 아니라 설계입니다. 감과 경험에 맡겨져 있던 협상을 구조로 옮겨, 누가 맡더라도 같은 수준의 준비가 가능하도록 만드는 일을 15년째 하고 있습니다.</p>
-        <ul class="facts">
-          <li><b>연구 분야</b><span>기업 협상 · B2B 영업/구매 협상 · 협상 프로세스 설계</span></li>
-          <li><b>독자 모델</b><span>8-Block Negotiation Model&trade; 개발 및 상표 등록</span></li>
-          <li><b>저서</b><span>『협상 레볼루션』</span></li>
-          <li><b>교육 방식</b><span>기업·직무 맞춤 시나리오 개발, 실전형 실습과 개별 피드백</span></li>
+        <p class="lead">협상은 배워서 아는 것으로 끝나지 않습니다. 우리 상황에 맞는 판을 만들어 직접 겪어봐야 남습니다. 그 판을 만드는 일을 15년째 하고 있습니다.</p>
+        <ul class="pillars">
+          <li>
+            <span class="no">01</span>
+            <div><b>커스터마이징</b><p>남의 사례가 아니라 그 기업의 산업과 직무로 실습 시나리오를 새로 만듭니다.</p></div>
+          </li>
+          <li>
+            <span class="no">02</span>
+            <div><b>프레임워크</b><p>감각에 맡겨져 있던 협상을 여덟 개 블록의 구조로 옮깁니다. 누가 맡아도 준비의 수준이 같아집니다.</p></div>
+          </li>
+          <li>
+            <span class="no">03</span>
+            <div><b>AI 시뮬레이터</b><p>강의장에서 끝나던 실습을, 언제든 다시 할 수 있는 훈련으로 이어갑니다.</p></div>
+          </li>
         </ul>
       </div>
     </div>
@@ -431,23 +434,13 @@ footer a:hover{color:#C9D4E1}
 <!-- ===================== 8-BNM ===================== -->
 <section id="model" class="model">
   <div class="wrap rv">
-    <div class="shead">
+    <div class="shead only">
       <div class="eyebrow">Our Framework</div>
-      <h2>8-Block Negotiation Model&trade;</h2>
-      <p class="lead">협상의 원리와 기술을 여덟 개의 블록으로 구조화한 협상 프로세스 모델입니다. 100개 이상 기업의 실무 교육에서 검증되어 왔습니다.</p>
-      <div class="tm">상표 등록 제 40-2458489 호</div>
+      <h2>협상을 여덟 개의<br>질문으로 나눕니다</h2>
+      <p class="lead">순서대로 답하고 나면 협상 준비가 끝나 있습니다. 무엇을 물어야 하는지가 정해져 있으니, 누가 맡든 준비의 수준이 같아집니다. 15년간 다듬어 상표로 등록한 독자 모델입니다.</p>
+      <div class="tm">8-Block Negotiation Model&trade; · 상표 등록 제 40-2458489 호</div>
     </div>
 
-    <div class="blocks">
-      <div class="blk"><b>BLOCK 1</b><h4>현황 분석</h4><p>지금 무엇이 걸려 있는가</p></div>
-      <div class="blk"><b>BLOCK 2</b><h4>목표 설정</h4><p>어디까지 얻어야 하는가</p></div>
-      <div class="blk"><b>BLOCK 3</b><h4>ZOPA</h4><p>합의 가능한 구간은 어디인가</p></div>
-      <div class="blk"><b>BLOCK 4</b><h4>BATNA</h4><p>합의하지 못하면 무엇이 남는가</p></div>
-      <div class="blk"><b>BLOCK 5</b><h4>욕구 파악</h4><p>상대가 진짜 원하는 것은 무엇인가</p></div>
-      <div class="blk"><b>BLOCK 6</b><h4>대안 설계</h4><p>서로 더 나은 선택지는 없는가</p></div>
-      <div class="blk"><b>BLOCK 7</b><h4>최적화</h4><p>무엇을 주고 무엇을 받을 것인가</p></div>
-      <div class="blk"><b>BLOCK 8</b><h4>최종안</h4><p>어떻게 매듭지을 것인가</p></div>
-    </div>
   </div>
 </section>
 
