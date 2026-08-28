@@ -126,9 +126,9 @@ nav a:hover:after{right:0}
 
 /* 대표 소개 */
 .founder{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(28px,5vw,72px);align-items:start}
-.portrait{aspect-ratio:4/5;background:var(--warm-2);border:1px solid var(--line);border-radius:12px;
-          display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;
-          font-size:13px;color:var(--ink-3);font-weight:600;line-height:1.7}
+/* 사진은 배경을 딴 컷아웃을 섹션 배경색으로 눌러 담아, 테두리 없이 지면에 얹힌 느낌을 준다 */
+.portrait{border-radius:12px;overflow:hidden}
+.portrait img{width:100%;height:auto;display:block}
 .fname{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .fname strong{font-size:clamp(24px,2.6vw,30px);font-weight:800;letter-spacing:-1.2px}
 .fname span{font-size:14px;color:var(--ink-2);font-weight:600}
@@ -148,24 +148,38 @@ nav a:hover:after{right:0}
 .blk h4{margin:12px 0 7px;font-size:16.5px;font-weight:700;letter-spacing:-.5px}
 .blk p{font-size:13px;color:var(--ink-2);font-weight:500;line-height:1.65}
 
-/* 저서 */
-.book{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:clamp(28px,5vw,64px);align-items:center}
-.cover{aspect-ratio:3/4.2;background:linear-gradient(150deg,#1E4476,#2F5A96);border-radius:10px;
-       box-shadow:0 24px 60px rgba(16,42,76,.22);display:flex;flex-direction:column;justify-content:flex-end;
-       padding:28px 24px;color:#fff;max-width:280px}
-.cover em{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--lime-b);display:block;margin-bottom:10px}
-.cover strong{font-size:26px;font-weight:800;letter-spacing:-1.2px;line-height:1.25}
-.cover span{font-size:13px;color:#B9CBE2;font-weight:600;margin-top:10px}
+/* 저서 — 표지 비율이 제각각(3D 목업·평면)이라 흰 카드 안에 contain으로 앉힌다 */
+.books{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.bk{margin:0}
+.bkimg{background:#fff;border:1px solid var(--line);border-radius:12px;height:210px;
+       display:flex;align-items:center;justify-content:center;padding:16px;transition:.2s ease}
+.bk:hover .bkimg{transform:translateY(-4px);box-shadow:0 18px 40px rgba(26,29,33,.10)}
+.bkimg img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.bk figcaption{margin-top:14px}
+.bk figcaption b{display:block;font-size:15px;font-weight:700;letter-spacing:-.4px;line-height:1.4}
+.bk figcaption span{display:block;margin-top:4px;font-size:12.5px;color:var(--ink-3);font-weight:600}
 
 /* 레퍼런스 */
 .refnum{display:flex;gap:clamp(28px,5vw,64px);flex-wrap:wrap;margin-bottom:clamp(32px,4vw,48px)}
 .refnum div b{display:block;font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-1.8px;line-height:1.15}
 .refnum div span{font-size:13.5px;color:var(--ink-2);font-weight:600}
-.logos{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.logos div{background:#fff;height:104px;display:flex;align-items:center;justify-content:center;padding:20px}
-.logos img{max-width:100%;max-height:38px;object-fit:contain;filter:grayscale(1);opacity:.58;transition:.22s}
-.logos div:hover img{filter:none;opacity:1}
-.logos .slot{color:var(--ink-3);font-size:12px;font-weight:600}
+/* 레퍼런스 — 한 화면에 4개, 나머지는 넘겨서 */
+.refcar{display:flex;align-items:center;gap:14px}
+.rview{flex:1;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--line)}
+.rrow{display:flex;transition:transform .45s cubic-bezier(.22,.61,.36,1)}
+.rl{flex:0 0 25%;background:#fff;height:132px;display:flex;align-items:center;justify-content:center;
+    padding:24px;border-right:1px solid var(--line)}
+.rl:last-child{border-right:0}
+.rl img{max-width:100%;max-height:46px;width:auto;object-fit:contain;filter:grayscale(1);opacity:.6;transition:.22s}
+.rl:hover img{filter:none;opacity:1}
+.rnav{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#fff;
+      color:#404A58;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.18s}
+.rnav svg{width:18px;height:18px}
+.rnav:hover{border-color:var(--navy);color:var(--navy)}
+.rnav:disabled{opacity:.32;cursor:default;border-color:var(--line);color:#404A58}
+.rdots{display:flex;gap:7px;justify-content:center;margin-top:20px}
+.rdots i{width:7px;height:7px;border-radius:50%;background:#D6D2C8;display:block;transition:.2s}
+.rdots i.on{background:var(--navy);width:20px;border-radius:4px}
 .refnote{margin-top:18px;font-size:12.5px;color:var(--ink-3);font-weight:500}
 
 /* 영상 */
@@ -203,6 +217,19 @@ nav a:hover:after{right:0}
 .shot .frame.ok img{display:block}
 .shot .frame.ok .ph{display:none}
 .shot-duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+/* 시연 영상 */
+.demo{margin-top:clamp(34px,4vw,52px)}
+.demohead{margin-bottom:18px}
+.demohead p{margin-top:6px;font-size:14px;color:var(--ink-2);font-weight:500}
+.demoframe{position:relative;aspect-ratio:16/9;border:1px solid var(--line-c);border-radius:16px;overflow:hidden;
+           background:#0D1520;box-shadow:0 24px 60px rgba(20,40,70,.10);background-size:cover;background-position:center}
+.demoframe iframe,.demoframe video{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.demoframe .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;
+               background:repeating-linear-gradient(45deg,#F7F9FC,#F7F9FC 12px,#F2F5F9 12px,#F2F5F9 24px);
+               color:var(--ink-3);font-size:13.5px;font-weight:600;line-height:1.8}
+.demoframe.ready{cursor:pointer}
+.demoframe.ready .ph{display:none}
+.demovid{width:100%;height:auto;display:block;border:1px solid var(--line-c);border-radius:16px;background:#000}
 .shot-duo .shot{margin-top:0}
 .shot .ph{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;
           background:repeating-linear-gradient(45deg,#F7F9FC,#F7F9FC 12px,#F2F5F9 12px,#F2F5F9 24px);
@@ -283,17 +310,19 @@ footer a:hover{color:#C9D4E1}
   nav{display:none}
   .stats{grid-template-columns:repeat(2,1fr)}
   .stats > div:nth-child(3){border-left:0;padding-left:0}
-  .founder,.book,.cgrid{grid-template-columns:1fr}
+  .founder,.cgrid{grid-template-columns:1fr}
+  .books{grid-template-columns:repeat(2,1fr)}
   .cover{max-width:220px}
   .blocks{grid-template-columns:repeat(2,1fr)}
-  .logos{grid-template-columns:repeat(3,1fr)}
+  .rl{flex-basis:33.333%}
   .videos,.feat,.flow,.shot-duo{grid-template-columns:1fr}
 }
 @media(max-width:620px){
   .stats{grid-template-columns:1fr}
   .stats > div{border-left:0;padding-left:0}
   .blocks{grid-template-columns:1fr}
-  .logos{grid-template-columns:repeat(2,1fr)}
+  .rl{flex-basis:50%}
+  .rnav{display:none}
   .frow,.ftype{grid-template-columns:1fr}
   .facts li,.ways li{grid-template-columns:1fr;gap:4px}
 }
@@ -334,7 +363,7 @@ footer a:hover{color:#C9D4E1}
 <div class="wrap">
   <div class="stats rv">
     <div><b>15년+</b><span>협상 전문 연구</span></div>
-    <div><b>30개+</b><span>기업에서 8-BNM 검증</span></div>
+    <div><b>100개+</b><span>기업 교육 · 컨설팅</span></div>
     <div><b>20,000명+</b><span>협상 역량 강화</span></div>
     <div><b>8-BNM</b><span>독자 협상모델 · 상표 등록</span></div>
   </div>
@@ -350,7 +379,7 @@ footer a:hover{color:#C9D4E1}
     </div>
 
     <div class="founder">
-      <div class="portrait">［ 대표 프로필 사진 자리 ］<br>사진 주시면 여기에 넣습니다</div>
+      <div class="portrait"><img src="/img/portrait.jpg" alt="열린협상연구소 대표 오명호" /></div>
       <div>
         <div class="fname"><strong>오명호</strong><span>열린협상연구소 대표 · 협상 전문 강사</span></div>
         <p class="lead">협상은 설득이 아니라 설계입니다. 감과 경험에 맡겨져 있던 협상을 구조로 옮겨, 누가 맡더라도 같은 수준의 준비가 가능하도록 만드는 일을 15년째 하고 있습니다.</p>
@@ -371,7 +400,7 @@ footer a:hover{color:#C9D4E1}
     <div class="shead">
       <div class="eyebrow">Our Framework</div>
       <h2>8-Block Negotiation Model&trade;</h2>
-      <p class="lead">협상의 원리와 기술을 여덟 개의 블록으로 구조화한 협상 프로세스 모델입니다. 30개 이상 기업의 실무 교육에서 검증되어 왔습니다.</p>
+      <p class="lead">협상의 원리와 기술을 여덟 개의 블록으로 구조화한 협상 프로세스 모델입니다. 100개 이상 기업의 실무 교육에서 검증되어 왔습니다.</p>
       <div class="tm">상표 등록 제 40-2458489 호</div>
     </div>
 
@@ -391,20 +420,33 @@ footer a:hover{color:#C9D4E1}
 <!-- ===================== 저서 ===================== -->
 <section>
   <div class="wrap rv">
-    <div class="book">
-      <div class="cover">
-        <em>OH MYUNG HO</em>
-        <strong>협상<br>레볼루션</strong>
-        <span>＊ 표지 이미지 주시면 교체합니다</span>
-      </div>
-      <div>
-        <div class="eyebrow">Book</div>
-        <h2>『협상 레볼루션』</h2>
-        <p class="lead" style="margin-top:18px">협상을 설득의 기술이 아니라 설계의 문제로 다시 놓은 책입니다. 강의에서 다루는 8-Block 모델의 배경과 원리를 담았습니다.</p>
-        <div class="acts">
-          <a class="btn ghost" href="https://youtu.be/wTUhbmvMwjg" target="_blank" rel="noopener">저자 인터뷰 보기</a>
-        </div>
-      </div>
+    <div class="shead">
+      <div class="eyebrow">Books</div>
+      <h2>연구의 결과는<br>네 권의 책으로 남았습니다</h2>
+      <p class="lead">협상을 설득의 기술이 아니라 설계의 문제로 다시 놓는 작업. 2016년부터 지금까지 이어져 온 기록입니다.</p>
+    </div>
+
+    <div class="books">
+      <figure class="bk">
+        <div class="bkimg"><img src="/img/books/book-2016.jpg" alt="협상의 한 수" loading="lazy"></div>
+        <figcaption><b>협상의 한 수</b><span>2016</span></figcaption>
+      </figure>
+      <figure class="bk">
+        <div class="bkimg"><img src="/img/books/book-2020.jpg" alt="협상이 이렇게 유용할 줄이야" loading="lazy"></div>
+        <figcaption><b>협상이 이렇게 유용할 줄이야</b><span>2020</span></figcaption>
+      </figure>
+      <figure class="bk">
+        <div class="bkimg"><img src="/img/books/book-2024.jpg" alt="에잇 블록 협상 모델" loading="lazy"></div>
+        <figcaption><b>에잇 블록 협상 모델</b><span>2024 · 8-BNM의 탄생</span></figcaption>
+      </figure>
+      <figure class="bk">
+        <div class="bkimg"><img src="/img/books/book-2026.jpg" alt="협상 레볼루션" loading="lazy"></div>
+        <figcaption><b>협상 레볼루션</b><span>2026 · AI 시대, 협상을 다시 설계하다</span></figcaption>
+      </figure>
+    </div>
+
+    <div class="acts">
+      <a class="btn ghost" href="https://youtu.be/wTUhbmvMwjg" target="_blank" rel="noopener">저자 인터뷰 보기</a>
     </div>
   </div>
 </section>
@@ -419,32 +461,41 @@ footer a:hover{color:#C9D4E1}
     </div>
 
     <div class="refnum">
-      <div><b>30개+</b><span>기업 협상 교육</span></div>
+      <div><b>100개+</b><span>기업 협상 교육</span></div>
       <div><b>15년+</b><span>누적 교육 기간</span></div>
       <div><b>20,000명+</b><span>누적 교육 인원</span></div>
     </div>
 
-    <!-- 로고 교체 방법: 아래 <img src="/img/파일명.png" alt="사명"> 만 바꾸면 됩니다.
-         새 로고는 /img/ 폴더에 넣고 파일명을 여기에 적으면 끝. 칸을 늘리려면 <div> 한 줄을 복사하세요. -->
-    <div class="logos">
-      <div><img src="/img/samsung-electronics.jpg" alt="삼성전자"></div>
-      <div><img src="/img/samsung-display.jpg" alt="삼성디스플레이"></div>
-      <div><img src="/img/samsung-sds.jpg" alt="삼성SDS"></div>
-      <div><img src="/img/posco-enc.jpg" alt="POSCO E&amp;C"></div>
-      <div><img src="/img/cj-cheiljedang.jpg" alt="CJ제일제당"></div>
-      <div><img src="/img/hanwha-aerospace.jpg" alt="한화에어로스페이스"></div>
-      <div><img src="/img/kcc.jpg" alt="KCC"></div>
-      <div><img src="/img/hyundai-dept.png" alt="현대백화점"></div>
-      <div><img src="/img/olive-young.jpg" alt="올리브영"></div>
-      <div><img src="/img/gs-retail.png" alt="GS리테일"></div>
-      <div><img src="/img/sk-academy.jpg" alt="SK academy"></div>
-      <div><img src="/img/sk-rent-a-car.jpg" alt="SK렌터카"></div>
-      <div><img src="/img/organon-korea.jpg" alt="한국오가논"></div>
-      <div><img src="/img/dongwon-farms.jpg" alt="동원팜스"></div>
-      <div><img src="/img/paris-croissant.jpg" alt="파리크라상"></div>
-      <div><img src="/img/ak-plaza.png" alt="AK PLAZA"></div>
-      <div><img src="/img/simmtech.jpg" alt="심텍"></div>
-      <div class="slot">＋ 로고 자리</div>
+    <!-- 로고 교체·추가 : 아래 .rl 한 줄을 복사하고 파일명과 alt만 바꾸면 됩니다.
+         파일은 /img/ 폴더에 넣습니다. 한 번에 4개씩 보이고 나머지는 넘겨서 봅니다. -->
+    <div class="refcar">
+      <button class="rnav prev" type="button" aria-label="이전 로고 보기">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="rview"><div class="rrow">
+        <div class="rl"><img src="/img/samsung-electronics.jpg" alt="삼성전자" loading="lazy"></div>
+        <div class="rl"><img src="/img/posco-enc.jpg" alt="POSCO E&amp;C" loading="lazy"></div>
+        <div class="rl"><img src="/img/gs-retail.png" alt="GS리테일" loading="lazy"></div>
+        <div class="rl"><img src="/img/cj-cheiljedang.jpg" alt="CJ제일제당" loading="lazy"></div>
+        <div class="rl"><img src="/img/samsung-display.jpg" alt="삼성디스플레이" loading="lazy"></div>
+        <div class="rl"><img src="/img/samsung-sds.jpg" alt="삼성SDS" loading="lazy"></div>
+        <div class="rl"><img src="/img/hanwha-aerospace.jpg" alt="한화에어로스페이스" loading="lazy"></div>
+        <div class="rl"><img src="/img/kcc.jpg" alt="KCC" loading="lazy"></div>
+        <div class="rl"><img src="/img/hyundai-dept.png" alt="현대백화점" loading="lazy"></div>
+        <div class="rl"><img src="/img/olive-young.jpg" alt="올리브영" loading="lazy"></div>
+        <div class="rl"><img src="/img/sk-academy.jpg" alt="SK academy" loading="lazy"></div>
+        <div class="rl"><img src="/img/sk-rent-a-car.jpg" alt="SK렌터카" loading="lazy"></div>
+        <div class="rl"><img src="/img/organon-korea.jpg" alt="한국오가논" loading="lazy"></div>
+        <div class="rl"><img src="/img/dongwon-farms.jpg" alt="동원팜스" loading="lazy"></div>
+        <div class="rl"><img src="/img/paris-croissant.jpg" alt="파리크라상" loading="lazy"></div>
+        <div class="rl"><img src="/img/ak-plaza.png" alt="AK PLAZA" loading="lazy"></div>
+        <div class="rl"><img src="/img/simmtech.jpg" alt="심텍" loading="lazy"></div>
+      </div></div>
+      <button class="rnav next" type="button" aria-label="다음 로고 보기">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <div class="rdots" aria-hidden="true"></div>
     </div>
     <p class="refnote">＊ 가나다순이 아닌 임의 배열입니다. 로고 추가·교체는 언제든 가능합니다.</p>
   </div>
@@ -514,11 +565,28 @@ footer a:hover{color:#C9D4E1}
       </div>
     </div>
 
+    <!-- 시연 영상 자리 ─────────────────────────────────────────────
+         받는 형태에 따라 둘 중 하나로 채우면 됩니다.
+         (1) 유튜브면  : 아래 div 의 data-yt="영상ID" 만 채우기
+         (2) 파일이면  : div 를 통째로 아래로 교체
+             <video class="demovid" src="/img/shots/demo.mp4" controls preload="none"
+                    poster="/img/shots/demo-poster.jpg"></video>
+         비워 두면 안내 박스가 자리를 지키고, 사이트는 깨지지 않습니다. -->
+    <div class="demo">
+      <div class="demohead">
+        <h3>시연 영상</h3>
+        <p>설계부터 협상, 평가까지 실제 사용 흐름을 그대로 보여드립니다.</p>
+      </div>
+      <div class="demoframe" data-yt="">
+        <div class="ph">［ 시뮬레이터 시연 영상 자리 ］<br>영상 주시면 이 자리에 넣습니다</div>
+      </div>
+    </div>
+
     <div class="feat">
       <div class="fcard">
         <div class="fnum">FEATURE 01</div>
         <h3>5단계 훈련 흐름</h3>
-        <p>케이스를 고르는 순간부터 평가를 받기까지, 협상 한 판이 통째로 훈련이 됩니다.</p>
+        <p>케이스를 고르는 순간부터 평가를 받기까지, 협상 전 과정이 하나의 훈련이 됩니다.</p>
       </div>
       <div class="fcard">
         <div class="fnum">FEATURE 02</div>
@@ -561,7 +629,7 @@ footer a:hover{color:#C9D4E1}
 
     <div class="simcta">
       <div>
-        <h3>직접 한 판 해 보시는 게 가장 빠릅니다</h3>
+        <h3>직접 써 보시는 것이 가장 빠릅니다</h3>
         <p>개인 훈련부터 기업 단위 도입까지, 필요에 맞춰 안내드립니다.</p>
       </div>
       <div class="acts">
@@ -665,6 +733,57 @@ footer a:hover{color:#C9D4E1}
     targets.forEach(function(t){ io.observe(t); });
   }
 
+  /* ---------- 레퍼런스 캐러셀 : 한 화면에 보이는 개수만큼 넘긴다 ---------- */
+  (function(){
+    var car = document.querySelector('.refcar');
+    if (!car) return;
+    var row = car.querySelector('.rrow');
+    var items = [].slice.call(row.children);
+    var dots = document.querySelector('.rdots');
+    var prev = car.querySelector('.rnav.prev');
+    var next = car.querySelector('.rnav.next');
+    var page = 0;
+
+    /* 한 화면에 보이는 개수 — 아래 CSS의 .rl flex-basis 분기와 반드시 같아야 한다.
+       (초기 로드 시점에는 실측이 어긋나므로 창 너비로 계산한다) */
+    function perView(){
+      var w = window.innerWidth;
+      if (w <= 620) return 2;
+      if (w <= 980) return 3;
+      return 4;
+    }
+    function pages(){ return Math.max(1, Math.ceil(items.length / perView())); }
+
+    function render(){
+      var n = pages();
+      if (page > n - 1) page = n - 1;
+      if (page < 0) page = 0;
+      row.style.transform = 'translateX(' + (-page * 100) + '%)';
+      prev.disabled = page === 0;
+      next.disabled = page === n - 1;
+      dots.innerHTML = '';
+      for (var i = 0; i < n; i++) {
+        var d = document.createElement('i');
+        if (i === page) d.className = 'on';
+        dots.appendChild(d);
+      }
+    }
+    prev.addEventListener('click', function(){ page--; render(); });
+    next.addEventListener('click', function(){ page++; render(); });
+    window.addEventListener('resize', render);
+
+    /* 손가락으로 넘기기 */
+    var x0 = null;
+    row.addEventListener('touchstart', function(e){ x0 = e.touches[0].clientX; }, { passive:true });
+    row.addEventListener('touchend', function(e){
+      if (x0 === null) return;
+      var dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 45) { page += dx < 0 ? 1 : -1; render(); }
+      x0 = null;
+    });
+    render();
+  })();
+
   /* ---------- 캡처 : 파일이 실제로 있을 때만 안내 박스를 대체한다 ---------- */
   [].slice.call(document.querySelectorAll('.shot .frame')).forEach(function(f){
     var img = f.querySelector('img');
@@ -683,6 +802,20 @@ footer a:hover{color:#C9D4E1}
       el.innerHTML = '<iframe src="https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0" title="영상" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
     });
   });
+
+  /* ---------- 시연 영상 : data-yt 가 채워져 있을 때만 동작 ---------- */
+  (function(){
+    var d = document.querySelector('.demoframe[data-yt]');
+    if (!d) return;
+    var id = (d.getAttribute('data-yt') || '').trim();
+    if (!id) return;                                  /* 아직 영상이 없으면 안내 박스 그대로 */
+    d.classList.add('ready');
+    d.style.backgroundImage = "url(https://i.ytimg.com/vi/" + id + "/maxresdefault.jpg)";
+    d.innerHTML = '<div class="vplay"><span><svg viewBox="0 0 24 24" fill="none"><path d="M8 5.5v13l11-6.5z" fill="#1A1D21"/></svg></span></div>';
+    d.addEventListener('click', function(){
+      d.innerHTML = '<iframe src="https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0" title="시연 영상" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    });
+  })();
 
   /* ---------- 문의 모달 ---------- */
   window.openInquiry = function(type){
