@@ -270,12 +270,13 @@ header.solid .hd .ask:hover{background:#173763}
 .rview:before{left:0;background:linear-gradient(to right,#fff,rgba(255,255,255,0))}
 .rview:after{right:0;background:linear-gradient(to left,#fff,rgba(255,255,255,0))}
 .rrow{display:flex;transition:transform .45s cubic-bezier(.22,.61,.36,1)}
-.rl{flex:0 0 25%;height:156px;display:flex;align-items:center;justify-content:center;padding:16px 20px}
+.rl{flex:0 0 25%;height:156px;display:flex;align-items:center;justify-content:center;padding:14px 8px}
 /* 영상 캐러셀 — 같은 캐러셀 뼈대를 쓰되 칸 안이 카드다 */
 .vidcar .rl{height:auto;padding:0 10px;align-items:stretch}
 .vidcar .rl .vcard{width:100%}
 .vidcar .rview:before,.vidcar .rview:after{width:14px}
-.rl img{max-width:100%;max-height:68px;width:auto;object-fit:contain;filter:grayscale(1);opacity:.68;transition:.22s}
+/* 로고마다 --w 가 다르다 — 원본 비율이 제각각이라 폭을 따로 줘야 보이는 세로 크기가 맞는다 */
+.rl img{width:var(--w,80%);height:auto;max-width:100%;filter:grayscale(1);opacity:.68;transition:filter .22s,opacity .22s}
 .rl:hover img{filter:none;opacity:1}
 .rnav{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#fff;
       color:#404A58;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.18s}
@@ -517,30 +518,40 @@ footer a:hover{color:#C9D4E1}
       <div><b>20,000명+</b><span>누적 교육 인원</span></div>
     </div>
 
-    <!-- 로고 교체·추가 : 아래 .rl 한 줄을 복사하고 파일명과 alt만 바꾸면 됩니다.
-         파일은 /img/ 폴더에 넣습니다. 한 번에 4개씩 보이고 나머지는 넘겨서 봅니다. -->
+    <!-- 로고 교체·추가 : 한 번에 4개씩 보이고 나머지는 넘겨서 봅니다.
+
+         로고마다 원본 비율이 크게 달라서(가로로 긴 것 11:1 ~ 뭉친 것 1.8:1),
+         같은 상자에 그냥 넣으면 보이는 크기가 제각각이 됩니다. 그래서
+           · 원본의 빈 여백을 잘라낸 파일을 /img/ref/ 에 두고
+           · 칸 대비 가로 비율을 style="--w:…%" 로 따로 지정합니다.
+         높이는 auto 라 --w 에서 따라 나옵니다. 비율로 줬기 때문에 화면이
+         좁아져도 로고들 사이의 크기 관계는 그대로 유지됩니다.
+
+         --w 값은 "넓이를 비슷하게 맞추되 세로 52px 을 넘지 않게" 계산한
+         것입니다. 새 로고를 넣을 때는 여백을 잘라낸 뒤 가로세로비를 재서
+         같은 규칙으로 값을 뽑아야 크기가 어울립니다. -->
     <div class="refcar" data-per="4,3,2">
       <button class="rnav prev" type="button" aria-label="이전 로고 보기">
         <svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <div class="rview"><div class="rrow">
-        <div class="rl"><img src="/img/samsung-electronics.jpg" alt="삼성전자" loading="lazy"></div>
-        <div class="rl"><img src="/img/posco-enc.jpg" alt="POSCO E&amp;C" loading="lazy"></div>
-        <div class="rl"><img src="/img/gs-retail.png?v=2" alt="GS리테일" loading="lazy"></div>
-        <div class="rl"><img src="/img/cj-cheiljedang.jpg" alt="CJ제일제당" loading="lazy"></div>
-        <div class="rl"><img src="/img/samsung-display.jpg" alt="삼성디스플레이" loading="lazy"></div>
-        <div class="rl"><img src="/img/samsung-sds.jpg" alt="삼성SDS" loading="lazy"></div>
-        <div class="rl"><img src="/img/hanwha-aerospace.jpg" alt="한화에어로스페이스" loading="lazy"></div>
-        <div class="rl"><img src="/img/kcc.jpg" alt="KCC" loading="lazy"></div>
-        <div class="rl"><img src="/img/hyundai-dept.png" alt="현대백화점" loading="lazy"></div>
-        <div class="rl"><img src="/img/olive-young.jpg" alt="올리브영" loading="lazy"></div>
-        <div class="rl"><img src="/img/sk-academy.jpg" alt="SK academy" loading="lazy"></div>
-        <div class="rl"><img src="/img/sk-rent-a-car.jpg" alt="SK렌터카" loading="lazy"></div>
-        <div class="rl"><img src="/img/organon-korea.jpg" alt="한국오가논" loading="lazy"></div>
-        <div class="rl"><img src="/img/dongwon-farms.jpg" alt="동원팜스" loading="lazy"></div>
-        <div class="rl"><img src="/img/paris-croissant.jpg" alt="파리크라상" loading="lazy"></div>
-        <div class="rl"><img src="/img/ak-plaza.png" alt="AK PLAZA" loading="lazy"></div>
-        <div class="rl"><img src="/img/simmtech.jpg" alt="심텍" loading="lazy"></div>
+        <div class="rl"><img src="/img/ref/samsung-electronics.png" alt="삼성전자" loading="lazy" style="--w:92.2%"></div>
+        <div class="rl"><img src="/img/ref/posco-enc.png" alt="POSCO E&amp;C" loading="lazy" style="--w:56.5%"></div>
+        <div class="rl"><img src="/img/ref/gs-retail.png" alt="GS리테일" loading="lazy" style="--w:65.2%"></div>
+        <div class="rl"><img src="/img/ref/cj-cheiljedang.png" alt="CJ제일제당" loading="lazy" style="--w:53.9%"></div>
+        <div class="rl"><img src="/img/ref/samsung-display.png" alt="삼성디스플레이" loading="lazy" style="--w:98%"></div>
+        <div class="rl"><img src="/img/ref/samsung-sds.png" alt="삼성SDS" loading="lazy" style="--w:98%"></div>
+        <div class="rl"><img src="/img/ref/hanwha-aerospace.png" alt="한화에어로스페이스" loading="lazy" style="--w:98%"></div>
+        <div class="rl"><img src="/img/ref/kcc.png" alt="KCC" loading="lazy" style="--w:39.6%"></div>
+        <div class="rl"><img src="/img/ref/hyundai-dept.png" alt="현대백화점" loading="lazy" style="--w:63.1%"></div>
+        <div class="rl"><img src="/img/ref/olive-young.png" alt="올리브영" loading="lazy" style="--w:86.6%"></div>
+        <div class="rl"><img src="/img/ref/sk-academy.png" alt="SK academy" loading="lazy" style="--w:54.7%"></div>
+        <div class="rl"><img src="/img/ref/sk-rent-a-car.png" alt="SK렌터카" loading="lazy" style="--w:46.7%"></div>
+        <div class="rl"><img src="/img/ref/organon-korea.png" alt="한국오가논" loading="lazy" style="--w:89.7%"></div>
+        <div class="rl"><img src="/img/ref/dongwon-farms.png" alt="동원팜스" loading="lazy" style="--w:42%"></div>
+        <div class="rl"><img src="/img/ref/paris-croissant.png" alt="파리크라상" loading="lazy" style="--w:93.7%"></div>
+        <div class="rl"><img src="/img/ref/ak-plaza.png" alt="AK PLAZA" loading="lazy" style="--w:98%"></div>
+        <div class="rl"><img src="/img/ref/simmtech.png" alt="심텍" loading="lazy" style="--w:79.2%"></div>
       </div></div>
       <button class="rnav next" type="button" aria-label="다음 로고 보기">
         <svg viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
