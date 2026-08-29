@@ -355,10 +355,13 @@ header.solid .hd .ask:hover{background:#173763}
 .contact .btn.navy:hover{background:#A8E03A}
 footer{background:var(--dark-2);color:var(--on-dark-3);padding:40px 0;font-size:13px;font-weight:500;line-height:1.9;border-top:1px solid var(--line-d)}
 .fgrid{text-align:center}
-.fgrid strong{display:block;margin-bottom:12px}
-.fgrid p{margin-top:4px}
-.fslogan{margin-top:16px;padding-top:14px;border-top:1px solid var(--line-d);
-         display:inline-block;padding-left:26px;padding-right:26px;color:var(--on-dark-2);font-weight:600}
+.fgrid strong{display:block;margin-bottom:14px;color:#fff;font-size:15px;font-weight:800;letter-spacing:-.3px}
+.fgrid p + p{margin-top:6px}
+.fslogan{margin-top:18px;padding:14px 26px 0;border-top:1px solid var(--line-d);
+         display:inline-block;color:var(--on-dark-2);font-weight:600}
+/* 구분선 — 글자가 아니라 선으로 그려야 굵기와 간격이 일정하다 */
+.fgrid i{display:inline-block;width:1px;height:11px;margin:0 14px;vertical-align:-1px;
+         background:var(--on-dark-3);opacity:.5;font-style:normal;text-indent:-9999px;overflow:hidden}
 footer strong{color:#fff;font-size:15px;font-weight:800;letter-spacing:-.3px}
 footer a:hover{color:#C9D4E1}
 
@@ -717,9 +720,9 @@ footer a:hover{color:#C9D4E1}
 <footer>
   <div class="wrap fgrid">
     <strong>Open Negotiation Lab</strong>
-    <p>(주)열린협상연구소 ㅣ 대표이사 오명호 ㅣ 사업자등록번호 360-87-02920<br class="brk">
-       경기도 양평군 양평읍 남북로 53-5, 502호(로현빌딩)</p>
-    <p><a href="tel:070-7776-4564">070-7776-4564</a> ㅣ <a href="mailto:negomaster@opennegolab.com">negomaster@opennegolab.com</a></p>
+    <p>주식회사 열린협상연구소<i>|</i>대표자 : 오명호<i>|</i>사업자등록번호 : 360-87-02920</p>
+    <p>주소 : 경기도 양평군 양평읍 남북로 53-5, 502호(로현빌딩)</p>
+    <p>대표번호 : <a href="tel:070-7776-4564">070-7776-4564</a><i>|</i><a href="mailto:admin@opennegolab.com">admin@opennegolab.com</a></p>
     <p class="fslogan">오직 협상만 연구합니다</p>
   </div>
 </footer>
