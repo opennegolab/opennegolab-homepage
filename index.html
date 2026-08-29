@@ -167,16 +167,20 @@ header.solid .hd .ask:hover{background:#173763}
 .hero-in{position:relative;text-align:center}
 /* 두 줄을 같은 크기로 두고, 아랫줄에만 색을 흘린다.
    윗줄보다 아랫줄이 길어서 그 줄이 한 줄에 들어가는 크기를 상한으로 잡았다 */
-.hero h1{max-width:none;margin:0 auto;font-size:clamp(30px,5.1vw,62px);letter-spacing:-2.5px;line-height:1.22}
+/* 둘째 줄이 첫 줄보다 길다. 어떤 폭에서도 그 줄이 한 줄에 들어오도록
+   글자 크기를 화면 폭에 비례시키고(4.6vw), 상한도 그 비율 안에서 잡았다.
+   Pretendard 가 아직 안 떠서 대체 글꼴로 그려질 때까지 감안한 값이다 */
+.hero h1{max-width:none;margin:0 auto;font-size:clamp(28px,4.2vw,54px);letter-spacing:-2.1px;line-height:1.26}
 .hero h1 .grad{color:var(--lime-b)}
 @supports ((-webkit-background-clip:text) or (background-clip:text)){
   .hero h1 .grad{background:linear-gradient(96deg,var(--lime-b) 6%,#FFFFFF 48%,#8FB8E8 96%);
                  -webkit-background-clip:text;background-clip:text;color:transparent}
 }
 .hero .acts{justify-content:center}
-.hero .badge{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;font-weight:800;color:#DCE8F8;
-             letter-spacing:.14em;text-transform:uppercase;
-             background:rgba(255,255,255,.07);border:1px solid var(--line-d);border-radius:999px;padding:10px 20px;margin-bottom:30px}
+.hero .badge{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;font-weight:800;color:#C6D6EA;
+             letter-spacing:.13em;text-transform:uppercase;
+             background:rgba(255,255,255,.06);border:1px solid var(--line-d);border-radius:999px;padding:7px 15px;margin-bottom:26px}
+.hero .badge i{width:5px;height:5px}
 .hero .badge i{width:6px;height:6px;border-radius:50%;background:var(--lime-b);display:block;
                box-shadow:0 0 10px rgba(154,211,52,.9)}
 .hero .btn.fill{background:var(--lime-b);border-color:var(--lime-b);color:#0B1A2E;
@@ -399,7 +403,7 @@ footer a:hover{color:#C9D4E1}
       <a href="#reference">레퍼런스</a>
       <a href="#education">협상 교육</a>
       <a href="#model">8-Block 모델</a>
-      <a href="#simulator">협상 시뮬레이터</a>
+      <a href="#simulator">AI 시뮬레이터</a>
     </nav>
     <a class="ask" href="javascript:void(0)" onclick="openInquiry()">문의하기</a>
   </div>
@@ -417,7 +421,7 @@ footer a:hover{color:#C9D4E1}
     <h1>오직 협상만 연구합니다<br><span class="grad">비즈니스 협상 교육의 신세계를 경험하세요</span></h1>
     <div class="acts">
       <a class="btn fill" href="#education">협상 교육 보기</a>
-      <a class="btn ghost" href="#simulator">시뮬레이터 보기</a>
+      <a class="btn ghost" href="#simulator">AI 시뮬레이터 보기</a>
     </div>
   </div>
 </section>
@@ -583,7 +587,7 @@ footer a:hover{color:#C9D4E1}
          비워 두면 안내 박스가 자리를 지키고, 사이트는 깨지지 않습니다. -->
     <div class="demo">
       <div class="demoframe" data-yt="">
-        <div class="ph">［ 시뮬레이터 시연 영상 자리 ］<br>영상 주시면 이 자리에 넣습니다</div>
+        <div class="ph">［ AI 시뮬레이터 시연 영상 자리 ］<br>영상 주시면 이 자리에 넣습니다</div>
       </div>
     </div>
 
@@ -629,7 +633,7 @@ footer a:hover{color:#C9D4E1}
         <p>개인 훈련부터 기업 단위 도입까지, 필요에 맞춰 안내드립니다.</p>
       </div>
       <div class="acts">
-        <a class="btn lime" href="https://ai.opennegolab.com" target="_blank" rel="noopener">시뮬레이터 체험하기</a>
+        <a class="btn lime" href="https://ai.opennegolab.com" target="_blank" rel="noopener">AI 시뮬레이터 체험하기</a>
         <a class="btn onDark" href="javascript:void(0)" onclick="openInquiry('sim')">도입 문의하기</a>
       </div>
     </div>
@@ -642,7 +646,7 @@ footer a:hover{color:#C9D4E1}
     <div class="shead">
       <div class="eyebrow">Contact</div>
       <h2>우리 기업의 협상력이<br>곧 우리 기업의 미래입니다</h2>
-      <p class="lead">교육 도입도, 시뮬레이터 데모도 편하게 문의해 주세요. 영업일 기준 1~2일 안에 회신드립니다.</p>
+      <p class="lead">교육 도입도, AI 시뮬레이터 데모도 편하게 문의해 주세요. 영업일 기준 1~2일 안에 회신드립니다.</p>
     </div>
 
     <div class="acts" style="justify-content:center">
@@ -679,7 +683,7 @@ footer a:hover{color:#C9D4E1}
             <label>문의 구분 <em>*</em></label>
             <div class="ftype">
               <label><input type="radio" name="문의구분" value="협상 교육" checked>협상 교육</label>
-              <label><input type="radio" name="문의구분" value="협상 시뮬레이터">협상 시뮬레이터</label>
+              <label><input type="radio" name="문의구분" value="AI 시뮬레이터">AI 시뮬레이터</label>
               <label><input type="radio" name="문의구분" value="기타">기타</label>
             </div>
           </div>
@@ -823,7 +827,7 @@ footer a:hover{color:#C9D4E1}
     var m = document.getElementById('inquiryModal');
     m.classList.add('open');
     document.body.style.overflow = 'hidden';
-    var map = { edu:'협상 교육', sim:'협상 시뮬레이터' };
+    var map = { edu:'협상 교육', sim:'AI 시뮬레이터' };
     if (type) {
       var r = m.querySelector('input[name="문의구분"][value="' + (map[type] || type) + '"]');
       if (r) r.checked = true;
