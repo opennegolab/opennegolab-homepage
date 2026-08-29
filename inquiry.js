@@ -9,6 +9,7 @@
      SMTP_FROM                          (선택, 기본 SMTP_USER)
      INQUIRY_MAIL_TO                    (선택, 기본 negomaster@opennegolab.com)
    미설정이면 접수를 받지 않고, 방문자에게 이메일로 보내달라고 안내한다.
+   안내에 쓰는 주소는 대외 표기용 admin@ 이다 — 실제 수신함(INQUIRY_MAIL_TO)과 별개.
    ============================================================ */
 const nodemailer = require("nodemailer");
 
@@ -92,12 +93,12 @@ async function handle(req, res) {
 
   const ip = (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.socket.remoteAddress || "?";
   if (rateLimited(ip)) {
-    return done(429, { ok: false, message: "잠시 후 다시 시도해 주세요. 급하시면 negomaster@opennegolab.com 으로 보내주셔도 됩니다." });
+    return done(429, { ok: false, message: "잠시 후 다시 시도해 주세요. 급하시면 admin@opennegolab.com 으로 보내주셔도 됩니다." });
   }
 
   if (!configured()) {
     console.warn("문의 접수: SMTP 미설정 — SMTP_HOST/USER/PASS 환경변수를 넣어 주세요.");
-    return done(503, { ok: false, message: "지금은 접수가 어렵습니다. negomaster@opennegolab.com 으로 보내주시면 확인하겠습니다." });
+    return done(503, { ok: false, message: "지금은 접수가 어렵습니다. admin@opennegolab.com 으로 보내주시면 확인하겠습니다." });
   }
 
   const rows = [["문의 구분", kind], ["이름", name], ["회사명", company || "—"],
@@ -122,7 +123,7 @@ async function handle(req, res) {
     return done(200, { ok: true });
   } catch (e) {
     console.error("문의 메일 발송 실패:", e && e.message);
-    return done(502, { ok: false, message: "전송에 실패했습니다. negomaster@opennegolab.com 으로 보내주시면 확인하겠습니다." });
+    return done(502, { ok: false, message: "전송에 실패했습니다. admin@opennegolab.com 으로 보내주시면 확인하겠습니다." });
   }
 }
 

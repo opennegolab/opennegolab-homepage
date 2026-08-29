@@ -41,7 +41,7 @@ npm start
   | `SMTP_PASS` | 비밀번호 (필수) |
   | `SMTP_PORT` | 기본 465 |
   | `SMTP_FROM` | 보내는 사람. 기본은 `SMTP_USER` |
-  | `INQUIRY_MAIL_TO` | 받는 사람. 기본 `negomaster@opennegolab.com` |
+  | `INQUIRY_MAIL_TO` | 받는 사람(실제 수신함). 기본 `negomaster@opennegolab.com`<br>홈페이지에 표기하고 방문자에게 안내하는 주소는 `admin@opennegolab.com` 로 따로 관리 |
 
   넣지 않으면 사이트는 정상 동작하되, 문의 버튼을 누른 방문자에게
   "이메일로 보내달라"는 안내가 뜹니다.

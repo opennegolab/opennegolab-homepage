@@ -736,7 +736,7 @@ footer a:hover{color:#C9D4E1}
     </div>
     <div class="mbody">
       <!-- 우리 서버가 직접 받아 SMTP로 메일을 보낸다 (inquiry.js).
-           수신 주소는 환경변수 INQUIRY_MAIL_TO, 기본값 negomaster@opennegolab.com -->
+           수신 주소는 환경변수 INQUIRY_MAIL_TO. 방문자에게 안내하는 주소는 대외 표기용 admin@ 이다 -->
       <form id="inquiryForm" action="/api/inquiry" method="POST">
         <!-- 사람 눈에 안 보이는 칸. 자동 프로그램만 채우므로, 채워지면 서버가 조용히 버린다 -->
         <input type="text" name="website" tabindex="-1" autocomplete="off"
@@ -924,10 +924,10 @@ footer a:hover{color:#C9D4E1}
           form.reset(); closeInquiry();
           alert('문의가 정상적으로 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.');
         } else {
-          alert((r.d && r.d.message) || '전송에 실패했습니다. negomaster@opennegolab.com 으로 보내주셔도 됩니다.');
+          alert((r.d && r.d.message) || '전송에 실패했습니다. admin@opennegolab.com 으로 보내주셔도 됩니다.');
         }
       })
-      .catch(function(){ alert('네트워크 오류로 전송하지 못했습니다. negomaster@opennegolab.com 으로 보내주셔도 됩니다.'); })
+      .catch(function(){ alert('네트워크 오류로 전송하지 못했습니다. admin@opennegolab.com 으로 보내주셔도 됩니다.'); })
       .finally(function(){ btn.disabled = false; btn.textContent = orig; });
   });
 })();
