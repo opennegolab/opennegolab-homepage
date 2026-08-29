@@ -242,6 +242,18 @@ header.solid .hd .ask:hover{background:#173763}
 .wcard h3{letter-spacing:-.7px;margin-bottom:14px}
 .wcard p{font-size:14.5px;color:var(--ink-2);font-weight:500;line-height:1.75}
 
+/* 인사말 — 사진 옆에 쓰는 편지라 이 섹션만 왼쪽 정렬로 둔다.
+   사진은 배경을 웜톤으로 눌러 담은 컷아웃이라 이 배경 위에서만 자연스럽다 */
+.greet{display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);
+       gap:clamp(28px,5vw,72px);align-items:center;text-align:left}
+.greet-photo img{width:100%;height:auto;border-radius:18px}
+.greet-sign{margin-top:16px;text-align:center;font-size:14px;color:var(--ink-2);font-weight:600}
+.greet-sign strong{display:block;margin-top:4px;font-size:20px;color:var(--ink);font-weight:800;letter-spacing:-.5px}
+.greet-body .eyebrow{margin-bottom:18px}
+.greet-body h2{margin-bottom:22px}
+.greet-body p{font-size:clamp(15px,1.5vw,17px);color:var(--ink-2);font-weight:500;line-height:1.9}
+.greet-body p + p{margin-top:16px}
+
 /* 레퍼런스 */
 .refnum{display:flex;gap:clamp(28px,5vw,72px);flex-wrap:wrap;justify-content:center;text-align:center;margin-bottom:clamp(32px,4vw,48px)}
 .refnum div b{display:block;font-size:clamp(30px,3.8vw,48px);font-weight:800;letter-spacing:-2px;line-height:1.15;color:var(--navy)}
@@ -391,6 +403,8 @@ footer a:hover{color:#C9D4E1}
   .stats{grid-template-columns:repeat(2,1fr)}
   .stats > div:nth-child(3){border-left:0;padding-left:0}
   .videos,.feat,.programs{grid-template-columns:1fr}
+  .greet{grid-template-columns:1fr;text-align:center}
+  .greet-photo{max-width:320px;margin:0 auto}
   .blocks{grid-template-columns:repeat(2,1fr)}
   .why{grid-template-columns:1fr}
 }
@@ -464,6 +478,24 @@ footer a:hover{color:#C9D4E1}
         <div class="wnum">03</div>
         <h3>프로세스와 데이터로<br>완성한 협상 프레임워크</h3>
         <p>개인의 감각과 경험에 의존하던 협상을 분석하고 설계할 수 있는 체계로 전환합니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 인사말 ===================== -->
+<section id="greeting">
+  <div class="wrap rv">
+    <div class="greet">
+      <div class="greet-photo">
+        <img src="/img/portrait.jpg" alt="열린협상연구소 소장 오명호" loading="lazy">
+        <div class="greet-sign">열린협상연구소 소장 <strong>오명호</strong></div>
+      </div>
+      <div class="greet-body">
+        <div class="eyebrow">Greeting</div>
+        <h2>협상의 차이가<br>비즈니스의 결과를 바꿉니다</h2>
+        <p>기업의 중요한 순간에는 언제나 협상이 있습니다. 고객과의 거래, 파트너와의 계약, 조직 안의 이해관계 조율까지 협상의 결과는 기업의 성과로 이어집니다.</p>
+        <p>열린협상연구소는 지난 15년간 기업이 더 나은 협상을 할 수 있도록 연구하고 교육해 왔습니다. 앞으로도 축적된 전문성과 현장 경험을 바탕으로 기업의 협상 역량을 높이는 데 집중하겠습니다.</p>
       </div>
     </div>
   </div>
