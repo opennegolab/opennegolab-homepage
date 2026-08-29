@@ -148,11 +148,13 @@ header.solid .hd .ask:hover{background:#173763}
    filter:blur() 대신 radial-gradient 로 만든다. 큰 면에 blur 를 걸면
    매 프레임 다시 그려야 해서 저사양 기기에서 눈에 띄게 무거워진다 */
 .hero-orb{position:absolute;border-radius:50%;will-change:transform}
+/* 왼쪽은 반드시 푸른색이어야 한다 — 연두색 요소(교육 보기 버튼, 둘째 줄
+   그라디언트의 시작점)가 전부 왼쪽에 몰려 있어서, 연두 위에 연두가 겹친다 */
 .hero-orb.a{width:60vw;height:60vw;left:-14%;top:-24%;
-  background:radial-gradient(circle,rgba(154,211,52,.26),rgba(154,211,52,0) 62%);
+  background:radial-gradient(circle,rgba(62,124,204,.40),rgba(62,124,204,0) 64%);
   animation:driftA 20s ease-in-out infinite}
 .hero-orb.b{width:66vw;height:66vw;right:-18%;bottom:-30%;
-  background:radial-gradient(circle,rgba(62,124,204,.38),rgba(62,124,204,0) 64%);
+  background:radial-gradient(circle,rgba(154,211,52,.24),rgba(154,211,52,0) 62%);
   animation:driftB 26s ease-in-out infinite}
 @keyframes driftA{
   0%,100%{transform:translate(0,0)}
