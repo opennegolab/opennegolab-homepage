@@ -1,0 +1,34 @@
+﻿opennegolab.com DNS 스냅샷
+뜬 날짜 : 2026-08-29
+등록기관 : 닷네임코리아 (Dotname Korea Corp.)  dotname.co.kr
+도메인 등록 2015-04-05 / 만료 2027-04-05 / 최근 변경 2026-06-14
+
+Cloudflare 계정을 못 찾아 DNS 를 다른 곳으로 옮겨야 할 때,
+아래 내용을 그대로 다시 만들면 사이트와 메일이 그대로 살아난다.
+------------------------------------------------------------
+
+[opennegolab.com]
+  A      216.198.79.1
+  MX     kr1-aspmx1.worksmobile.com  (우선순위 10)   <- 회사 메일(네이버웍스). 이게 빠지면 메일이 끊긴다
+  MX     kr1-aspmx2.worksmobile.com  (우선순위 20)
+  NS     jasmine.ns.cloudflare.com
+  NS     miles.ns.cloudflare.com
+  TXT    cloudtype-space=@omh4564
+  TXT    v=spf1 include:spf.worksmobile.com ~all
+
+[www.opennegolab.com]   <- 홈페이지
+  A      34.8.247.175
+  CNAME  mrc4ptdr6dd51744.sel3.cloudtype.app
+
+[ai.opennegolab.com]   <- 협상 시뮬레이터
+  A      34.8.247.175
+  CNAME  mrc4ptdr6dd51744.sel3.cloudtype.app
+  * www 와 CNAME 목적지가 같다. 잘못된 게 아니다 — 클라우드타입이 접속한
+    도메인 이름을 보고 홈페이지와 시뮬레이터로 갈라 보낸다. 확인함
+
+------------------------------------------------------------
+되찾는 방법 (Cloudflare 를 못 쓰게 됐을 때)
+  1. 닷네임코리아(dotname.co.kr) 에 로그인한다 — 도메인 소유자 계정이다
+  2. 네임서버를 새 DNS 로 바꾼다 (새 Cloudflare 계정이든 다른 곳이든)
+  3. 위 레코드를 그대로 다시 넣는다
+  * 네임서버를 바꾸면 퍼지는 데 최대 하루 걸린다. 그동안 사이트가 끊길 수 있다
