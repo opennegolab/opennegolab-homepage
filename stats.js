@@ -16,9 +16,9 @@
      그 값으로 사람을 되짚을 수는 없고 날짜가 바뀌면 값도 달라진다.
 
    환경변수
-     DATABASE_URL    (선택) 없으면 메모리 모드
+     DATABASE_URL    (선택) 없으면 메모리 모드. 못 붙으면 그 이유를 화면에 띄운다
      STATS_PASSWORD  (필수) 이게 없으면 통계 화면 자체를 열지 않는다
-     STATS_USER      (선택) 기본 admin
+     STATS_SALT      (선택) 방문자 구분값에 섞는 소금. 없으면 기동할 때 새로 만든다
    ============================================================ */
 const crypto = require("crypto");
 
@@ -27,45 +27,90 @@ const KEEP_DAYS = 400;
 
 /* ---------- 저장소 ---------- */
 let pool = null;
-let ready = null;
+let connecting = null;
+let lastTry = 0;
+let note = "";                 /* 메모리 모드로 떨어졌을 때 그 이유. 화면에 그대로 보여 준다 */
 const memory = [];
 const MEM_MAX = 20000;
 
-function db() {
-  if (pool !== null) return pool;
-  const url = process.env.DATABASE_URL;
-  if (!url) { pool = false; return false; }
-  try {
-    const { Pool } = require("pg");
-    /* 클라우드타입 내부 주소는 인증서가 없다. 시뮬레이터(results-store.js)와 같은 조건 */
-    const noSsl = /localhost|127\.0\.0\.1|\.svc|sslmode=disable/.test(url);
-    pool = new Pool({ connectionString: url, max: 3, ...(noSsl ? {} : { ssl: { rejectUnauthorized: false } }) });
-    pool.on("error", e => console.error("통계 DB 연결 오류:", e && e.message));
-  } catch (e) {
-    console.error("통계: pg 를 불러오지 못해 메모리 모드로 둔다 —", e && e.message);
-    pool = false;
-  }
-  return pool;
+const TABLE = `
+  CREATE TABLE IF NOT EXISTS hp_hits (
+    id      BIGSERIAL PRIMARY KEY,
+    at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    kind    TEXT NOT NULL,
+    path    TEXT,
+    ref     TEXT,
+    device  TEXT,
+    visitor TEXT
+  )`;
+
+function makePool(useSsl) {
+  const { Pool } = require("pg");
+  const p = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    max: 3,
+    connectionTimeoutMillis: 8000,
+    ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+  });
+  p.on("error", e => console.error("통계 DB 풀 오류:", e && e.message));
+  return p;
 }
 
-function init() {
-  if (ready) return ready;
-  const p = db();
-  if (!p) { ready = Promise.resolve(false); return ready; }
-  ready = p.query(`
-    CREATE TABLE IF NOT EXISTS hp_hits (
-      id      BIGSERIAL PRIMARY KEY,
-      at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-      kind    TEXT NOT NULL,
-      path    TEXT,
-      ref     TEXT,
-      device  TEXT,
-      visitor TEXT
-    )`)
-    .then(() => p.query(`CREATE INDEX IF NOT EXISTS hp_hits_at_idx ON hp_hits (at)`))
-    .then(() => true)
-    .catch(e => { console.error("통계 표를 만들지 못했다:", e && e.message); return false; });
-  return ready;
+async function connect() {
+  const url = process.env.DATABASE_URL;
+  if (!url) { note = "DATABASE_URL 환경변수가 없습니다."; return null; }
+  try { require.resolve("pg"); }
+  catch { note = "pg 모듈이 없습니다. 설치 명령(npm install)이 실행됐는지 확인해 주세요."; return null; }
+
+  /* 클라우드타입 내부 DB 는 SSL 을 받지 않고, 외부 관리형 DB 는 대개 요구한다.
+     주소만 보고 맞히려다 틀리면 조용히 메모리 모드로 떨어져 원인을 찾기 어렵다.
+     그래서 한 번 해보고 안 되면 반대로 한 번 더 해본다 */
+  const guess = !/localhost|127\.0\.0\.1|@postgresql:|\.svc|sslmode=disable/i.test(url);
+  let last = "";
+  for (const useSsl of [guess, !guess]) {
+    let p;
+    try {
+      p = makePool(useSsl);
+      await p.query(TABLE);
+      await p.query(`CREATE INDEX IF NOT EXISTS hp_hits_at_idx ON hp_hits (at)`);
+      note = "";
+      console.log("통계: DB 연결 완료 (SSL " + (useSsl ? "사용" : "미사용") + ")");
+      return p;
+    } catch (e) {
+      last = (e && e.message) || String(e);
+      if (p) { try { await p.end(); } catch {} }
+    }
+  }
+  note = "DB에 연결하지 못했습니다 — " + last;
+  console.error("통계:", note);
+  return null;
+}
+
+/* 연결은 한 번만 시도하되, 실패했으면 1분 뒤에 다시 해본다.
+   서버가 뜰 때 DB 가 잠깐 늦게 준비되는 경우가 있는데, 그때 한 번 실패했다고
+   끝까지 메모리 모드로 남아 있으면 안 된다 */
+function store() {
+  if (pool) return Promise.resolve(pool);
+  if (connecting) return connecting;
+  if (Date.now() - lastTry < 60000) return Promise.resolve(null);
+  lastTry = Date.now();
+  connecting = connect().then(async p => {
+    pool = p;
+    connecting = null;
+    /* 연결되기 전에 메모리에 쌓인 게 있으면 옮겨 담는다 */
+    if (p && memory.length) {
+      const pending = memory.splice(0, memory.length);
+      for (const r of pending) {
+        try {
+          await p.query(`INSERT INTO hp_hits (at, kind, path, ref, device, visitor) VALUES ($1,$2,$3,$4,$5,$6)`,
+            [r.at, r.kind, r.path, r.ref, r.device, r.visitor]);
+        } catch (e) { /* 한 줄 못 옮겼다고 나머지를 포기할 일은 아니다 */ }
+      }
+      console.log("통계: 메모리에 있던 " + pending.length + "건을 DB로 옮겼다");
+    }
+    return p;
+  });
+  return connecting;
 }
 
 /* ---------- 들어온 요청에서 필요한 것만 뽑기 ---------- */
@@ -152,8 +197,8 @@ async function record(req, body) {
     visitor: visitorId(req, when),
   };
 
-  const p = db();
-  if (p && await init()) {
+  const p = await store();
+  if (p) {
     try {
       await p.query(
         `INSERT INTO hp_hits (at, kind, path, ref, device, visitor) VALUES ($1,$2,$3,$4,$5,$6)`,
@@ -172,17 +217,18 @@ async function record(req, body) {
    집계 SQL 을 따로 쓰면 두 모드의 숫자가 어긋날 수 있다. 규모가 작아서
    30일치를 가져와 세도 부담이 없다 */
 async function rowsSince(since) {
-  const p = db();
-  if (p && await init()) {
+  const p = await store();
+  if (p) {
     try {
       const r = await p.query(
         `SELECT at, kind, ref, device, visitor FROM hp_hits WHERE at >= $1 ORDER BY at`, [since]);
-      return { rows: r.rows, store: "db" };
+      return { rows: r.rows, mode: "db" };
     } catch (e) {
       console.error("통계 조회 실패:", e && e.message);
+      note = "DB에서 읽지 못했습니다 — " + (e && e.message);
     }
   }
-  return { rows: memory.filter(r => r.at >= since), store: "memory" };
+  return { rows: memory.filter(r => r.at >= since), mode: "memory" };
 }
 
 function countTop(rows, key, limit) {
@@ -207,7 +253,7 @@ function summarize(rows, days) {
 
 async function summary() {
   const since = new Date(Date.now() - 30 * 86400000);
-  const { rows, store } = await rowsSince(since);
+  const { rows, mode } = await rowsSince(since);
   const views = rows.filter(r => r.kind === "view");
 
   /* 최근 30일 일별 — 하루도 빠짐없이 채운다. 방문이 없던 날이 빠지면 그래프가 거짓말을 한다 */
@@ -227,7 +273,8 @@ async function summary() {
   const 어제행 = rows.filter(r => today(new Date(r.at)) === 어제);
 
   return {
-    저장방식: store,
+    저장방식: mode,
+    저장이유: mode === "db" ? "" : note,
     기준시각: new Date().toISOString(),
     오늘: summarize(rows, 1),
     어제: {
@@ -247,8 +294,8 @@ async function summary() {
 
 /* ---------- 오래된 기록 정리 ---------- */
 async function prune() {
-  const p = db();
-  if (!p || !(await init())) return;
+  const p = await store();
+  if (!p) return;
   try { await p.query(`DELETE FROM hp_hits WHERE at < now() - interval '${KEEP_DAYS} days'`); }
   catch (e) { console.error("통계 정리 실패:", e && e.message); }
 }

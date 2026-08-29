@@ -37,6 +37,9 @@ main{padding:clamp(26px,3.6vw,40px) 0 72px}
 .warn{background:#FFF6E5;border:1px solid #F0DCB0;color:#7A5B14;border-radius:12px;
       padding:14px 18px;font-size:14px;line-height:1.65;margin-bottom:22px}
 .warn b{color:#5C4310}
+/* 왜 메모리 모드인지 — 서버가 알려 준 그대로 보여 준다. 추측하지 않게 */
+.warn .why{display:inline-block;margin-top:8px;font-size:13px;color:#8A6D2B;
+           font-family:ui-monospace,SFMono-Regular,Consolas,monospace;word-break:break-all}
 
 h2{font-size:14px;font-weight:800;color:var(--ink-3);letter-spacing:.06em;
    margin:34px 0 12px;text-transform:uppercase}
@@ -190,9 +193,10 @@ function ranking(title, rows, unit){
 function render(d){
   var html = '';
   if (d.저장방식 === 'memory') {
-    html += '<div class="warn"><b>임시 저장 상태입니다.</b><br>' +
-            'DATABASE_URL 환경변수가 없어 기록이 서버 메모리에만 남습니다. ' +
-            '재배포하거나 서버가 다시 뜨면 지금까지의 숫자가 모두 사라집니다.</div>';
+    html += '<div class="warn"><b>임시 저장 상태입니다.</b> ' +
+            '기록이 서버 메모리에만 남아, 재배포하면 지금까지의 숫자가 사라집니다.' +
+            (d.저장이유 ? '<br><span class="why">원인 : ' + esc(d.저장이유) + '</span>' : '') +
+            '</div>';
   }
   html += cards(d);
   html += chart(d.일별);
