@@ -405,6 +405,10 @@ footer{background:var(--dark-2);color:var(--on-dark-3);padding:40px 0;font-size:
          background:var(--on-dark-3);opacity:.5;font-style:normal;text-indent:-9999px;overflow:hidden}
 footer strong{color:#fff;font-size:15px;font-weight:800;letter-spacing:-.3px}
 footer a:hover{color:#C9D4E1}
+/* 개인정보처리방침은 다른 안내와 구분되게 표시해야 한다 (개인정보 보호법 시행령).
+   같은 줄의 주소·연락처보다 굵고 밝게 둬서 눈에 먼저 들어오게 한다 */
+.fprivacy{font-weight:700;color:var(--on-dark-2)}
+.fprivacy:hover{color:#fff}
 
 /* 문의 모달 */
 .modal-bg{position:fixed;inset:0;background:rgba(16,22,30,.55);backdrop-filter:blur(4px);z-index:100;
@@ -772,7 +776,7 @@ footer a:hover{color:#C9D4E1}
   <div class="wrap fgrid">
     <strong>Open Negotiation Lab</strong>
     <p>주식회사 열린협상연구소<i>|</i>대표자 : 오명호<i>|</i>사업자등록번호 : 360-87-02920</p>
-    <p>주소 : 경기도 양평군 양평읍 남북로 53-5, 502호(로현빌딩)<i>|</i><a href="/privacy">개인정보처리방침</a></p>
+    <p>주소 : 경기도 양평군 양평읍 남북로 53-5, 502호(로현빌딩)<i>|</i><a class="fprivacy" href="/privacy">개인정보처리방침</a></p>
     <p>대표번호 : <a href="tel:070-7776-4564">070-7776-4564</a><i>|</i><a href="mailto:admin@opennegolab.com">admin@opennegolab.com</a></p>
     <p class="fslogan">오직 협상만 연구합니다</p>
   </div>
