@@ -10,6 +10,8 @@ www.opennegolab.com 에 올라가는 정적 사이트입니다.
 | `grade1-learning.html` | 초등 1학년 공부방 (별도 페이지, `/grade1-learning.html`) |
 | `baeumteo-icon.png` `baeumteo-og.png` | 위 페이지가 쓰는 이미지 |
 | `privacy.html` | 개인정보처리방침 (`/privacy` 로 열립니다) |
+| `stats.html` `stats.js` | 방문 통계 화면과 집계 (`/stats`) |
+| `hit.js` | 방문 기록을 서버로 보내는 조각. 모든 페이지가 불러갑니다 |
 | `server.js` | 이 폴더를 그대로 내보내는 정적 서버 + 문의 접수 라우트 |
 | `inquiry.js` | 문의 폼 내용을 SMTP로 메일 발송 |
 | `package.json` | 의존성(nodemailer)과 `npm start` 정의 |
@@ -74,12 +76,39 @@ Google Analytics 로 아래 세 가지를 따로 보냅니다. GA4 화면에서
 `simulator_click` 에는 `link_text` 가 함께 담깁니다. 이 값을 보고서에서
 쪼개 보려면 GA4 의 **관리 → 맞춤 정의** 에서 맞춤 측정기준으로 등록해야 합니다.
 
+## 방문 통계 보기 — `/stats`
+
+GA4 는 화면이 복잡해서, 매일 열어 볼 용도로 따로 만든 화면입니다.
+`https://www.opennegolab.com/stats` 로 들어가 비밀번호를 넣으면 됩니다.
+한 번 넣으면 30일 동안 다시 묻지 않습니다.
+
+보이는 것 — 오늘 / 최근 7일 / 최근 30일의 방문자·조회수·문의 접수·시뮬레이터 클릭,
+문의 전환율, 30일 방문자 추이 그래프, 유입 경로, 기기 종류.
+
+### 환경변수
+
+| 이름 | 설명 |
+|---|---|
+| `STATS_PASSWORD` | **필수.** 없으면 통계 화면이 열리지 않습니다 |
+| `DATABASE_URL` | 시뮬레이터가 쓰는 그 PostgreSQL 주소를 그대로 넣습니다.<br>**넣지 않으면 기록이 메모리에만 남아 재배포할 때 전부 사라집니다** (화면 위에 경고가 뜹니다) |
+| `STATS_USER` | 지금은 쓰지 않습니다 (비밀번호만 물어봅니다) |
+| `STATS_SALT` | 선택. 방문자를 구분하는 값에 섞는 소금.<br>비워 두면 서버가 뜰 때마다 새로 만들어져, 재시작한 날의 순방문자가 다시 세어집니다 |
+
+### 개인정보
+
+IP 주소는 저장하지 않습니다. 날짜·IP·브라우저를 한 덩어리로 해시해 16자만 남기므로
+같은 사람이 하루에 몇 번 왔는지는 셀 수 있지만 되짚을 수는 없고, 날짜가 바뀌면 값도 바뀝니다.
+검색엔진 수집기는 방문자에서 제외하고, 기록은 400일 뒤 자동으로 지웁니다.
+
+`opennegolab.com` 에서만 기록합니다 — 로컬이나 미리보기 주소에서 시험한 것은 섞이지 않습니다.
+
 ## 연결된 것들
 
 | 무엇 | 어디서 관리 |
 |---|---|
 | 문의 폼 | 우리 서버가 직접 받아 SMTP로 발송 (`inquiry.js`). 외부 서비스 안 씀 |
 | 방문 통계 | Google Analytics `G-Z0XNVJ5PRD`, 네이버 애널리틱스 `4429ba2e580cf`<br>`opennegolab.com` 에서만 켜집니다. 로컬·미리보기 주소에서는 기록되지 않습니다 |
+| 자체 방문 통계 | `/stats` (비밀번호 필요). 기록은 시뮬레이터와 같은 PostgreSQL 에 `hp_hits` 표로 |
 | DNS | Cloudflare (`opennegolab.com`) |
 | 협상 시뮬레이터 | 별도 저장소 `opennegolab/8-block-simulator` (Cloudtype 별도 서비스) |
 

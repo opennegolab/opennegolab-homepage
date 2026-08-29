@@ -11,6 +11,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "nodemailer": "^7.0.5"
+    "nodemailer": "^7.0.5",
+    "pg": "^8.13.1"
   }
 }

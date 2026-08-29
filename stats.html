@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>방문 통계 | 열린협상연구소</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" as="style" crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+<style>
+:root{
+  --ink:#1A1D21; --ink-2:#5A6472; --ink-3:#8A94A3;
+  --navy:#1E4476; --lime:#7CB518;
+  --warm:#FAF9F6; --line:#E5E2DB;
+  --dark-2:#0A1526;
+}
+*,*:before,*:after{box-sizing:border-box}
+body{margin:0;background:var(--warm);color:var(--ink);
+     font-family:Pretendard,"Pretendard Variable",-apple-system,BlinkMacSystemFont,"Malgun Gothic","맑은 고딕",sans-serif;
+     -webkit-font-smoothing:antialiased}
+.wrap{width:min(1080px,92%);margin:0 auto}
+a{color:inherit}
+
+header{background:#fff;border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px;
+             min-height:74px;flex-wrap:wrap;padding:12px 0}
+h1{font-size:20px;font-weight:800;letter-spacing:-.7px;color:var(--navy);margin:0}
+h1 span{display:block;font-size:12.5px;font-weight:600;color:var(--ink-3);letter-spacing:0;margin-top:3px}
+.tools{display:flex;align-items:center;gap:10px}
+.btn{font-size:13.5px;font-weight:700;color:var(--ink-2);text-decoration:none;background:#fff;
+     border:1px solid var(--line);border-radius:999px;padding:9px 16px;cursor:pointer;transition:.18s}
+.btn:hover{border-color:var(--navy);color:var(--navy)}
+
+main{padding:clamp(26px,3.6vw,40px) 0 72px}
+.warn{background:#FFF6E5;border:1px solid #F0DCB0;color:#7A5B14;border-radius:12px;
+      padding:14px 18px;font-size:14px;line-height:1.65;margin-bottom:22px}
+.warn b{color:#5C4310}
+
+h2{font-size:14px;font-weight:800;color:var(--ink-3);letter-spacing:.06em;
+   margin:34px 0 12px;text-transform:uppercase}
+h2:first-of-type{margin-top:0}
+
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 20px 18px}
+.card .k{font-size:12.5px;font-weight:700;color:var(--ink-3);margin-bottom:8px}
+.card .v{font-size:clamp(26px,3.2vw,34px);font-weight:800;letter-spacing:-1.4px;color:var(--navy);
+         line-height:1.1;font-variant-numeric:tabular-nums}
+.card .s{font-size:12.5px;color:var(--ink-3);margin-top:7px;font-variant-numeric:tabular-nums}
+.card.hi .v{color:var(--lime)}
+
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 24px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* 일별 막대 — 하루도 빠뜨리지 않고 30칸을 그린다 */
+.bars{display:flex;align-items:flex-end;gap:3px;height:150px;margin-top:6px}
+.bars div{flex:1;background:linear-gradient(180deg,#2C5EA0,#1E4476);border-radius:3px 3px 0 0;
+          min-height:2px;position:relative;transition:.18s}
+.bars div.zero{background:var(--line)}
+.bars div:hover{filter:brightness(1.25)}
+.bars div span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:6px;
+               background:var(--dark-2);color:#fff;font-size:11.5px;font-weight:700;white-space:nowrap;
+               padding:5px 9px;border-radius:7px;opacity:0;pointer-events:none;transition:.15s}
+.bars div:hover span{opacity:1}
+.axis{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-3);margin-top:9px}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{padding:10px 4px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:12.5px;font-weight:700;color:var(--ink-3)}
+td.n{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.barbg{position:relative}
+.barbg i{position:absolute;left:0;top:50%;transform:translateY(-50%);height:22px;
+         background:#EDF2F9;border-radius:5px;z-index:0}
+.barbg span{position:relative;z-index:1}
+.empty{color:var(--ink-3);font-size:14px;padding:18px 0;text-align:center}
+
+/* 로그인 */
+.login{max-width:380px;margin:8vh auto 0;background:#fff;border:1px solid var(--line);
+       border-radius:18px;padding:34px 32px 30px;text-align:center}
+.login h3{margin:0 0 6px;font-size:19px;font-weight:800;letter-spacing:-.6px;color:var(--navy)}
+.login p{margin:0 0 22px;font-size:13.5px;color:var(--ink-3);line-height:1.6}
+.login input{width:100%;font:inherit;font-size:15px;padding:13px 16px;border:1px solid var(--line);
+             border-radius:11px;background:var(--warm);color:var(--ink);text-align:center}
+.login input:focus{outline:none;border-color:var(--navy);background:#fff}
+.login button{width:100%;margin-top:10px;font:inherit;font-size:15px;font-weight:700;color:#fff;
+              background:var(--navy);border:0;border-radius:11px;padding:13px;cursor:pointer;transition:.18s}
+.login button:hover{background:#173659}
+.login button:disabled{opacity:.55;cursor:default}
+.login .err{margin:14px 0 0;font-size:13.5px;color:#C0392B;font-weight:600;min-height:1em}
+
+footer{text-align:center;color:var(--ink-3);font-size:12.5px;padding:0 0 40px;line-height:1.8}
+
+@media(max-width:820px){
+  .cards{grid-template-columns:repeat(2,1fr)}
+  .grid2{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+  .bars{height:120px;gap:2px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>방문 통계<span id="asof">불러오는 중…</span></h1>
+    <div class="tools" id="tools" hidden>
+      <button class="btn" id="reload" type="button">새로고침</button>
+      <button class="btn" id="logout" type="button">로그아웃</button>
+      <a class="btn" href="/">홈페이지 보기</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap" id="app">
+    <p class="empty">불러오는 중…</p>
+  </div>
+</main>
+
+<footer>
+  방문 기록은 개인을 식별하지 않습니다 · IP 주소는 저장하지 않습니다
+</footer>
+
+<script>
+var N = function(n){ return (n || 0).toLocaleString('ko-KR'); };
+var esc = function(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+
+function pct(a, b){ return b ? Math.round(a / b * 1000) / 10 : 0; }
+
+function cards(d){
+  var 오늘 = d.오늘, 어제 = d.어제, w = d.최근7일, m = d.최근30일;
+  return '' +
+  '<h2>오늘</h2><div class="cards">' +
+    card('방문자', N(오늘.방문자), '어제 ' + N(어제.방문자) + '명') +
+    card('조회수', N(오늘.조회수), '어제 ' + N(어제.조회수) + '회') +
+    card('문의 접수', N(오늘.문의접수), '창 연 횟수 ' + N(오늘.문의창) + '회', true) +
+    card('시뮬레이터 클릭', N(오늘.시뮬레이터), '어제 ' + N(어제.시뮬레이터) + '회') +
+  '</div>' +
+  '<h2>최근 7일</h2><div class="cards">' +
+    card('방문자', N(w.방문자), N(w.조회수) + '회 조회') +
+    card('문의 접수', N(w.문의접수), '창 연 횟수 ' + N(w.문의창) + '회', true) +
+    card('문의 전환율', w.방문자 ? pct(w.문의접수, w.방문자) + '%' : '—', '방문자 대비 접수') +
+    card('시뮬레이터 클릭', N(w.시뮬레이터), w.방문자 ? pct(w.시뮬레이터, w.방문자) + '% 가 눌렀습니다' : '') +
+  '</div>' +
+  '<h2>최근 30일</h2><div class="cards">' +
+    card('방문자', N(m.방문자), N(m.조회수) + '회 조회') +
+    card('문의 접수', N(m.문의접수), '창 연 횟수 ' + N(m.문의창) + '회', true) +
+    card('문의 전환율', m.방문자 ? pct(m.문의접수, m.방문자) + '%' : '—', '방문자 대비 접수') +
+    card('시뮬레이터 클릭', N(m.시뮬레이터), m.방문자 ? pct(m.시뮬레이터, m.방문자) + '% 가 눌렀습니다' : '') +
+  '</div>';
+}
+
+function card(k, v, s, hi){
+  return '<div class="card' + (hi ? ' hi' : '') + '"><div class="k">' + k + '</div>' +
+         '<div class="v">' + v + '</div>' + (s ? '<div class="s">' + s + '</div>' : '') + '</div>';
+}
+
+function chart(daily){
+  var max = Math.max.apply(null, daily.map(function(d){ return d.방문자; }).concat([1]));
+  var bars = daily.map(function(d){
+    var h = d.방문자 ? Math.max(4, d.방문자 / max * 100) : 2;
+    var md = d.날짜.slice(5).replace('-', '월 ') + '일';
+    return '<div class="' + (d.방문자 ? '' : 'zero') + '" style="height:' + h + '%">' +
+           '<span>' + md + ' · ' + N(d.방문자) + '명</span></div>';
+  }).join('');
+  return '<h2>최근 30일 방문자 추이</h2><div class="panel">' +
+         '<div class="bars">' + bars + '</div>' +
+         '<div class="axis"><span>' + daily[0].날짜.slice(5).replace('-', '월 ') + '일</span>' +
+         '<span>오늘</span></div></div>';
+}
+
+function ranking(title, rows, unit){
+  if (!rows.length) return '<div class="panel"><h2 style="margin-top:0">' + title + '</h2>' +
+                           '<p class="empty">아직 기록이 없습니다</p></div>';
+  var total = rows.reduce(function(a, b){ return a + b.n; }, 0);
+  var body = rows.map(function(r){
+    var p = pct(r.n, total);
+    return '<tr><td class="barbg"><i style="width:' + p + '%"></i>' +
+           '<span>' + esc(r.name) + '</span></td>' +
+           '<td class="n">' + N(r.n) + unit + '</td>' +
+           '<td class="n" style="color:var(--ink-3);font-weight:600">' + p + '%</td></tr>';
+  }).join('');
+  return '<div class="panel"><h2 style="margin-top:0">' + title + '</h2><table>' +
+         '<tr><th>구분</th><th class="n">횟수</th><th class="n">비중</th></tr>' + body + '</table></div>';
+}
+
+function render(d){
+  var html = '';
+  if (d.저장방식 === 'memory') {
+    html += '<div class="warn"><b>임시 저장 상태입니다.</b><br>' +
+            'DATABASE_URL 환경변수가 없어 기록이 서버 메모리에만 남습니다. ' +
+            '재배포하거나 서버가 다시 뜨면 지금까지의 숫자가 모두 사라집니다.</div>';
+  }
+  html += cards(d);
+  html += chart(d.일별);
+  html += '<h2>어디서 들어왔나</h2><div class="grid2">' +
+          ranking('유입 경로', d.유입경로, '회') +
+          ranking('기기', d.기기, '회') + '</div>';
+  document.getElementById('app').innerHTML = html;
+
+  var t = new Date(d.기준시각);
+  document.getElementById('asof').textContent =
+    t.toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }) + ' 기준' +
+    (d.저장방식 === 'db' ? '' : ' · 임시 저장');
+}
+
+/* ---------- 로그인 ---------- */
+function showLogin(msg){
+  document.getElementById('tools').hidden = true;
+  document.getElementById('asof').textContent = '';
+  document.getElementById('app').innerHTML =
+    '<div class="login"><h3>방문 통계</h3>' +
+    '<p>비밀번호를 넣어 주세요.<br>한 번 넣으면 30일 동안 다시 묻지 않습니다.</p>' +
+    '<form id="lf"><input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password" required>' +
+    '<button type="submit">들어가기</button>' +
+    '<p class="err" id="lerr">' + (msg || '') + '</p></form></div>';
+
+  document.getElementById('pw').focus();
+  document.getElementById('lf').addEventListener('submit', function(e){
+    e.preventDefault();
+    var btn = e.target.querySelector('button');
+    var err = document.getElementById('lerr');
+    btn.disabled = true; btn.textContent = '확인 중…';
+    err.textContent = '';
+    fetch('/api/stats-login', {
+      method: 'POST', cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: document.getElementById('pw').value })
+    })
+      .then(function(r){ return r.json().catch(function(){ return {}; }); })
+      .then(function(d){
+        if (d.ok) { load(); return; }
+        err.textContent = d.message || '들어가지 못했습니다.';
+        btn.disabled = false; btn.textContent = '들어가기';
+        document.getElementById('pw').select();
+      })
+      .catch(function(){
+        err.textContent = '연결하지 못했습니다.';
+        btn.disabled = false; btn.textContent = '들어가기';
+      });
+  });
+}
+
+function load(){
+  document.getElementById('app').innerHTML = '<p class="empty">불러오는 중…</p>';
+  fetch('/api/stats', { cache: 'no-store' })
+    .then(function(r){
+      if (r.status === 401) { showLogin(); return null; }
+      if (r.status === 503) {
+        document.getElementById('app').innerHTML =
+          '<div class="warn"><b>아직 설정이 끝나지 않았습니다.</b><br>' +
+          '클라우드타입 환경변수에 STATS_PASSWORD 를 넣고 재배포해 주세요.</div>';
+        return null;
+      }
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    })
+    .then(function(d){
+      if (!d) return;
+      document.getElementById('tools').hidden = false;
+      render(d);
+    })
+    .catch(function(){
+      document.getElementById('app').innerHTML =
+        '<p class="empty">통계를 불러오지 못했습니다. 잠시 뒤 새로고침을 눌러 보세요.</p>';
+    });
+}
+
+document.getElementById('reload').addEventListener('click', load);
+document.getElementById('logout').addEventListener('click', function(){
+  fetch('/api/stats-logout', { method: 'GET', cache: 'no-store' })
+    .then(function(){ showLogin('로그아웃했습니다.'); });
+});
+load();
+</script>
+
+</body>
+</html>
