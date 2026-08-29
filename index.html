@@ -201,6 +201,15 @@ header.solid .hd .ask:hover{background:#173763}
 .shead.only{margin-bottom:0}   /* 아래에 아무것도 없는 섹션 */
 .shead .tm{margin-left:auto;margin-right:auto}
 
+/* 여덟 블록 — 시뮬레이터의 실제 블록명을 그대로 쓴다 */
+.blocks{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+        border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-top:clamp(30px,3.6vw,46px)}
+.blk{background:#fff;padding:30px 20px;text-align:center;transition:background .2s ease}
+.blk:hover{background:#FBFAF7}
+.blk b{display:block;font-size:11.5px;font-weight:800;color:var(--lime);letter-spacing:.14em;margin-bottom:14px}
+.blk h4{font-size:18px;font-weight:700;letter-spacing:-.5px;color:var(--navy);line-height:1.35}
+.blk span{display:block;margin-top:7px;font-size:12.5px;color:var(--ink-3);font-weight:600}
+
 /* 교육 과정 — 기존 홈페이지의 커리큘럼 카드를 새 톤으로 옮겼다 */
 .programs{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:left}
 .pcard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:32px 30px;transition:.22s ease}
@@ -376,6 +385,7 @@ footer a:hover{color:#C9D4E1}
   .stats > div:nth-child(3){border-left:0;padding-left:0}
   .rl{flex-basis:33.333%}
   .videos,.feat,.programs{grid-template-columns:1fr}
+  .blocks{grid-template-columns:repeat(2,1fr)}
   .why{grid-template-columns:1fr}
 }
 @media(max-width:620px){
@@ -554,13 +564,23 @@ footer a:hover{color:#C9D4E1}
 <!-- ===================== 8-BNM ===================== -->
 <section id="model" class="model">
   <div class="wrap rv">
-    <div class="shead only">
+    <div class="shead">
       <div class="eyebrow">Our Framework</div>
       <h2>8-Block Negotiation Model</h2>
       <p class="lead">복잡한 협상을 8단계의 체계적인 프로세스로 구조화한 협상 프레임워크입니다.<br class="brk">무엇을 분석하고 어떻게 전략을 설계할지 명확해져, 협상을 보다 체계적이고 일관되게 준비하고 실행할 수 있습니다.</p>
       <div class="tm">8-Block Negotiation Model&trade; · 상표 등록 제 40-2458489 호</div>
     </div>
 
+    <div class="blocks">
+      <div class="blk"><b>01</b><h4>현황분석</h4><span>Situation Analysis</span></div>
+      <div class="blk"><b>02</b><h4>목표설정</h4><span>Goal Setting</span></div>
+      <div class="blk"><b>03</b><h4>ZOPA설정</h4><span>ZOPA Setting</span></div>
+      <div class="blk"><b>04</b><h4>BATNA검토</h4><span>BATNA Review</span></div>
+      <div class="blk"><b>05</b><h4>욕구탐색</h4><span>Interest Exploration</span></div>
+      <div class="blk"><b>06</b><h4>창조적대안</h4><span>Creative Options</span></div>
+      <div class="blk"><b>07</b><h4>ZOPA최적화</h4><span>ZOPA Optimization</span></div>
+      <div class="blk"><b>08</b><h4>최종안도출</h4><span>Final Proposal</span></div>
+    </div>
   </div>
 </section>
 
