@@ -186,7 +186,8 @@ header.solid .hd .ask:hover{background:#173763}
 /* 히어로 버튼은 본문 버튼보다 한 단계 작게 — 큰 헤드라인과 나란히 두면
    같은 크기로도 과하게 보인다 */
 .hero .btn{font-size:13.5px;padding:11px 20px}
-.hero .acts{margin-top:clamp(56px,8.5vw,108px)}
+/* 버튼 높이(46px)만큼 더 띄운다. clamp 를 그대로 감싸서 어느 화면 폭에서든 딱 그만큼 벌어진다 */
+.hero .acts{margin-top:calc(clamp(56px,8.5vw,108px) + 46px)}
 .hero .btn.fill{background:var(--lime-b);border-color:var(--lime-b);color:#0B1A2E;
                 box-shadow:0 8px 26px rgba(154,211,52,.24)}
 .hero .btn.fill:hover{background:#A8E03A;border-color:#A8E03A}
@@ -204,8 +205,23 @@ header.solid .hd .ask:hover{background:#173763}
 /* 여덟 블록 — 시뮬레이터의 실제 블록명을 그대로 쓴다 */
 .blocks{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:clamp(30px,3.6vw,46px)}
 .blk{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px 18px 24px;
-     text-align:center;transition:.22s ease}
+     text-align:center;transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
 .blk:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(26,29,33,.08);border-color:#D8DEE8}
+
+/* 여덟 블록이 살아 움직이는 느낌 — 자리는 그대로 두고 아주 조금씩 떠오른다.
+   폭·주기·시작점을 블록마다 어긋나게 줘서 줄 맞춰 출렁이지 않고 제각각 숨쉬듯 움직인다.
+   transform 이 아니라 translate 속성을 쓰는 이유 : :hover 의 transform 과 서로
+   덮어쓰지 않고 겹쳐 적용된다. 마우스를 올리면 떠오른 자리에서 한 번 더 들린다 */
+@keyframes bfloat{0%,100%{translate:0 0} 50%{translate:0 calc(var(--amp) * -1)}}
+.blk{animation:bfloat var(--dur) ease-in-out var(--dl) infinite}
+.blk:nth-child(1){--amp:6px;--dur:6.2s;--dl:-0.4s}
+.blk:nth-child(2){--amp:8px;--dur:7.1s;--dl:-2.6s}
+.blk:nth-child(3){--amp:5px;--dur:5.8s;--dl:-1.1s}
+.blk:nth-child(4){--amp:7px;--dur:6.7s;--dl:-3.4s}
+.blk:nth-child(5){--amp:6px;--dur:7.4s;--dl:-1.9s}
+.blk:nth-child(6){--amp:8px;--dur:6.0s;--dl:-3.1s}
+.blk:nth-child(7){--amp:5px;--dur:6.9s;--dl:-0.7s}
+.blk:nth-child(8){--amp:7px;--dur:7.7s;--dl:-2.2s}
 .bico{display:flex;align-items:center;justify-content:center;width:46px;height:46px;margin:0 auto 14px;
       border-radius:14px;font-size:21px;line-height:1;background:linear-gradient(150deg,#F2F6FC,#EEF6DC);
       border:1px solid var(--line)}
@@ -256,7 +272,8 @@ header.solid .hd .ask:hover{background:#173763}
 .greet-body p + p{margin-top:16px}
 
 /* 레퍼런스 */
-.refnum{display:flex;gap:clamp(28px,5vw,72px);flex-wrap:wrap;justify-content:center;text-align:center;margin-bottom:clamp(32px,4vw,48px)}
+.refnum{display:flex;gap:clamp(28px,5vw,72px);flex-wrap:wrap;justify-content:center;text-align:center;
+        margin-bottom:calc(clamp(32px,4vw,48px) + 40px)}   /* 숫자와 로고 줄 사이를 넉넉히 */
 .refnum div b{display:block;font-size:clamp(30px,3.8vw,48px);font-weight:800;letter-spacing:-2px;line-height:1.15;color:var(--navy)}
 @supports ((-webkit-background-clip:text) or (background-clip:text)){
   .refnum div b{background:linear-gradient(160deg,var(--navy),var(--lime));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -278,6 +295,16 @@ header.solid .hd .ask:hover{background:#173763}
 /* 로고마다 --w 가 다르다 — 원본 비율이 제각각이라 폭을 따로 줘야 보이는 세로 크기가 맞는다 */
 .rl img{width:var(--w,80%);height:auto;max-width:100%;filter:grayscale(1);opacity:.68;transition:filter .22s,opacity .22s}
 .rl:hover img{filter:none;opacity:1}
+
+/* 로고가 끊김 없이 흐르는 모드 — 넘기기 버튼·점은 필요 없으니 감춘다.
+   줄을 한 벌 더 복제해 두고 딱 한 벌 너비만큼 밀었다가 처음으로 되돌린다.
+   되돌아온 화면이 직전 화면과 똑같아서 이어붙인 자리가 눈에 띄지 않는다 */
+.refcar.flowing .rnav{display:none}
+.refcar.flowing + .rdots{display:none}
+.refcar.flowing .rrow{width:max-content;transition:none;
+                      animation:refflow var(--flow-dur,60s) linear infinite}
+.refcar.flowing:hover .rrow{animation-play-state:paused}   /* 마우스를 올리면 멈춰서 볼 수 있다 */
+@keyframes refflow{from{transform:translateX(0)} to{transform:translateX(var(--flow-dist,0))}}
 .rnav{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#fff;
       color:#404A58;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.18s}
 .rnav svg{width:18px;height:18px}
@@ -530,7 +557,7 @@ footer a:hover{color:#C9D4E1}
          --w 값은 "넓이를 비슷하게 맞추되 세로 52px 을 넘지 않게" 계산한
          것입니다. 새 로고를 넣을 때는 여백을 잘라낸 뒤 가로세로비를 재서
          같은 규칙으로 값을 뽑아야 크기가 어울립니다. -->
-    <div class="refcar" data-per="4,3,2">
+    <div class="refcar flow" data-per="4,3,2">
       <button class="rnav prev" type="button" aria-label="이전 로고 보기">
         <svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
@@ -809,7 +836,52 @@ footer a:hover{color:#C9D4E1}
   /* ---------- 캐러셀 : 로고·영상 공용 ----------
      한 화면에 보이는 개수는 data-per="넓은화면,태블릿,모바일" 로 받는다.
      칸 너비도 여기서 직접 정해 CSS 와 어긋날 여지를 없앤다 */
+  /* 끊김 없이 흐르는 줄 (레퍼런스 로고).
+     같은 줄을 한 벌 더 붙여 두고 한 벌 너비만큼 왼쪽으로 민 다음 처음으로 되돌린다.
+     칸 너비는 CSS 가 아니라 여기서 px 로 직접 정한다 — 되돌아갈 거리를 정확히 알아야
+     이어붙인 자리가 안 보인다.
+     data-per 의 "한 화면에 몇 개" 는 그대로 쓴다. 버튼을 감춘 만큼 칸이 넓어진다 */
+  function flowRow(car){
+    var view = car.querySelector(".rview");
+    var row = car.querySelector(".rrow");
+    var items = [].slice.call(row.children);
+    var conf = (car.getAttribute("data-per") || "4,3,2").split(",").map(Number);
+
+    items.forEach(function(el){
+      var c = el.cloneNode(true);
+      c.setAttribute("aria-hidden", "true");         /* 화면 낭독기가 두 번 읽지 않도록 */
+      var img = c.querySelector("img");
+      if (img) img.loading = "eager";                /* 원본과 같은 주소라 캐시에서 바로 온다 */
+      row.appendChild(c);
+    });
+
+    function size(){
+      var w = window.innerWidth;
+      var per = Math.max(1, (w <= 620 ? conf[2] : (w <= 980 ? conf[1] : conf[0])) || 1);
+      var cell = view.clientWidth / per;
+      [].slice.call(row.children).forEach(function(el){
+        el.style.flex = "none";
+        el.style.width = cell + "px";
+      });
+      row.style.setProperty("--flow-dist", -(cell * items.length) + "px");
+      row.style.setProperty("--flow-dur", (items.length * 3.6) + "s");
+      /* 폭이 바뀌면 처음부터 다시 — 안 그러면 어긋난 위치에서 이어져 로고가 튄다 */
+      row.style.animation = "none";
+      void row.offsetWidth;
+      row.style.animation = "";
+    }
+
+    car.classList.add("flowing");
+    size();
+    var t = null;
+    window.addEventListener("resize", function(){ clearTimeout(t); t = setTimeout(size, 180); });
+  }
+
   [].slice.call(document.querySelectorAll(".refcar")).forEach(function(car){
+    /* 흐르는 줄은 넘기기와 구조가 달라 따로 처리한다.
+       움직임을 줄여 달라는 설정이면 원래의 넘겨보기로 둔다 */
+    if (car.classList.contains("flow") && !reduced) { flowRow(car); return; }
+
     var row = car.querySelector(".rrow");
     var items = [].slice.call(row.children);
     var prev = car.querySelector(".rnav.prev");
