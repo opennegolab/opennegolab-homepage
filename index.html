@@ -138,7 +138,7 @@ nav a:hover:after{right:0}
 header.solid .hd .ask{background:var(--navy);border-color:var(--navy);color:#fff}
 header.solid .hd .ask:hover{background:#173763}
 
-/* 히어로 — 배경 모티프는 브랜드 자산인 여덟 개 블록이 차례로 켜지는 모습 */
+/* 히어로 */
 .hero{position:relative;overflow:hidden;color:#fff;
       background:linear-gradient(158deg,var(--dark-2) 0%,var(--dark) 46%,var(--dark-3) 100%);
       padding:clamp(140px,17vw,210px) 0 clamp(88px,11vw,150px)}
@@ -164,14 +164,6 @@ header.solid .hd .ask:hover{background:#173763}
 
 .hero-glow{position:absolute;left:50%;top:-34%;transform:translateX(-50%);width:80vw;height:80vw;border-radius:50%;
            background:radial-gradient(circle,rgba(154,211,52,.10),rgba(154,211,52,0) 58%)}
-.hero-blocks{display:flex;justify-content:center;gap:clamp(8px,1.1vw,14px);margin-top:clamp(44px,6vw,72px)}
-.hero-blocks i{width:clamp(30px,4.4vw,54px);aspect-ratio:1;border-radius:12px;border:1px solid rgba(255,255,255,.15);
-               background:rgba(255,255,255,.035);animation:blkOn 7s ease-in-out infinite;
-               animation-delay:calc(var(--i) * .42s)}
-@keyframes blkOn{
-  0%,60%,100%{background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.15);box-shadow:none}
-  14%,34%{background:rgba(154,211,52,.16);border-color:rgba(154,211,52,.55);box-shadow:0 0 26px rgba(154,211,52,.18)}
-}
 .hero-in{position:relative;text-align:center}
 /* 두 줄을 같은 크기로 두고, 아랫줄에만 색을 흘린다.
    윗줄보다 아랫줄이 길어서 그 줄이 한 줄에 들어가는 크기를 상한으로 잡았다 */
@@ -375,7 +367,6 @@ footer a:hover{color:#C9D4E1}
   nav{display:none}
   .hero{padding:clamp(120px,20vw,160px) 0 clamp(72px,10vw,110px)}
   .hero h1,.hero .lead{max-width:none}
-  .hero-blocks{gap:6px}   /* 여덟 칸이 한 줄에 들어오도록 */
   .stats{grid-template-columns:repeat(2,1fr)}
   .stats > div:nth-child(3){border-left:0;padding-left:0}
   .founder{grid-template-columns:1fr}
@@ -428,7 +419,6 @@ footer a:hover{color:#C9D4E1}
       <a class="btn fill" href="#education">협상 교육 보기</a>
       <a class="btn ghost" href="#simulator">시뮬레이터 보기</a>
     </div>
-    <div class="hero-blocks" aria-hidden="true"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i></div>
   </div>
 </section>
 
