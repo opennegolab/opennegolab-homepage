@@ -16,23 +16,36 @@
 <meta property="og:description" content="협상은 설득이 아니라 설계입니다. 8-Block Negotiation Model™ 기반 기업 협상 교육과 AI 협상 훈련 시뮬레이터." />
 <meta property="og:locale" content="ko_KR" />
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-Z0XNVJ5PRD"></script>
+<!-- 방문 통계 : Google Analytics G-Z0XNVJ5PRD + 네이버 애널리틱스 4429ba2e580cf
+
+     opennegolab.com 에서만 켠다. 로컬(localhost)이나 클라우드타입 미리보기 주소에서
+     시험하며 남긴 기록이 실제 방문 통계에 섞이면 숫자를 믿을 수 없게 된다.
+
+     gtag 는 통계를 끈 화면에서도 정의해 둔다 — 본문 코드가 이걸 불러 쓰는데,
+     없으면 매번 있는지 확인해야 하고 빠뜨리면 오류가 난다. 빈 큐에 쌓일 뿐 나가지 않는다 -->
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
+window.dataLayer = window.dataLayer || [];
+function gtag(){ dataLayer.push(arguments); }
+(function(){
+  if (!/(^|\.)opennegolab\.com$/i.test(location.hostname)) return;
+
   gtag('js', new Date());
   gtag('config', 'G-Z0XNVJ5PRD');
-</script>
+  var ga = document.createElement('script');
+  ga.async = true;
+  ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z0XNVJ5PRD';
+  document.head.appendChild(ga);
 
-<!-- Naver Analytics -->
-<script type="text/javascript" src="//wcs.pstatic.net/wcslog.js"></script>
-<script type="text/javascript">
-if(!wcs_add) var wcs_add = {};
-wcs_add["wa"] = "4429ba2e580cf";
-if(window.wcs) {
-  wcs_do();
-}
+  var nv = document.createElement('script');
+  nv.async = true;
+  nv.src = 'https://wcs.pstatic.net/wcslog.js';
+  nv.onload = function(){
+    if (!window.wcs_add) window.wcs_add = {};
+    window.wcs_add.wa = '4429ba2e580cf';
+    if (window.wcs) wcs_do();
+  };
+  document.head.appendChild(nv);
+})();
 </script>
 
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
@@ -760,7 +773,7 @@ footer a:hover{color:#C9D4E1}
     <strong>Open Negotiation Lab</strong>
     <p>주식회사 열린협상연구소<i>|</i>대표자 : 오명호<i>|</i>사업자등록번호 : 360-87-02920</p>
     <p>주소 : 경기도 양평군 양평읍 남북로 53-5, 502호(로현빌딩)</p>
-    <p>대표번호 : <a href="tel:070-7776-4564">070-7776-4564</a><i>|</i><a href="mailto:admin@opennegolab.com">admin@opennegolab.com</a></p>
+    <p>대표번호 : <a href="tel:070-7776-4564">070-7776-4564</a><i>|</i><a href="mailto:admin@opennegolab.com">admin@opennegolab.com</a><i>|</i><a href="/privacy">개인정보처리방침</a></p>
     <p class="fslogan">오직 협상만 연구합니다</p>
   </div>
 </footer>
@@ -794,7 +807,7 @@ footer a:hover{color:#C9D4E1}
           <div class="fld"><label>이메일 <em>*</em></label><input type="email" name="email" required placeholder="email@company.com" autocomplete="email"></div>
           <div class="fld full"><label>문의 내용 <em>*</em></label><textarea name="message" required placeholder="교육 대상, 인원, 희망 일정 등을 함께 적어주시면 더 정확한 상담이 가능합니다."></textarea></div>
         </div>
-        <label class="agree"><input type="checkbox" required><span>개인정보 수집 및 이용에 동의합니다. <a href="https://www.opennegolab.com/?mode=privacy" target="_blank" rel="noopener">자세히</a></span></label>
+        <label class="agree"><input type="checkbox" required><span>개인정보 수집 및 이용에 동의합니다. <a href="/privacy" target="_blank" rel="noopener">자세히</a></span></label>
         <button class="submit" type="submit">문의 등록하기</button>
       </form>
     </div>
@@ -984,6 +997,13 @@ footer a:hover{color:#C9D4E1}
   };
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeInquiry(); });
 
+  /* 방문 통계에 남기는 기록.
+     광고 차단기를 쓰면 gtag 가 아예 없을 수 있으니 있는지 확인하고 부른다 —
+     통계가 안 잡히는 건 감수해도, 그것 때문에 문의 전송이 막히면 안 된다 */
+  function track(name, params){
+    try { if (typeof gtag === 'function') gtag('event', name, params || {}); } catch (err) {}
+  }
+
   var form = document.getElementById('inquiryForm');
   form.addEventListener('submit', function(e){
     e.preventDefault();
@@ -1004,6 +1024,8 @@ footer a:hover{color:#C9D4E1}
       })
       .then(function(r){
         if (r.ok && r.d.ok) {
+          /* 실제로 접수된 것만 센다 — 눌렀다가 실패한 건 문의가 아니다 */
+          track('generate_lead', { form_name: '홈페이지 문의', inquiry_type: payload.kind || '기타' });
           form.reset(); closeInquiry();
           alert('문의가 정상적으로 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.');
         } else {
@@ -1012,6 +1034,20 @@ footer a:hover{color:#C9D4E1}
       })
       .catch(function(){ alert('네트워크 오류로 전송하지 못했습니다. admin@opennegolab.com 으로 보내주셔도 됩니다.'); })
       .finally(function(){ btn.disabled = false; btn.textContent = orig; });
+  });
+
+  /* 시뮬레이터로 나가는 링크를 누른 횟수. 어느 자리의 버튼이 실제로 눌리는지 보려는 것 */
+  [].slice.call(document.querySelectorAll('a[href*="ai.opennegolab.com"]')).forEach(function(a){
+    a.addEventListener('click', function(){
+      track('simulator_click', { link_text: (a.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 60) });
+    });
+  });
+
+  /* 문의 창을 연 사람 수. 연 사람 대비 실제 보낸 사람을 비교하면
+     폼이 부담스러운지(열었다가 그냥 닫는지) 알 수 있다 */
+  var openBtns = document.querySelectorAll('[onclick*="openInquiry"]');
+  [].slice.call(openBtns).forEach(function(b){
+    b.addEventListener('click', function(){ track('inquiry_open', {}); });
   });
 })();
 </script>

@@ -9,6 +9,7 @@ www.opennegolab.com 에 올라가는 정적 사이트입니다.
 | `index.html` | 홈페이지 전체 (HTML·CSS·JS·이미지가 한 파일에) |
 | `grade1-learning.html` | 초등 1학년 공부방 (별도 페이지, `/grade1-learning.html`) |
 | `baeumteo-icon.png` `baeumteo-og.png` | 위 페이지가 쓰는 이미지 |
+| `privacy.html` | 개인정보처리방침 (`/privacy` 로 열립니다) |
 | `server.js` | 이 폴더를 그대로 내보내는 정적 서버 + 문의 접수 라우트 |
 | `inquiry.js` | 문의 폼 내용을 SMTP로 메일 발송 |
 | `package.json` | 의존성(nodemailer)과 `npm start` 정의 |
@@ -57,12 +58,28 @@ npm start
 
 되돌리려면 `git log` 로 시점을 찾아 `git revert <커밋>` 하면 됩니다.
 
+## 방문 통계에 남기는 이벤트
+
+Google Analytics 로 아래 세 가지를 따로 보냅니다. GA4 화면에서
+**관리 → 이벤트** 에 들어가면 목록에 나오고, 그중 `generate_lead` 를
+**주요 이벤트로 표시**해 두면 전환수로 집계됩니다.
+
+| 이벤트 | 언제 |
+|---|---|
+| `inquiry_open` | 문의하기 버튼을 눌러 창을 열었을 때 |
+| `generate_lead` | 문의가 **실제로 접수된** 때 (전송 실패는 세지 않습니다) |
+| `simulator_click` | 시뮬레이터로 나가는 링크를 눌렀을 때 |
+
+`generate_lead` 에는 `inquiry_type`(협상 교육 / AI 시뮬레이터 / 기타),
+`simulator_click` 에는 `link_text` 가 함께 담깁니다. 이 값을 보고서에서
+쪼개 보려면 GA4 의 **관리 → 맞춤 정의** 에서 맞춤 측정기준으로 등록해야 합니다.
+
 ## 연결된 것들
 
 | 무엇 | 어디서 관리 |
 |---|---|
 | 문의 폼 | 우리 서버가 직접 받아 SMTP로 발송 (`inquiry.js`). 외부 서비스 안 씀 |
-| 방문 통계 | Google Analytics `G-Z0XNVJ5PRD`, 네이버 애널리틱스 `4429ba2e580cf` |
+| 방문 통계 | Google Analytics `G-Z0XNVJ5PRD`, 네이버 애널리틱스 `4429ba2e580cf`<br>`opennegolab.com` 에서만 켜집니다. 로컬·미리보기 주소에서는 기록되지 않습니다 |
 | DNS | Cloudflare (`opennegolab.com`) |
 | 협상 시뮬레이터 | 별도 저장소 `opennegolab/8-block-simulator` (Cloudtype 별도 서비스) |
 
