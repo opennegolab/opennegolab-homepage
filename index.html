@@ -201,22 +201,20 @@ header.solid .hd .ask:hover{background:#173763}
 .shead.only{margin-bottom:0}   /* 아래에 아무것도 없는 섹션 */
 .shead .tm{margin-left:auto;margin-right:auto}
 
-/* 대표 소개 */
-.founder{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(28px,5vw,72px);align-items:start}
-/* 사진은 배경을 딴 컷아웃을 섹션 배경색으로 눌러 담아, 테두리 없이 지면에 얹힌 느낌을 준다 */
-.portrait{border-radius:18px;overflow:hidden}
-.portrait img{width:100%;height:auto;display:block}
-.fname{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
-.fname strong{font-size:clamp(24px,2.6vw,30px);font-weight:800;letter-spacing:-1.2px}
-.fname span{font-size:14px;color:var(--ink-2);font-weight:600}
-/* 교육 과정 구성 — 인원·시간·교재 같은 스펙은 두지 않는다. 이름과 대상까지만 */
-.pillars{list-style:none;margin-top:28px;border-top:1px solid var(--line)}
-.pillars li{display:grid;grid-template-columns:auto 1fr;gap:20px;padding:22px 0;border-bottom:1px solid var(--line)}
-.pillars .no{font-size:12px;font-weight:800;color:var(--lime);letter-spacing:.1em;padding-top:6px}
-.pillars b{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:17.5px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
-.pillars b em{font-style:normal;font-size:12px;font-weight:700;color:var(--ink-2);letter-spacing:0;
-              background:var(--warm-2);border:1px solid var(--line);border-radius:999px;padding:4px 11px}
-.pillars p{margin:0;font-size:14.5px;color:var(--ink-2);font-weight:500;line-height:1.7}
+/* 교육 과정 — 기존 홈페이지의 커리큘럼 카드를 새 톤으로 옮겼다 */
+.programs{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:left}
+.pcard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:32px 30px;transition:.22s ease}
+.pcard:hover{transform:translateY(-4px);box-shadow:0 20px 46px rgba(26,29,33,.09)}
+.pcard.best{border:2px solid rgba(30,68,118,.3);background:linear-gradient(180deg,#fff,#F7FAFF)}
+.pcard .tier{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--lime);margin-bottom:14px}
+.pcard h3{color:var(--navy);margin-bottom:10px}
+.pcard .pdesc{font-size:14px;color:var(--ink-2);font-weight:500;line-height:1.7;min-height:72px}
+.spec{list-style:none;margin-top:20px;padding-top:18px;border-top:1px dashed var(--line);
+      display:flex;flex-direction:column;gap:10px}
+.spec li{position:relative;padding-left:16px;font-size:14px;color:var(--ink-2);font-weight:600;line-height:1.6}
+.spec li:before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--lime)}
+.spec li.hl{color:var(--ink);font-weight:700}
+.spec li.hl:before{background:var(--navy)}
 
 /* 8-BNM */
 .model{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -378,9 +376,8 @@ footer a:hover{color:#C9D4E1}
   .hero h1,.hero .lead{max-width:none}
   .stats{grid-template-columns:repeat(2,1fr)}
   .stats > div:nth-child(3){border-left:0;padding-left:0}
-  .founder{grid-template-columns:1fr}
   .rl{flex-basis:33.333%}
-  .videos,.feat{grid-template-columns:1fr}
+  .videos,.feat,.programs{grid-template-columns:1fr}
   .why{grid-template-columns:1fr}
 }
 @media(max-width:620px){
@@ -513,28 +510,45 @@ footer a:hover{color:#C9D4E1}
   <div class="wrap rv">
     <div class="shead">
       <div class="eyebrow">Negotiation Education</div>
-      <h2>대상에 따라<br>세 가지로 엽니다</h2>
-      <p class="lead">같은 협상이라도 실무자가 마주하는 판과 임원이 마주하는 판은 다릅니다. 직무와 직급에 맞춰 다르게 구성합니다.</p>
+      <h2>직무와 직급에 최적화된 협상 교육</h2>
+      <p class="lead">같은 협상이라도 직무와 직급에 따라 마주하는 과제는 다릅니다.<br class="brk">대상에 맞춰 교육의 내용과 방식을 다르게 구성합니다.</p>
     </div>
 
-    <div class="founder">
-      <div class="portrait"><img src="/img/portrait.jpg" alt="열린협상연구소 대표 오명호" /></div>
-      <div>
-        <div class="fname"><strong>오명호</strong><span>열린협상연구소 대표 · 협상 전문 강사</span></div>
-        <p class="lead">협상은 배워서 아는 것으로 끝나지 않습니다. 우리 상황에 맞는 판을 만들어 직접 겪어봐야 남습니다. 그 판을 만드는 일만 해 왔습니다.</p>
-        <ul class="pillars">
-          <li>
-            <span class="no">01</span>
-            <div><b>Standard <em>공통 직무</em></b><p>협상의 기본 개념과 실전 활용의 기초를 다집니다. 협상을 처음 배우는 구성원에게 공통 언어를 만들어 주는 과정입니다.</p></div>
-          </li>
-          <li>
-            <span class="no">02</span>
-            <div><b>Pro <em>구매 · 영업 실무자</em></b><p>매일 협상 테이블에 앉는 직무를 위한 과정입니다. 원리와 사례를 실전 중심으로 다루고, 시간의 대부분을 실습과 피드백에 씁니다.</p></div>
-          </li>
-          <li>
-            <span class="no">03</span>
-            <div><b>Executive <em>직책자 · 임원</em></b><p>판을 짜고 결정을 내리는 자리를 위한 고급 과정입니다. 복합 쟁점과 이해관계가 얽힌 협상을 다룹니다.</p></div>
-          </li>
+    <div class="programs">
+      <div class="pcard">
+        <div class="tier">STANDARD</div>
+        <h3>Standard 과정</h3>
+        <p class="pdesc">협상의 기본 개념과 실전 활용의 기초를 다지는 공통 직무 역량 과정</p>
+        <ul class="spec">
+          <li>인원 : 30명 내외</li>
+          <li>시간 : 4시간 ~ 8시간 과정</li>
+          <li>교재 : PDF 파일 제공</li>
+          <li>실습 : 자체 개발 시나리오 사용</li>
+
+        </ul>
+      </div>
+      <div class="pcard best">
+        <div class="tier">PRO</div>
+        <h3>Pro 과정</h3>
+        <p class="pdesc">실전 중심의 원리와 사례, 실습과 피드백 위주의 구매·영업 등 협상 직무 실무자 과정</p>
+        <ul class="spec">
+          <li>인원 : 25명 내외</li>
+          <li>시간 : 1일(8시간) 또는 2일 과정</li>
+          <li>교재 : 프리미엄 바인더 제공</li>
+          <li>실습 : 커스텀 시나리오 개발</li>
+          <li class="hl">에잇블록 AI 시뮬레이터 제공</li>
+        </ul>
+      </div>
+      <div class="pcard">
+        <div class="tier">EXECUTIVE</div>
+        <h3>Executive 과정</h3>
+        <p class="pdesc">전문 협상 역량이 필요한 직책자 및 임원을 위한 고급 협상 과정</p>
+        <ul class="spec">
+          <li>인원 : 20명 내외</li>
+          <li>시간 : 2일(12시간) 또는 3일 과정</li>
+          <li>교재 : 프리미엄 바인더 + 『협상 레볼루션』</li>
+          <li>실습 : 커스텀 시나리오 개발</li>
+          <li class="hl">에잇블록 AI 시뮬레이터 제공</li>
         </ul>
       </div>
     </div>
