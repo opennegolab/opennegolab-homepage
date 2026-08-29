@@ -144,26 +144,24 @@ header.solid .hd .ask:hover{background:#173763}
       padding:clamp(140px,17vw,210px) 0 clamp(88px,11vw,150px)}
 .hero-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 
-/* 도면 격자 — "협상은 설계"라는 말을 배경이 대신한다.
-   가운데는 진하게, 가장자리로 갈수록 사라지도록 마스크를 씌운다 */
-.hero-grid{position:absolute;inset:-2px;
-  background-image:linear-gradient(to right,rgba(255,255,255,.06) 1px,transparent 1px),
-                   linear-gradient(to bottom,rgba(255,255,255,.06) 1px,transparent 1px);
-  background-size:clamp(40px,4.6vw,64px) clamp(40px,4.6vw,64px);
-  -webkit-mask-image:radial-gradient(ellipse 68% 62% at 50% 44%,#000 26%,transparent 76%);
-          mask-image:radial-gradient(ellipse 68% 62% at 50% 44%,#000 26%,transparent 76%)}
-
-/* 도면 위를 천천히 훑고 지나가는 빛 — 설계를 검토하는 손길처럼 */
-.hero-sweep{position:absolute;top:-20%;bottom:-20%;left:-30%;right:-30%;
-  background:linear-gradient(104deg,transparent 44%,rgba(154,211,52,.10) 50%,transparent 56%);
-  animation:sweep 11s ease-in-out infinite}
-@keyframes sweep{
-  0%,100%{transform:translateX(-26%)}
-  50%{transform:translateX(26%)}
+/* 빛이 번지는 면 — 라임과 네이비 빛덩어리가 아주 천천히 떠다닌다.
+   filter:blur() 대신 radial-gradient 로 만든다. 큰 면에 blur 를 걸면
+   매 프레임 다시 그려야 해서 저사양 기기에서 눈에 띄게 무거워진다 */
+.hero-orb{position:absolute;border-radius:50%;will-change:transform}
+.hero-orb.a{width:60vw;height:60vw;left:-14%;top:-24%;
+  background:radial-gradient(circle,rgba(154,211,52,.26),rgba(154,211,52,0) 62%);
+  animation:driftA 20s ease-in-out infinite}
+.hero-orb.b{width:66vw;height:66vw;right:-18%;bottom:-30%;
+  background:radial-gradient(circle,rgba(62,124,204,.38),rgba(62,124,204,0) 64%);
+  animation:driftB 26s ease-in-out infinite}
+@keyframes driftA{
+  0%,100%{transform:translate(0,0)}
+  50%{transform:translate(7%,9%)}
 }
-
-.hero-glow{position:absolute;left:50%;top:-34%;transform:translateX(-50%);width:80vw;height:80vw;border-radius:50%;
-           background:radial-gradient(circle,rgba(154,211,52,.10),rgba(154,211,52,0) 58%)}
+@keyframes driftB{
+  0%,100%{transform:translate(0,0)}
+  50%{transform:translate(-8%,-7%)}
+}
 .hero-in{position:relative;text-align:center}
 /* 두 줄을 같은 크기로 두고, 아랫줄에만 색을 흘린다.
    윗줄보다 아랫줄이 길어서 그 줄이 한 줄에 들어가는 크기를 상한으로 잡았다 */
@@ -412,9 +410,8 @@ footer a:hover{color:#C9D4E1}
 <!-- ===================== HERO ===================== -->
 <section class="hero" id="top">
   <div class="hero-bg" aria-hidden="true">
-    <div class="hero-grid"></div>
-    <div class="hero-sweep"></div>
-    <div class="hero-glow"></div>
+    <div class="hero-orb a"></div>
+    <div class="hero-orb b"></div>
   </div>
   <div class="wrap hero-in">
     <div class="badge"><i></i>8-Block Negotiation Model&trade;</div>
