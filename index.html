@@ -675,23 +675,26 @@ footer a:hover{color:#C9D4E1}
       <button class="mclose" onclick="closeInquiry()" aria-label="닫기">✕</button>
     </div>
     <div class="mbody">
-      <!-- Formspree 연동. 알림 수신 이메일은 Formspree 대시보드에서 관리 -->
-      <form id="inquiryForm" action="https://formspree.io/f/xqeowezk" method="POST">
-        <input type="hidden" name="_subject" value="[열린협상연구소] 홈페이지 문의 접수">
+      <!-- 우리 서버가 직접 받아 SMTP로 메일을 보낸다 (inquiry.js).
+           수신 주소는 환경변수 INQUIRY_MAIL_TO, 기본값 negomaster@opennegolab.com -->
+      <form id="inquiryForm" action="/api/inquiry" method="POST">
+        <!-- 사람 눈에 안 보이는 칸. 자동 프로그램만 채우므로, 채워지면 서버가 조용히 버린다 -->
+        <input type="text" name="website" tabindex="-1" autocomplete="off"
+               style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" aria-hidden="true">
         <div class="frow">
           <div class="fld full">
             <label>문의 구분 <em>*</em></label>
             <div class="ftype">
-              <label><input type="radio" name="문의구분" value="협상 교육" checked>협상 교육</label>
-              <label><input type="radio" name="문의구분" value="AI 시뮬레이터">AI 시뮬레이터</label>
-              <label><input type="radio" name="문의구분" value="기타">기타</label>
+              <label><input type="radio" name="kind" value="협상 교육" checked>협상 교육</label>
+              <label><input type="radio" name="kind" value="AI 시뮬레이터">AI 시뮬레이터</label>
+              <label><input type="radio" name="kind" value="기타">기타</label>
             </div>
           </div>
-          <div class="fld"><label>이름 <em>*</em></label><input type="text" name="이름" required placeholder="홍길동"></div>
-          <div class="fld"><label>회사명</label><input type="text" name="회사명" placeholder="(주)회사명"></div>
-          <div class="fld"><label>연락처 <em>*</em></label><input type="tel" name="연락처" required placeholder="010-0000-0000"></div>
-          <div class="fld"><label>이메일 <em>*</em></label><input type="email" name="email" required placeholder="email@company.com"></div>
-          <div class="fld full"><label>문의 내용 <em>*</em></label><textarea name="문의내용" required placeholder="교육 대상, 인원, 희망 일정 등을 함께 적어주시면 더 정확한 상담이 가능합니다."></textarea></div>
+          <div class="fld"><label>이름 <em>*</em></label><input type="text" name="name" required placeholder="홍길동" autocomplete="name"></div>
+          <div class="fld"><label>회사명</label><input type="text" name="company" placeholder="(주)회사명" autocomplete="organization"></div>
+          <div class="fld"><label>연락처 <em>*</em></label><input type="tel" name="phone" required placeholder="010-0000-0000" autocomplete="tel"></div>
+          <div class="fld"><label>이메일 <em>*</em></label><input type="email" name="email" required placeholder="email@company.com" autocomplete="email"></div>
+          <div class="fld full"><label>문의 내용 <em>*</em></label><textarea name="message" required placeholder="교육 대상, 인원, 희망 일정 등을 함께 적어주시면 더 정확한 상담이 가능합니다."></textarea></div>
         </div>
         <label class="agree"><input type="checkbox" required><span>개인정보 수집 및 이용에 동의합니다. <a href="https://www.opennegolab.com/?mode=privacy" target="_blank" rel="noopener">자세히</a></span></label>
         <button class="submit" type="submit">문의 등록하기</button>
@@ -829,7 +832,7 @@ footer a:hover{color:#C9D4E1}
     document.body.style.overflow = 'hidden';
     var map = { edu:'협상 교육', sim:'AI 시뮬레이터' };
     if (type) {
-      var r = m.querySelector('input[name="문의구분"][value="' + (map[type] || type) + '"]');
+      var r = m.querySelector('input[name="kind"][value="' + (map[type] || type) + '"]');
       if (r) r.checked = true;
     }
   };
@@ -845,15 +848,24 @@ footer a:hover{color:#C9D4E1}
     var btn = form.querySelector('.submit');
     var orig = btn.textContent;
     btn.disabled = true; btn.textContent = '전송 중…';
-    fetch(form.action, { method:'POST', body:new FormData(form), headers:{ 'Accept':'application/json' } })
+    var fd = new FormData(form);
+    var payload = {};
+    fd.forEach(function(v, k){ payload[k] = v; });
+
+    fetch(form.action, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
       .then(function(res){
-        if (res.ok) {
+        return res.json().catch(function(){ return {}; }).then(function(d){ return { ok: res.ok, d: d }; });
+      })
+      .then(function(r){
+        if (r.ok && r.d.ok) {
           form.reset(); closeInquiry();
           alert('문의가 정상적으로 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.');
         } else {
-          res.json().then(function(d){
-            alert('전송 실패: ' + ((d && d.errors && d.errors.map(function(x){return x.message;}).join(', ')) || '잠시 후 다시 시도해 주세요.'));
-          }).catch(function(){ alert('전송에 실패했습니다. 잠시 후 다시 시도해 주세요.'); });
+          alert((r.d && r.d.message) || '전송에 실패했습니다. negomaster@opennegolab.com 으로 보내주셔도 됩니다.');
         }
       })
       .catch(function(){ alert('네트워크 오류로 전송하지 못했습니다. negomaster@opennegolab.com 으로 보내주셔도 됩니다.'); })

@@ -9,8 +9,9 @@ www.opennegolab.com 에 올라가는 정적 사이트입니다.
 | `index.html` | 홈페이지 전체 (HTML·CSS·JS·이미지가 한 파일에) |
 | `grade1-learning.html` | 초등 1학년 공부방 (별도 페이지, `/grade1-learning.html`) |
 | `baeumteo-icon.png` `baeumteo-og.png` | 위 페이지가 쓰는 이미지 |
-| `server.js` | 이 폴더를 그대로 내보내는 정적 서버 (외부 패키지 없음) |
-| `package.json` | Cloudtype이 실행할 `npm start` 정의 |
+| `server.js` | 이 폴더를 그대로 내보내는 정적 서버 + 문의 접수 라우트 |
+| `inquiry.js` | 문의 폼 내용을 SMTP로 메일 발송 |
+| `package.json` | 의존성(nodemailer)과 `npm start` 정의 |
 
 콘텐츠 파일을 **저장소 루트**에 두는 이유는 기존 Vercel 배포와 구조가 같아,
 도메인을 옮기는 동안 Vercel과 Cloudtype 어느 쪽에서도 똑같이 동작하기 때문입니다.
@@ -28,10 +29,22 @@ npm start
 `main` 브랜치에 push하면 자동으로 다시 배포됩니다.
 
 - 템플릿: **Node.js**
-- 설치 명령어: 없음 (의존성 없음)
+- 설치 명령어: `npm install --omit=dev`
 - 시작 명령어: `npm start`
 - 포트: `3000` (Cloudtype이 넣어 주는 `PORT` 환경변수를 그대로 씁니다)
-- 환경변수: 없음
+- 환경변수 (문의 폼 메일 발송용 — 시뮬레이터와 같은 값을 그대로 쓰면 됩니다)
+
+  | 이름 | 설명 |
+  |---|---|
+  | `SMTP_HOST` | 메일 서버 주소 (필수) |
+  | `SMTP_USER` | 계정 (필수) |
+  | `SMTP_PASS` | 비밀번호 (필수) |
+  | `SMTP_PORT` | 기본 465 |
+  | `SMTP_FROM` | 보내는 사람. 기본은 `SMTP_USER` |
+  | `INQUIRY_MAIL_TO` | 받는 사람. 기본 `negomaster@opennegolab.com` |
+
+  넣지 않으면 사이트는 정상 동작하되, 문의 버튼을 누른 방문자에게
+  "이메일로 보내달라"는 안내가 뜹니다.
 - 도메인: Cloudtype 도메인 메뉴에서 `www.opennegolab.com` 연결 →
   안내되는 CNAME 값을 **Cloudflare** DNS에 등록 (프록시는 회색 구름 / DNS only 유지)
 
@@ -48,7 +61,7 @@ npm start
 
 | 무엇 | 어디서 관리 |
 |---|---|
-| 문의 폼 | Formspree `https://formspree.io/f/xqeowezk` — 수신 메일은 Formspree 대시보드 |
+| 문의 폼 | 우리 서버가 직접 받아 SMTP로 발송 (`inquiry.js`). 외부 서비스 안 씀 |
 | 방문 통계 | Google Analytics `G-Z0XNVJ5PRD`, 네이버 애널리틱스 `4429ba2e580cf` |
 | DNS | Cloudflare (`opennegolab.com`) |
 | 협상 시뮬레이터 | 별도 저장소 `opennegolab/8-block-simulator` (Cloudtype 별도 서비스) |
