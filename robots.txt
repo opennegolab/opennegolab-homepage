@@ -1,0 +1,11 @@
+# 열린협상연구소 홈페이지
+# 검색엔진이 무엇을 가져가도 되는지 알려 준다.
+
+User-agent: *
+Allow: /
+
+# 통계 화면은 검색에 나올 이유가 없다 (비밀번호가 걸려 있지만 주소도 굳이 알릴 필요 없다)
+Disallow: /stats
+Disallow: /api/
+
+Sitemap: https://www.opennegolab.com/sitemap.xml

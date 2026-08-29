@@ -12,6 +12,8 @@ www.opennegolab.com 에 올라가는 정적 사이트입니다.
 | `privacy.html` | 개인정보처리방침 (`/privacy` 로 열립니다) |
 | `stats.html` `stats.js` | 방문 통계 화면과 집계 (`/stats`) |
 | `hit.js` | 방문 기록을 서버로 보내는 조각. 모든 페이지가 불러갑니다 |
+| `robots.txt` `sitemap.xml` | 검색엔진 안내. 내용을 크게 고치면 sitemap 의 lastmod 를 갱신합니다 |
+| `favicon.ico` `favicon-*.png` | 파비콘. 512 원본에서 만든 것들이며 ico 에는 16·32·48 이 들어 있습니다 |
 | `server.js` | 이 폴더를 그대로 내보내는 정적 서버 + 문의 접수 라우트 |
 | `inquiry.js` | 문의 폼 내용을 SMTP로 메일 발송 |
 | `package.json` | 의존성(nodemailer)과 `npm start` 정의 |
