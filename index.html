@@ -1056,6 +1056,17 @@ footer a:hover{color:#C9D4E1}
   })();
 
   /* ---------- 문의 모달 ---------- */
+  /* 휴대폰의 뒤로 가기로 홈페이지를 벗어나 버리지 않도록, 창을 열 때 방문 기록을
+     하나 쌓아 둔다. 그러면 뒤로 가기가 그 기록을 무르면서 창만 닫힌다.
+     ✕ 나 Esc 로 닫을 때는 쌓아 둔 기록을 우리가 직접 되돌린다 —
+     안 그러면 창을 닫은 뒤 뒤로 가기를 한 번 더 눌러야 이전 페이지로 간다 */
+  var 기록쌓음 = false;
+
+  function 창닫기(){
+    document.getElementById('inquiryModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
   window.openInquiry = function(type){
     var m = document.getElementById('inquiryModal');
     m.classList.add('open');
@@ -1065,11 +1076,21 @@ footer a:hover{color:#C9D4E1}
       var r = m.querySelector('input[name="kind"][value="' + (map[type] || type) + '"]');
       if (r) r.checked = true;
     }
+    if (!기록쌓음) {
+      try { history.pushState({ inquiry: true }, ''); 기록쌓음 = true; } catch (e) {}
+    }
   };
+
   window.closeInquiry = function(){
-    document.getElementById('inquiryModal').classList.remove('open');
-    document.body.style.overflow = '';
+    창닫기();
+    if (기록쌓음) { 기록쌓음 = false; try { history.back(); } catch (e) {} }
   };
+
+  /* 뒤로 가기로 닫힌 경우 — 이미 기록이 물러났으므로 history.back() 을 부르면 안 된다 */
+  window.addEventListener('popstate', function(){
+    if (기록쌓음) { 기록쌓음 = false; 창닫기(); }
+  });
+
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeInquiry(); });
 
   /* 방문 통계에 남기는 기록.
