@@ -309,8 +309,15 @@ header.solid .hd .ask:hover{background:#173763}
 .pcard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:32px 30px;transition:.22s ease;
        display:flex;flex-direction:column}
 .pcard:hover{transform:translateY(-4px);box-shadow:0 20px 46px rgba(26,29,33,.09)}
-.pcard.best{border:2px solid rgba(30,68,118,.3);background:linear-gradient(180deg,#fff,#F7FAFF)}
+/* 과정마다 바탕을 한 단계씩 짙게 — Pro 는 흰색, Expert 로 갈수록 남색이 배어든다.
+   단계가 올라간다는 걸 글자를 읽기 전에 색으로 먼저 알아채게 하려는 것이다.
+   같은 남색 계열 안에서만 움직여 세 장이 따로 놀지 않는다 */
+.pcard.best{border:2px solid rgba(30,68,118,.3);background:linear-gradient(180deg,#fff,#F1F7FF)}
+.pcard.expert{border-color:#D6DFEE;background:linear-gradient(180deg,#F8FAFD,#E9EFF8)}
+
 .pcard .tier{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--lime);margin-bottom:14px}
+.pcard.best .tier{color:var(--navy)}
+.pcard.expert .tier{color:var(--dark-3)}
 .pcard h3{color:var(--navy);margin-bottom:10px}
 .pcard .pdesc{font-size:14px;color:var(--ink-2);font-weight:500;line-height:1.7;min-height:72px}
 /* 주요 커리큘럼 — 번호는 사이트의 다른 곳(왜 우리인가·8블록)과 같은 두 자리 표기 */
@@ -737,7 +744,7 @@ footer a:hover{color:#C9D4E1}
           <li>시간 : 1일(8시간) 또는 2일 과정</li>
         </ul>
       </div>
-      <div class="pcard">
+      <div class="pcard expert">
         <div class="tier">EXPERT</div>
         <h3>Expert 과정</h3>
         <p class="pdesc">복합 쟁점이 얽힌 협상을 설계하고 결정하는 임원·직책자 과정입니다. 전략 수립과 구조화를 깊이 다룹니다.</p>
