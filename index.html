@@ -321,14 +321,12 @@ header.solid .hd .ask:hover{background:#173763}
    글자 사이 조판이 끊기고 ™ 앞에 빈틈이 생긴다. 아이콘 없이 글자만 있는 배지다 */
 .tm{display:inline-block;font-size:12.5px;font-weight:700;color:var(--navy);
     background:#F2F6FC;border:1px solid #DCE6F4;border-radius:999px;padding:6px 14px;margin-top:20px}
-/* 좁은 화면에서 두 줄로 갈라지던 것 — 상표 등록번호는 줄이면 뜻이 흐려지므로
-   문구는 그대로 두고 글자와 여백만 줄여 한 줄에 앉힌다.
-   430px 아래에서만 걸린다. 그보다 넓으면 원래 크기로도 한 줄에 들어간다 */
-@media(max-width:430px){
+/* 한 줄을 지키려고 줄이는 구간. 한글 표장이라 짧아서 흔한 휴대폰(375px 이상)은
+   원래 크기 그대로 한 줄에 들어간다. 그보다 좁을 때만 단계적으로 줄인다 */
+@media(max-width:360px){
   .tm{font-size:11px;padding:6px 10px}
 }
-/* 폴드 커버 화면(280px 대)에서 2px 모자라 넘어간다 */
-@media(max-width:340px){
+@media(max-width:300px){          /* 폴드 커버 화면 */
   .tm{font-size:10.5px;padding:6px 8px}
 }
 
