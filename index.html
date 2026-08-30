@@ -166,10 +166,13 @@ section[id]{scroll-margin-top:84px}   /* 고정 헤더에 제목이 가리지 �
 }
 h1{font-size:clamp(38px,6.2vw,76px);font-weight:800;letter-spacing:-3.2px;line-height:1.08}
 h2{font-size:clamp(28px,3.8vw,48px);font-weight:800;letter-spacing:-1.9px;line-height:1.2}
-/* 알파벳으로만 된 제목 보정 — 같은 굵기라도 한글보다 가늘어 보인다.
-   한글은 획이 촘촘히 네모를 채우는데 알파벳은 획이 가늘고 여백이 많다.
-   자간 -1.9px 도 한글 기준이라 알파벳에는 너무 좁아 더 흐려 보인다 */
-h2.en{font-weight:900;letter-spacing:-1.1px}
+/* 알파벳으로만 된 제목. 큰 화면에서는 다른 제목과 같은 굵기(800)로 충분하다.
+   작은 화면에서만 흐려 보이는데, 글자가 28px 까지 줄어들면 한글에 맞춘
+   자간 -1.9px 이 알파벳에는 -6.8% 나 되어 획끼리 붙어 버리기 때문이다.
+   그 구간에서만 자간을 풀고 굵기를 한 단계 올린다 */
+@media(max-width:820px){
+  h2.en{font-weight:900;letter-spacing:-.6px}
+}
 h3{font-size:clamp(18px,1.9vw,21px);font-weight:700;letter-spacing:-.6px;line-height:1.4}
 .lead{font-size:clamp(16px,1.65vw,19px);color:var(--ink-2);font-weight:500;line-height:1.75}
 .sub{font-size:14.5px;color:var(--ink-2);font-weight:500;line-height:1.75}
