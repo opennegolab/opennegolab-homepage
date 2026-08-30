@@ -304,13 +304,25 @@ header.solid .hd .ask:hover{background:#173763}
 
 /* 교육 과정 — 기존 홈페이지의 커리큘럼 카드를 새 톤으로 옮겼다 */
 .programs{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:left}
-.pcard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:32px 30px;transition:.22s ease}
+/* 세로 흐름으로 두고 시간 줄을 바닥에 붙인다 — 커리큘럼 개수가 달라도
+   세 카드의 시간 줄이 같은 높이에서 만난다 */
+.pcard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:32px 30px;transition:.22s ease;
+       display:flex;flex-direction:column}
 .pcard:hover{transform:translateY(-4px);box-shadow:0 20px 46px rgba(26,29,33,.09)}
 .pcard.best{border:2px solid rgba(30,68,118,.3);background:linear-gradient(180deg,#fff,#F7FAFF)}
 .pcard .tier{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--lime);margin-bottom:14px}
 .pcard h3{color:var(--navy);margin-bottom:10px}
 .pcard .pdesc{font-size:14px;color:var(--ink-2);font-weight:500;line-height:1.7;min-height:72px}
-.spec{list-style:none;margin-top:20px;padding-top:18px;border-top:1px dashed var(--line);
+/* 주요 커리큘럼 — 번호는 사이트의 다른 곳(왜 우리인가·8블록)과 같은 두 자리 표기 */
+.curri{margin-top:20px;padding-top:18px;border-top:1px dashed var(--line)}
+.clabel{font-size:11.5px;font-weight:800;letter-spacing:.12em;color:var(--ink-3);margin-bottom:13px}
+.clist{list-style:none;counter-reset:c;display:flex;flex-direction:column;gap:9px;padding:0;margin:0}
+.clist li{counter-increment:c;position:relative;padding-left:26px;
+          font-size:14px;font-weight:600;color:var(--ink);line-height:1.5}
+.clist li:before{content:counter(c,decimal-leading-zero);position:absolute;left:0;top:2px;
+                 font-size:11.5px;font-weight:800;color:var(--lime);font-variant-numeric:tabular-nums}
+
+.spec{list-style:none;margin-top:auto;padding-top:18px;border-top:1px dashed var(--line);
       display:flex;flex-direction:column;gap:10px}
 .spec li{position:relative;padding-left:16px;font-size:14px;color:var(--ink-2);font-weight:600;line-height:1.6}
 .spec li:before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--lime)}
@@ -686,39 +698,62 @@ footer a:hover{color:#C9D4E1}
       <p class="lead">같은 협상이라도 직무와 직급에 따라 마주하는 과제는 다릅니다. <br class="brk">대상에 맞춰 교육의 내용과 방식을 다르게 구성합니다.</p>
     </div>
 
+    <!-- 과정 카드 : 설명 → 주요 커리큘럼 → 시간 순서다.
+         커리큘럼이 이 섹션의 알맹이라 위로 올리고, 시간은 아래에 붙인다 -->
     <div class="programs">
       <div class="pcard">
         <div class="tier">PRO</div>
         <h3>Pro 과정</h3>
-        <p class="pdesc">협상의 원리와 실전 활용법을 익히는 공통 직무 역량 과정</p>
+        <p class="pdesc">협상의 원리와 기본기를 익히는 입문 과정입니다. 전 구성원이 갖춰야 할 공통 협상 역량을 탄탄히 다집니다.</p>
+        <div class="curri">
+          <div class="clabel">주요 커리큘럼</div>
+          <ol class="clist">
+            <li>협상의 오해와 이해</li>
+            <li>협상의 준비와 프로세스</li>
+            <li>협상의 핵심 원리와 기술</li>
+            <li>범용 케이스 시뮬레이션 실습</li>
+          </ol>
+        </div>
         <ul class="spec">
-          <li>인원 : 30명 내외</li>
           <li>시간 : 4시간 ~ 8시간 과정</li>
-          <li>교재 : PDF 파일 제공</li>
-          <li>실습 : 자체 개발 시나리오 사용</li>
-
         </ul>
       </div>
       <div class="pcard best">
         <div class="tier">LEAD</div>
         <h3>Lead 과정</h3>
-        <p class="pdesc">매일 협상 테이블에 앉는 구매·영업 실무자를 위해, 실전 사례와 반복 실습으로 협상력을 끌어올리는 과정</p>
+        <p class="pdesc">매일 협상 테이블에 앉는 구매·영업 실무자 과정입니다. 실전 사례와 반복 실습으로 협상력을 끌어올립니다.</p>
+        <div class="curri">
+          <div class="clabel">주요 커리큘럼</div>
+          <ol class="clist">
+            <li>전략적 사고와 협상의 이해</li>
+            <li>협상 프로세스와 데이터 기반 협상</li>
+            <li>8-Block Negotiation Model</li>
+            <li>범용 케이스 시뮬레이션 실습</li>
+            <li>협상의 핵심 원리와 기술</li>
+            <li>커스텀 케이스 AI 시뮬레이터 실습</li>
+          </ol>
+        </div>
         <ul class="spec">
-          <li>인원 : 25명 내외</li>
           <li>시간 : 1일(8시간) 또는 2일 과정</li>
-          <li>교재 : 프리미엄 바인더 제공</li>
-          <li>실습 : 커스텀 시나리오 개발</li>
         </ul>
       </div>
       <div class="pcard">
         <div class="tier">EXPERT</div>
         <h3>Expert 과정</h3>
-        <p class="pdesc">복합 쟁점과 이해관계가 얽힌 협상을 직접 설계하고 결정하는 직책자·임원을 위한 고급 과정</p>
+        <p class="pdesc">복합 쟁점이 얽힌 협상을 설계하고 결정하는 임원·직책자 과정입니다. 전략 수립과 구조화를 깊이 다룹니다.</p>
+        <div class="curri">
+          <div class="clabel">주요 커리큘럼</div>
+          <ol class="clist">
+            <li>성공적인 협상의 요건</li>
+            <li>협상 전략의 설계와 구조화</li>
+            <li>범용 복합 케이스 시뮬레이션 실습</li>
+            <li>협상의 핵심 원리와 메커니즘</li>
+            <li>커스텀 케이스 시뮬레이션 실습</li>
+            <li>커스텀 복합 케이스 AI 시뮬레이터 실습</li>
+          </ol>
+        </div>
         <ul class="spec">
-          <li>인원 : 20명 내외</li>
           <li>시간 : 2일(12시간) 또는 3일 과정</li>
-          <li>교재 : 프리미엄 바인더 + 『협상 레볼루션』</li>
-          <li>실습 : 커스텀 시나리오 개발</li>
         </ul>
       </div>
     </div>
