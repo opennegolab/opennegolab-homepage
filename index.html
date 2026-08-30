@@ -166,6 +166,10 @@ section[id]{scroll-margin-top:84px}   /* 고정 헤더에 제목이 가리지 �
 }
 h1{font-size:clamp(38px,6.2vw,76px);font-weight:800;letter-spacing:-3.2px;line-height:1.08}
 h2{font-size:clamp(28px,3.8vw,48px);font-weight:800;letter-spacing:-1.9px;line-height:1.2}
+/* 알파벳으로만 된 제목 보정 — 같은 굵기라도 한글보다 가늘어 보인다.
+   한글은 획이 촘촘히 네모를 채우는데 알파벳은 획이 가늘고 여백이 많다.
+   자간 -1.9px 도 한글 기준이라 알파벳에는 너무 좁아 더 흐려 보인다 */
+h2.en{font-weight:900;letter-spacing:-1.1px}
 h3{font-size:clamp(18px,1.9vw,21px);font-weight:700;letter-spacing:-.6px;line-height:1.4}
 .lead{font-size:clamp(16px,1.65vw,19px);color:var(--ink-2);font-weight:500;line-height:1.75}
 .sub{font-size:14.5px;color:var(--ink-2);font-weight:500;line-height:1.75}
@@ -715,7 +719,7 @@ footer a:hover{color:#C9D4E1}
   <div class="wrap rv">
     <div class="shead">
       <div class="eyebrow">Our Framework</div>
-      <h2>8-Block Negotiation Model</h2>
+      <h2 class="en">8-Block Negotiation Model</h2>
       <p class="lead">복잡한 협상을 8단계의 체계적인 프로세스로 구조화한 협상 프레임워크입니다.<br class="brk">분석부터 전략 설계, 실행까지 협상 전반을 체계적이고 일관된 프로세스로 진행합니다.</p>
       <div class="tm">8-Block Negotiation Model&trade; · 상표 등록 제 40-2458489 호</div>
     </div>
