@@ -1141,8 +1141,11 @@ footer a:hover{color:#C9D4E1}
   /* 방문 통계에 남기는 기록.
      광고 차단기를 쓰면 gtag 가 아예 없을 수 있으니 있는지 확인하고 부른다 —
      통계가 안 잡히는 건 감수해도, 그것 때문에 문의 전송이 막히면 안 된다 */
+  /* 두 곳에 함께 남긴다 — 구글 애널리틱스와 우리 통계 화면(/stats).
+     한쪽만 보내면 /stats 의 문의 접수·시뮬레이터 클릭이 영영 0 으로 남는다 */
   function track(name, params){
     try { if (typeof gtag === 'function') gtag('event', name, params || {}); } catch (err) {}
+    try { if (typeof window.onlHit === 'function') window.onlHit(name); } catch (err) {}
   }
 
   var form = document.getElementById('inquiryForm');
