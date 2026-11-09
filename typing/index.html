@@ -7,6 +7,21 @@
 <meta name="description" content="듣고 쓰는 받아쓰기, 질문에 답하기로 한글 타자를 연습해요.">
 <!-- 전용 링크로만 들어오는 학습 화면이라 검색에는 올리지 않는다 -->
 <meta name="robots" content="noindex, nofollow">
+<!-- 카카오톡·문자 등으로 링크를 보낼 때 뜨는 미리보기 -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="오선빈 타자연습">
+<meta property="og:title" content="오선빈 타자연습">
+<meta property="og:description" content="잘 듣고, 또박또박 써 봐요. 받아쓰기와 질문에 답하기로 한글 타자를 연습해요.">
+<meta property="og:url" content="https://www.opennegolab.com/typing">
+<meta property="og:image" content="https://www.opennegolab.com/typing/og.png?v=1">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="오선빈 타자연습">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="오선빈 타자연습">
+<meta name="twitter:description" content="잘 듣고, 또박또박 써 봐요. 받아쓰기와 질문에 답하기로 한글 타자를 연습해요.">
+<meta name="twitter:image" content="https://www.opennegolab.com/typing/og.png?v=1">
 <meta name="theme-color" content="#FBF7F1">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -59,7 +74,8 @@
   .step .side{ margin-left:auto; }
   .note{ font-size:.86rem; color:var(--ink-soft); line-height:1.6; }
   .note b{ color:var(--ink-2); }
-  .warn{ display:flex; gap:10px; align-items:flex-start; background:var(--yellow-soft); color:var(--yellow-d); border-radius:var(--r); padding:14px 16px; font-size:.93rem; font-weight:600; line-height:1.55; }
+  .warn .open-ext{ display:inline-flex; margin-top:10px; padding:9px 16px; border-radius:12px; background:var(--blue); color:#fff; font-weight:800; text-decoration:none; }
+  .warn{ display:block; background:var(--yellow-soft); color:var(--yellow-d); border-radius:var(--r); padding:14px 16px; font-size:.93rem; font-weight:600; line-height:1.55; }
 
   /* 버튼 */
   .btn{
@@ -189,10 +205,9 @@
   .hint{ color:var(--ink-soft); margin-top:2px; font-size:.92rem; }
   /* 질문 모드: 작은 다시 듣기 버튼 */
   .listen-pill{ margin-top:20px; display:inline-flex; align-items:center; gap:8px; padding:10px 18px; min-height:48px; border-radius:999px; background:var(--yellow-soft); color:var(--yellow-d); font-weight:800; }
-  .wave{ display:inline-flex; gap:3px; align-items:center; height:18px; }
-  .wave i{ width:4px; height:6px; background:currentColor; border-radius:2px; opacity:.6; }
-  .speaking .wave i{ animation:wave .8s infinite ease-in-out; }
-  .speaking .wave i:nth-child(2){ animation-delay:.15s; } .speaking .wave i:nth-child(3){ animation-delay:.3s; }
+  .listen-pill svg{ width:20px; height:20px; }
+  .listen-pill.speaking svg{ animation:beat .9s ease-in-out infinite; }
+  @keyframes beat{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.2); } }
   @keyframes wave{ 0%,100%{ height:5px; } 50%{ height:18px; } }
 
   .answer-box{
@@ -409,7 +424,7 @@
       </div>
     </div>
 
-    <p class="warn hidden" id="homeWarn" role="alert"></p>
+    <div class="warn hidden" id="homeWarn" role="alert"></div>
     <div class="start-wrap">
       <button type="button" class="btn btn-primary start" id="startBtn" disabled>연습 시작<svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></button>
     </div>
@@ -467,7 +482,7 @@
   </section>
 </div>
 
-<script src="/typing/store.js?v=4"></script>
+<script src="/typing/store.js?v=5"></script>
 <script>
 (function () {
   "use strict";
@@ -505,6 +520,26 @@
      목소리는 따로 고르지 않는다. 기기에 있는 한국어 목소리 중
      가장 자연스러운 것을 자동으로 쓰고, 빠르기는 아이에게 맞춘 한 가지로 둔다.
      ============================================================ */
+  const ANDROID = /Android/i.test(navigator.userAgent);
+  /* 카카오톡·네이버·인스타그램 등 앱 안의 브라우저. 안드로이드 웹뷰(wv)도 여기에 든다 */
+  const IN_APP = /KAKAOTALK|NAVER\(|NAVER\/|Instagram|FBAN|FBAV|Line\/|DaumApps|SamsungBrowser\/.*CrossApp|; wv\)/i.test(navigator.userAgent);
+  /* 지금 주소를 바깥 브라우저로 여는 링크 */
+  function externalUrl() {
+    const url = location.href;
+    if (/KAKAOTALK/i.test(navigator.userAgent)) return "kakaotalk://web/openExternal?url=" + encodeURIComponent(url);
+    if (ANDROID) return "intent://" + url.replace(/^https?:\/\//, "") + "#Intent;scheme=https;package=com.android.chrome;end";
+    return "";
+  }
+  /* 소리가 안 날 때 한 번만 알려 준다 */
+  let hinted = false;
+  function silentHint() {
+    if (hinted || $("play").classList.contains("hidden")) return;
+    hinted = true;
+    setMsg(ANDROID
+      ? "소리가 안 나요? 휴대폰 미디어 소리를 키우고, 설정 › 일반 › 텍스트 음성 변환에서 한국어가 설치됐는지 확인해 주세요."
+      : "소리가 안 나요? 컴퓨터 소리를 키우고, 설정에서 한국어 음성이 설치됐는지 확인해 주세요.");
+  }
+
   const tts = {
     ok: "speechSynthesis" in window && "SpeechSynthesisUtterance" in window,
     voices: [],
@@ -526,33 +561,49 @@
     },
     stop() {
       this.token++;
-      if (this.ok) speechSynthesis.cancel();
+      if (this.ok && (speechSynthesis.speaking || speechSynthesis.pending)) speechSynthesis.cancel();
       setSpeaking(false);
     },
-    /* 문제가 바뀌면 앞 음성을 끊고 새로 읽는다.
-       크롬은 cancel 직후 바로 speak 하면 가끔 무시해서 조금 쉬었다 읽는다 */
-    speak(text, opts) {
+    /* 읽기
+       - 읽고 있는 게 있을 때만 끊고, 조금 쉬었다 읽는다 (안드로이드는 끊은 직후 읽기를 무시하는 경우가 있다)
+       - 읽고 있는 게 없으면 바로 읽는다 — 버튼을 누른 그 순간에 읽어야 휴대폰이 막지 않는다
+       - 안드로이드(갤럭시)는 목소리를 직접 지정하면 소리가 안 나는 경우가 있어,
+         휴대폰에 설정된 한국어 기본 목소리를 그대로 쓴다 */
+    speak(text) {
       if (!this.ok || !text) return false;
       const t = ++this.token;
-      speechSynthesis.cancel();
-      setTimeout(() => {
+      const busy = speechSynthesis.speaking || speechSynthesis.pending;
+      if (busy) speechSynthesis.cancel();
+      const go = () => {
         if (t !== this.token) return;
         const u = new SpeechSynthesisUtterance(text);
-        const v = (opts && opts.voice) || this.pick();
-        if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "ko-KR";
+        u.lang = "ko-KR";
+        const v = ANDROID ? null : this.pick();
+        if (v) { u.voice = v; u.lang = v.lang; }
         u.rate = RATE;
         u.pitch = 1;
-        u.onstart = () => { if (t === this.token) setSpeaking(true); };
-        u.onend = u.onerror = () => { if (t === this.token) setSpeaking(false); };
+        u.volume = 1;
+        let started = false;
+        u.onstart = () => { started = true; if (t === this.token) setSpeaking(true); };
+        u.onend = () => { if (t === this.token) setSpeaking(false); };
+        u.onerror = e => {
+          if (t !== this.token) return;
+          setSpeaking(false);
+          if (e && e.error !== "interrupted" && e.error !== "canceled") silentHint();
+        };
         this.current = u;               /* 일부 브라우저는 참조가 없으면 중간에 끊는다 */
         try { speechSynthesis.resume(); } catch (e) {}
         speechSynthesis.speak(u);
-      }, 90);
+        /* 몇 초가 지나도 읽기 시작을 안 하면 소리가 안 나는 것 — 확인할 것을 알려 준다 */
+        setTimeout(() => { if (t === this.token && !started && !speechSynthesis.speaking) silentHint(); }, 4000);
+      };
+      if (busy) setTimeout(go, ANDROID ? 300 : 120); else go();
       return true;
     },
-    /* 휴대폰 브라우저는 사용자가 누른 순간에 한 번 말해 둬야 그 뒤 자동 읽기가 된다 */
+    /* 아이폰 사파리는 누른 순간에 한 번 말해 둬야 그 뒤 자동 읽기가 된다.
+       안드로이드에서는 빈 말이 오류를 내고 뒤 읽기를 막기도 해서 하지 않는다 */
     unlock() {
-      if (!this.ok || this.unlocked) return;
+      if (!this.ok || this.unlocked || ANDROID) return;
       try {
         const u = new SpeechSynthesisUtterance(" ");
         u.volume = 0; u.lang = "ko-KR";
@@ -621,8 +672,24 @@
       else if (!n) w = "이 문제집에는 " + (settings.mode === "qa" ? "질문" : "받아쓰기") + " 문제가 없어요. '문제 설정'에서 넣어 주세요.";
     }
     if (loadError) w = loadError;
-    if (settings.mode === "dictation" && !tts.ok) w = (w ? w + " " : "") + "이 브라우저는 소리 내어 읽기를 지원하지 않아 받아쓰기를 할 수 없어요.";
     warn.textContent = w;
+    /* 소리를 낼 수 없는 곳 — 대개 카카오톡·네이버 같은 앱 안에서 링크를 연 경우다.
+       그 자리에서 크롬으로 다시 열 수 있게 버튼을 준다 */
+    if (!tts.ok || IN_APP) {
+      const p = document.createElement("div");
+      p.textContent = IN_APP
+        ? "카카오톡·네이버 같은 앱 안에서 열면 문제를 소리 내어 읽지 못할 수 있어요. 크롬이나 삼성 인터넷으로 열어 주세요."
+        : "이 화면에서는 소리 내어 읽기를 쓸 수 없어요" + (settings.mode === "dictation" ? " (받아쓰기는 소리가 있어야 해요)" : "") + ". 크롬이나 삼성 인터넷으로 열어 주세요.";
+      if (w) p.style.marginTop = "8px";
+      warn.appendChild(p);
+      const href = externalUrl();
+      if (href) {
+        const a = document.createElement("a");
+        a.className = "open-ext"; a.href = href; a.textContent = "크롬으로 열기";
+        warn.appendChild(a);
+      }
+      w = w || "app";
+    }
     warn.classList.toggle("hidden", !w);
     $("startBtn").disabled = !counts || !counts[settings.mode] || (settings.mode === "dictation" && !tts.ok);
   }
@@ -730,7 +797,7 @@
     $("stage").innerHTML = qa
       ? "<span class='qtag qa'>" + icon("chat") + "질문에 답하기</span>" +
         "<div class='question'>" + esc(item.question) + "</div>" +
-        "<button type='button' class='listen listen-pill' id='listenBtn'><span class='wave' aria-hidden='true'><i></i><i></i><i></i></span>질문 다시 듣기</button>"
+        "<button type='button' class='listen listen-pill' id='listenBtn'>" + icon("speaker") + "질문 다시 듣기</button>"
       : "<span class='qtag'>" + icon("headphones") + "받아쓰기</span>" +
         "<button type='button' class='listen listen-big' id='listenBtn' aria-label='다시 듣기'>" + icon("speaker") + "</button>" +
         "<div class='listen-cap'>눌러서 다시 듣기</div><div class='hint'>잘 듣고 그대로 써 보세요</div>";
