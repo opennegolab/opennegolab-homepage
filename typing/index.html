@@ -642,10 +642,20 @@
      ============================================================ */
   let counts = null;
 
+  /* 연습·결과 화면에 들어갈 때 방문 기록에 한 칸을 넣어 둔다.
+     그러면 뒤로가기(PC 뒤로 버튼, 휴대폰 뒤로가기)가 페이지를 떠나지 않고 처음 화면으로 돌아온다.
+     처음 화면에서 뒤로가기를 누르면 원래대로 페이지를 떠난다 */
+  const INNER = "typing-inner";
+  const inInner = () => !!(history.state && history.state[INNER]);
   function show(id) {
     for (const s of ["home", "play", "result"]) $(s).classList.toggle("hidden", s !== id);
+    if (id !== "home" && !inInner()) { try { history.pushState({ [INNER]: true }, ""); } catch (e) {} }
     window.scrollTo(0, 0);
   }
+  window.addEventListener("popstate", () => {
+    if (!$("home").classList.contains("hidden")) return;   /* 이미 처음 화면 */
+    toHomeScreen();
+  });
 
   let sets = null;
   const currentSet = () => (sets || []).find(x => x.id === settings.set) || null;
@@ -993,7 +1003,13 @@
   input.addEventListener("focus", () => setTimeout(keepVisible, 250));
   input.addEventListener("blur", () => setTimeout(() => document.body.classList.remove("kbd"), 200));
 
+  /* 처음 화면으로 — 버튼으로 갈 때는 넣어 둔 기록 한 칸을 되돌려(history.back) 기록이 쌓이지 않게 한다.
+     되돌리면 popstate 가 와서 toHomeScreen 이 불린다 */
   function goHome() {
+    if (inInner()) { history.back(); return; }
+    toHomeScreen();
+  }
+  function toHomeScreen() {
     clearTimeout(S.timer);
     S.seq++;
     S.phase = "idle";
