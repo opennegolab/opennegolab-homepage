@@ -3,63 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>타자 연습 — 문제 설정</title>
+<title>오선빈 타자연습 — 문제 설정</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <style>
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
   :root{
-    --bg:#F4F7FC; --card:#fff; --ink:#232B40; --ink-2:#4A536B; --ink-soft:#7A839A; --line:#E6EBF3; --line-2:#D5DDEA;
-    --blue:#4C8DF0; --blue-d:#2F6FD6; --blue-soft:#EAF2FF; --blue-mid:#CFE1FD;
-    --mint:#25B08C; --mint-d:#168469; --mint-soft:#E1F6EF;
-    --lav:#8A72E6; --lav-d:#5E45C4; --lav-soft:#EFEBFF;
-    --yellow:#F2B42A; --yellow-d:#8C6400; --yellow-soft:#FFF4D4;
-    --coral:#E05C7C; --coral-soft:#FFE8EE;
-    --shadow:0 1px 1px rgba(35,43,64,.03), 0 2px 6px rgba(35,43,64,.04), 0 16px 40px -14px rgba(35,43,64,.12);
-    --shadow-sm:0 1px 2px rgba(35,43,64,.05), 0 4px 12px -4px rgba(35,43,64,.10);
+    --bg:#FBF7F1; --card:#fff; --ink:#2E2A33; --ink-2:#57505E; --ink-soft:#8E8679; --line:#EFE7DB; --line-2:#E2D8C8;
+    --blue:#5A8BEA; --blue-d:#3A68C8; --blue-soft:#EAF0FC; --blue-mid:#D4E1F8;
+    --mint:#38B48E; --mint-d:#1D8766; --mint-soft:#E2F4EB;
+    --lav:#9B7FE6; --lav-d:#6B50C2; --lav-soft:#F1ECFD;
+    --yellow:#F2B33F; --yellow-d:#8A5E06; --yellow-soft:#FFF3D8;
+    --coral:#E2698A; --coral-soft:#FFE9EF;
+    --shadow:0 1px 1px rgba(70,52,34,.03), 0 2px 6px rgba(70,52,34,.04), 0 16px 40px -14px rgba(70,52,34,.12);
+    --shadow-sm:0 1px 2px rgba(70,52,34,.05), 0 4px 12px -4px rgba(70,52,34,.10);
   }
   *{ box-sizing:border-box; margin:0; padding:0; }
   body{ background:var(--bg); color:var(--ink); font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif; font-size:15px; line-height:1.5; letter-spacing:-.01em; -webkit-font-smoothing:antialiased; }
   body::before{ content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
-    background:radial-gradient(40rem 24rem at 0% -10%, rgba(76,141,240,.12), transparent 70%), radial-gradient(34rem 22rem at 100% 0%, rgba(138,114,230,.10), transparent 70%); }
+    background:radial-gradient(40rem 24rem at 0% -10%, rgba(240,150,94,.15), transparent 70%), radial-gradient(34rem 22rem at 100% 0%, rgba(90,139,234,.10), transparent 70%); }
   button,input,textarea,select{ font:inherit; color:inherit; }
   button{ cursor:pointer; border:none; background:none; }
   a{ color:inherit; text-decoration:none; }
-  :focus-visible{ outline:3px solid rgba(76,141,240,.5); outline-offset:2px; border-radius:10px; }
+  :focus-visible{ outline:3px solid rgba(90,139,234,.5); outline-offset:2px; border-radius:10px; }
   svg.i{ width:1.15em; height:1.15em; flex:none; fill:none; stroke:currentColor; stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round; }
   .wrap{ max-width:1040px; margin:0 auto; padding:28px 18px 64px; }
   .hidden{ display:none !important; }
 
   header{ display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:18px; }
   .brand{ display:flex; align-items:center; gap:12px; }
-  .brand .logo{ width:46px; height:46px; border-radius:15px; display:grid; place-items:center; color:#fff; background:linear-gradient(135deg,#6AA4F5,var(--blue-d)); box-shadow:0 8px 18px -8px rgba(76,141,240,.8); }
+  .brand .logo{ width:46px; height:46px; border-radius:15px; display:grid; place-items:center; color:#fff; background:linear-gradient(135deg,#F7B58A,#E07A3E); box-shadow:0 8px 18px -8px rgba(224,122,62,.7); }
   .brand .logo svg{ width:24px; height:24px; }
   h1{ font-size:1.35rem; font-weight:900; letter-spacing:-.02em; }
   .brand p{ font-size:.84rem; color:var(--ink-soft); font-weight:600; }
   h2{ font-size:1.02rem; font-weight:900; display:flex; align-items:center; gap:8px; }
   h2 svg{ color:var(--blue); }
 
-  .card{ background:var(--card); border-radius:24px; box-shadow:var(--shadow); border:1px solid rgba(230,235,243,.7); padding:22px; margin-bottom:16px; }
+  .card{ background:var(--card); border-radius:24px; box-shadow:var(--shadow); border:1px solid rgba(239,231,219,.8); padding:22px; margin-bottom:16px; }
   .btn{ display:inline-flex; align-items:center; justify-content:center; gap:6px; border-radius:12px; padding:9px 15px; font-weight:800; font-size:.92rem; background:var(--blue-soft); color:var(--blue-d); min-height:42px; transition:background .15s, box-shadow .15s, transform .1s; white-space:nowrap; }
-  .btn:hover:not(:disabled){ background:#DDEAFE; }
+  .btn:hover:not(:disabled){ background:#DCE7FA; }
   .btn:active:not(:disabled){ transform:translateY(1px); }
   .btn:disabled{ opacity:.45; cursor:not-allowed; }
-  .btn.primary{ background:linear-gradient(180deg,#5B98F3,var(--blue)); color:#fff; box-shadow:0 6px 14px -6px rgba(76,141,240,.7); }
-  .btn.primary:hover:not(:disabled){ background:linear-gradient(180deg,#4C8DF0,var(--blue-d)); }
+  .btn.primary{ background:linear-gradient(180deg,#6D9BEF,var(--blue)); color:#fff; box-shadow:0 6px 14px -6px rgba(90,139,234,.7); }
+  .btn.primary:hover:not(:disabled){ background:linear-gradient(180deg,#5A8BEA,var(--blue-d)); }
   .btn.white{ background:#fff; color:var(--ink-2); box-shadow:var(--shadow-sm); }
   .btn.white:hover{ background:#fff; color:var(--blue-d); }
   .btn.danger{ background:var(--coral-soft); color:var(--coral); }
-  .btn.danger:hover:not(:disabled){ background:#FFDCE5; }
+  .btn.danger:hover:not(:disabled){ background:#FFDDE6; }
   .btn.ghost{ background:transparent; color:var(--ink-soft); }
-  .btn.ghost:hover{ background:#F1F4FA; }
+  .btn.ghost:hover{ background:#F5EFE6; }
   .btn.small{ padding:6px 11px; min-height:34px; font-size:.84rem; border-radius:10px; }
   .btn.line{ background:#fff; color:var(--ink-2); border:1.5px solid var(--line-2); }
-  .btn.line:hover{ background:#F7F9FC; }
+  .btn.line:hover{ background:#FBF8F3; }
 
   input[type=text],input[type=search],textarea{
     width:100%; border:2px solid var(--line); border-radius:14px; padding:11px 14px; background:#fff; outline:none; transition:border-color .15s, box-shadow .15s;
   }
-  input[type=text]:focus,input[type=search]:focus,textarea:focus{ border-color:var(--blue); box-shadow:0 0 0 4px rgba(76,141,240,.12); }
+  input[type=text]:focus,input[type=search]:focus,textarea:focus{ border-color:var(--blue); box-shadow:0 0 0 4px rgba(90,139,234,.12); }
   textarea{ min-height:150px; resize:vertical; font-size:.94rem; line-height:1.6; }
   input[type=checkbox]{ width:17px; height:17px; accent-color:var(--blue); vertical-align:middle; }
   .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
@@ -70,7 +70,7 @@
   .err{ color:var(--coral); font-weight:700; min-height:1.4em; font-size:.88rem; }
   .ok{ color:var(--mint-d); font-weight:800; }
 
-  .tabs{ display:inline-grid; grid-auto-flow:column; gap:4px; background:#E9EEF6; padding:5px; border-radius:18px; margin-bottom:16px; }
+  .tabs{ display:inline-grid; grid-auto-flow:column; gap:4px; background:#F2EBE0; padding:5px; border-radius:18px; margin-bottom:16px; }
   .tab{ display:flex; align-items:center; gap:8px; border-radius:14px; padding:10px 18px; font-weight:800; color:var(--ink-soft); transition:background .15s, color .15s; }
   .tab svg{ width:18px; height:18px; }
   .tab .n{ font-size:.78rem; font-weight:900; background:rgba(255,255,255,.7); border-radius:999px; padding:1px 9px; }
@@ -96,7 +96,7 @@
   th,td{ text-align:left; padding:12px 8px; border-top:1px solid var(--line); vertical-align:top; }
   th{ font-size:.76rem; color:var(--ink-soft); font-weight:900; border-top:none; text-transform:uppercase; letter-spacing:.02em; padding-top:4px; }
   tbody tr{ transition:background .12s; }
-  tbody tr:hover td{ background:#F9FBFE; }
+  tbody tr:hover td{ background:#FCF9F4; }
   td:first-child{ border-radius:12px 0 0 12px; } td:last-child{ border-radius:0 12px 12px 0; }
   td.num{ color:var(--ink-soft); width:52px; font-weight:700; font-size:.88rem; padding-top:14px; }
   td.act{ width:136px; white-space:nowrap; text-align:right; }
@@ -133,7 +133,6 @@
   <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></symbol>
   <symbol id="i-stack" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.3-4.3"/></symbol>
-  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
   <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
@@ -189,11 +188,6 @@
     <div class="card">
       <div class="listbar">
         <h2><svg class="i" aria-hidden="true"><use href="#i-list"/></svg>문제 목록 <span class="count" id="listCount">0</span></h2>
-        <div class="row">
-          <button class="btn small line" id="exportJson"><svg class="i" aria-hidden="true"><use href="#i-down"/></svg>JSON</button>
-          <button class="btn small line" id="exportCsv"><svg class="i" aria-hidden="true"><use href="#i-down"/></svg>CSV</button>
-          <button class="btn small line" id="exportAll" title="받아쓰기와 질문을 한 파일로"><svg class="i" aria-hidden="true"><use href="#i-down"/></svg>전체 JSON</button>
-        </div>
       </div>
       <div class="row">
         <div class="search grow"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="search" placeholder="문장·질문·정답에서 찾기"></div>
@@ -228,7 +222,7 @@
 
   function boot() {
     const w = $("storageWarn");
-    const msg = store.persistent() ? "" : "⚠️ 이 브라우저는 저장 공간을 쓸 수 없어요(사생활 보호 모드 등). 넣은 문제가 창을 닫으면 사라지니 꼭 내보내기로 받아 두세요.";
+    const msg = store.persistent() ? "" : "⚠️ 이 브라우저는 저장 공간을 쓸 수 없어요(사생활 보호 모드 등). 넣은 문제가 창을 닫으면 사라져요.";
     w.textContent = msg;
     w.classList.toggle("hidden", !msg);
     refreshCounts();
@@ -395,37 +389,6 @@
       m.textContent = r.added + "개 등록" + (r.skipped ? " · 이미 있는 " + r.skipped + "개는 건너뜀" : "") + ".";
       $("bulkText").value = "";
     } catch (err) { m.className = "err"; m.textContent = err.message; }
-  });
-
-  /* ---------- 내보내기 ---------- */
-  function download(name, text, type) {
-    const blob = new Blob([text], { type });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
-  }
-  const stamp = () => new Date().toISOString().slice(0, 10);
-  const asJson = (m, list) => m === "qa" ? list.map(x => ({ question: x.prompt, answers: x.answers })) : list.map(x => ({ text: x.prompt }));
-  function csvCell(s) { s = String(s); return /[",\r\n]/.test(s) || /^[=+\-@]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
-
-  $("exportJson").addEventListener("click", () => {
-    const data = { type: "opennegolab-typing", version: 1, exportedAt: new Date().toISOString() };
-    data[mode] = asJson(mode, items);
-    download("typing-" + mode + "-" + stamp() + ".json", JSON.stringify(data, null, 2), "application/json");
-  });
-  $("exportAll").addEventListener("click", async () => {
-    try {
-      const data = { type: "opennegolab-typing", version: 1, exportedAt: new Date().toISOString(), dictation: asJson("dictation", store.list("dictation")), qa: asJson("qa", store.list("qa")) };
-      download("typing-all-" + stamp() + ".json", JSON.stringify(data, null, 2), "application/json");
-    } catch (e) { alert(e.message); }
-  });
-  $("exportCsv").addEventListener("click", () => {
-    const rows = mode === "qa" ? [["질문", "정답"]].concat(items.map(x => [x.prompt, x.answers.join("|")])) : [["문장"]].concat(items.map(x => [x.prompt]));
-    /* 맨 앞 BOM 은 엑셀이 한글을 깨뜨리지 않게 한다 */
-    download("typing-" + mode + "-" + stamp() + ".csv", "﻿" + rows.map(r => r.map(csvCell).join(",")).join("\r\n"), "text/csv;charset=utf-8");
   });
 
   boot();
