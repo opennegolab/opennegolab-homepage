@@ -58,12 +58,86 @@ const SAMPLES = {
   ],
 };
 
+/* 한 번만 넣는 문제집 — 배포 후 처음 켜질 때 넣고, typing_meta 에 넣었다고 적어 둔다.
+   그래서 나중에 지워도 다시 생기지 않는다. 같은 이름의 문제집이 이미 있으면 거기에 더하고,
+   이미 있는 문제는 건너뛴다 */
+const ONCE = [
+  {
+    key: "set:arith-1digit-v1",
+    name: "한자리 산수",
+    qa: [
+      ["1 더하기 8은?", ["9"]],
+      ["7 빼기 3은?", ["4"]],
+      ["3 빼기 1은?", ["2"]],
+      ["4 빼기 2는?", ["2"]],
+      ["6 빼기 4는?", ["2"]],
+      ["6 더하기 5는?", ["11"]],
+      ["6 더하기 7은?", ["13"]],
+      ["7 빼기 4는?", ["3"]],
+      ["4 더하기 3은?", ["7"]],
+      ["8 빼기 3은?", ["5"]],
+      ["5 더하기 6은?", ["11"]],
+      ["9 빼기 3은?", ["6"]],
+      ["6 더하기 2는?", ["8"]],
+      ["3 더하기 4는?", ["7"]],
+      ["7 더하기 5는?", ["12"]],
+      ["5 더하기 9는?", ["14"]],
+      ["9 더하기 8은?", ["17"]],
+      ["8 빼기 1은?", ["7"]],
+      ["4 더하기 1은?", ["5"]],
+      ["4 더하기 2는?", ["6"]],
+      ["1 더하기 7은?", ["8"]],
+      ["2 더하기 7은?", ["9"]],
+      ["8 빼기 7은?", ["1"]],
+      ["9 빼기 5는?", ["4"]],
+      ["5 더하기 8은?", ["13"]],
+      ["6 더하기 1은?", ["7"]],
+      ["9 더하기 6은?", ["15"]],
+      ["6 빼기 5는?", ["1"]],
+      ["6 더하기 8은?", ["14"]],
+      ["7 빼기 7은?", ["0"]],
+    ],
+  },
+];
+
+async function seedOnce(p) {
+  await p.query(`CREATE TABLE IF NOT EXISTS typing_meta (key TEXT PRIMARY KEY, done_at TIMESTAMPTZ NOT NULL DEFAULT now())`);
+  for (const seed of ONCE) {
+    const done = (await p.query(`SELECT 1 FROM typing_meta WHERE key = $1`, [seed.key])).rows.length;
+    if (done) continue;
+    const client = await p.connect();
+    try {
+      await client.query("BEGIN");
+      const found = (await client.query(`SELECT id FROM typing_sets WHERE lower(name) = lower($1)`, [seed.name])).rows[0];
+      const set = found ? found.id : (await client.query(`INSERT INTO typing_sets (name) VALUES ($1) RETURNING id`, [seed.name])).rows[0].id;
+      const have = new Set((await client.query(`SELECT prompt FROM typing_items WHERE set_id = $1 AND mode = 'qa'`, [set])).rows.map(r => r.prompt));
+      let n = 0;
+      for (const [q, a] of seed.qa) {
+        if (have.has(q)) continue;
+        await client.query(`INSERT INTO typing_items (set_id, mode, prompt, answers) VALUES ($1, 'qa', $2, $3)`, [set, q, JSON.stringify(a)]);
+        n++;
+      }
+      await client.query(`INSERT INTO typing_meta (key) VALUES ($1) ON CONFLICT DO NOTHING`, [seed.key]);
+      await client.query("COMMIT");
+      console.log(`타자 연습: '${seed.name}' 문제집에 ${n}문제를 넣었다`);
+    } catch (e) {
+      try { await client.query("ROLLBACK"); } catch {}
+      console.error("타자 연습: 문제집 넣기 실패 —", e && e.message);
+    } finally { client.release(); }
+  }
+}
+
 function seedMemory() {
   const now = new Date().toISOString();
   const set = { id: ++memory.setSeq, name: SAMPLE_SET, created_at: now };
   memory.sets.push(set);
   for (const t of SAMPLES.dictation) memory.items.push({ id: ++memory.seq, set_id: set.id, mode: "dictation", prompt: t, answers: [], created_at: now, updated_at: now });
   for (const [q, a] of SAMPLES.qa) memory.items.push({ id: ++memory.seq, set_id: set.id, mode: "qa", prompt: q, answers: a, created_at: now, updated_at: now });
+  for (const seed of ONCE) {
+    const st = { id: ++memory.setSeq, name: seed.name, created_at: now };
+    memory.sets.push(st);
+    for (const [q, a] of seed.qa) memory.items.push({ id: ++memory.seq, set_id: st.id, mode: "qa", prompt: q, answers: a, created_at: now, updated_at: now });
+  }
 }
 
 function makePool(useSsl) {
@@ -123,6 +197,7 @@ async function prepare(p) {
       console.log("타자 연습: 문제집 없이 있던 문제 " + orphan + "개를 '기본 문제집'으로 옮겼다");
     }
   }
+  await seedOnce(p);
 }
 
 async function connect() {
