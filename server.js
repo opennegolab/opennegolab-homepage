@@ -40,6 +40,25 @@ const TYPES = {
 
 const home = () => path.join(ROOT, "index.html");
 
+/* 카카오톡에서 /typing 을 열었을 때 보내는 빈 화면 — 바로 기본 브라우저로 넘긴다.
+   같은 창에서는 한 번만 넘기고, 넘어가지 못하면 1.5초 뒤 원래 화면(?inapp=1)을 연다 */
+const KAKAO_HOP = `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>오선빈 타자연습</title><link rel="icon" href="data:,">
+<meta property="og:title" content="오선빈 타자연습">
+<meta property="og:image" content="https://www.opennegolab.com/typing/og.png?v=1">
+<style>html,body{margin:0;height:100%;background:#FBF7F1}</style>
+<script>
+(function () {
+  var full = location.href + (location.search ? "&" : "?") + "inapp=1";
+  var tried = false;
+  try { tried = !!sessionStorage.getItem("typing.ext"); sessionStorage.setItem("typing.ext", "1"); } catch (e) {}
+  if (tried) { location.replace(full); return; }
+  location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href);
+  setTimeout(function () { location.replace(full); }, 1500);
+})();
+</script></head><body></body></html>`;
+
 /* 요청 하나를 처리하다 예외가 나면 Node 는 프로세스를 끝낸다 — 방문자 한 명의
    이상한 요청 때문에 사이트 전체가 내려가면 안 된다. 그래서 전체를 감싼다 */
 http.createServer((req, res) => {
@@ -143,6 +162,14 @@ function handle(req, res) {
      채점은 방문자 브라우저 안에서 한다 (typing/store.js) */
   if (urlPath === "/typing" || urlPath === "/typing/" || urlPath === "/typing/admin" || urlPath === "/typing/admin/") {
     const admin = urlPath.startsWith("/typing/admin");
+    /* 카카오톡 안에서 연 연습 화면은 소리가 나지 않아 크롬(기본 브라우저)으로 넘긴다.
+       카톡 안에서 아이콘·화면이 잠깐 보였다 넘어가지 않게, 아무것도 그리지 않는 빈 화면만 보낸다.
+       (미리보기를 만드는 카카오 수집기 'kakaotalk-scrap' 에는 원래 화면을 그대로 보낸다) */
+    const ua = req.headers["user-agent"] || "";
+    if (!admin && /KAKAOTALK/.test(ua) && !/kakaotalk-scrap/i.test(ua) && !/[?&]inapp=1(&|$)/.test(req.url)) {
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow" });
+      return res.end(KAKAO_HOP);
+    }
     res.writeHead(200, {
       "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": admin ? "no-store" : "no-cache",

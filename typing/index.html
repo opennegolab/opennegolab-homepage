@@ -6,8 +6,9 @@
 /* 카카오톡에서 링크를 열면 카톡 안 화면에서는 소리가 나지 않는다.
    열자마자 휴대폰 기본 브라우저(크롬 등)로 다시 연다. 같은 창에서는 한 번만 시도해,
    안 되더라도 계속 되풀이하지 않는다 (그때는 화면의 '크롬으로 열기' 버튼을 쓴다) */
+setTimeout(function () { document.documentElement.classList.add("ready"); }, 700);
 (function () {
-  if (!/KAKAOTALK/i.test(navigator.userAgent)) return;
+  if (!/KAKAOTALK/.test(navigator.userAgent) || /[?&]inapp=1(&|$)/.test(location.search)) return;
   try { if (sessionStorage.getItem("typing.ext")) return; sessionStorage.setItem("typing.ext", "1"); } catch (e) {}
   location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href);
 })();
@@ -33,8 +34,11 @@
 <meta name="twitter:description" content="잘 듣고, 또박또박 써 봐요. 받아쓰기와 질문에 답하기로 한글 타자를 연습해요.">
 <meta name="twitter:image" content="https://www.opennegolab.com/typing/og.png?v=1">
 <meta name="theme-color" content="#FBF7F1">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/typing/icon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="/typing/icon-64.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/typing/icon-192.png">
+<link rel="apple-touch-icon" href="/typing/icon-180.png">
+<noscript><style>.wrap{ opacity:1 !important; }</style></noscript>
 <style>
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
@@ -53,6 +57,9 @@
   }
   *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
   html{ -webkit-text-size-adjust:100%; }
+  /* 글꼴·문제집이 준비되기 전 화면이 바뀌며 흔들리지 않게, 준비되면 한 번에 보여 준다 */
+  .wrap{ opacity:0; transition:opacity .22s ease-out; }
+  html.ready .wrap{ opacity:1; }
   body{
     background:var(--bg); color:var(--ink);
     font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
@@ -107,7 +114,7 @@
 
   /* 세그먼트 (문제 수 · 빠르기) */
   /* 문제집 고르기 — 이름표 모양, 많아지면 줄을 바꿔 이어진다 */
-  .sets{ display:flex; flex-wrap:wrap; gap:8px; }
+  .sets{ display:flex; flex-wrap:wrap; gap:8px; min-height:48px; align-items:center; }
   .set{
     display:inline-flex; align-items:center; gap:8px; padding:10px 14px 10px 16px; border-radius:16px; min-height:48px;
     border:2px solid var(--line); background:#fff; font-weight:800; color:var(--ink-2); transition:border-color .15s, background .15s, color .15s;
@@ -136,12 +143,10 @@
     display:grid; place-items:center; width:62px; height:62px; border-radius:16px; font-size:1.9rem; font-weight:900; color:var(--t);
     background:linear-gradient(180deg,#fff 10%,var(--k)); border:1px solid var(--e);
     box-shadow:0 5px 0 var(--e), 0 14px 22px -12px rgba(70,52,34,.35);
-    animation:keyin .5s var(--ease) both;
   }
-  .keycap:nth-child(2){ --k:var(--lav-soft); --e:#DCD0F7; --t:var(--lav-d); animation-delay:.06s; }
-  .keycap:nth-child(3){ --k:var(--mint-soft); --e:#C3E7D6; --t:var(--mint-d); animation-delay:.12s; }
-  .keycap:nth-child(4){ --k:var(--peach-soft); --e:#F7D2B8; --t:var(--peach-d); animation-delay:.18s; }
-  @keyframes keyin{ from{ transform:translateY(-10px); opacity:0; } to{ transform:none; opacity:1; } }
+  .keycap:nth-child(2){ --k:var(--lav-soft); --e:#DCD0F7; --t:var(--lav-d); }
+  .keycap:nth-child(3){ --k:var(--mint-soft); --e:#C3E7D6; --t:var(--mint-d); }
+  .keycap:nth-child(4){ --k:var(--peach-soft); --e:#F7D2B8; --t:var(--peach-d); }
   .hero p{ color:var(--ink-soft); margin-top:16px; font-weight:600; }
 
   .modes{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
@@ -535,7 +540,7 @@
   const IN_APP = /KAKAOTALK|NAVER\(|NAVER\/|Instagram|FBAN|FBAV|Line\/|DaumApps|SamsungBrowser\/.*CrossApp|; wv\)/i.test(navigator.userAgent);
   /* 지금 주소를 바깥 브라우저로 여는 링크 */
   function externalUrl() {
-    const url = location.href;
+    const url = location.href.replace(/([?&])inapp=1(&|$)/, (m, a, b) => (b ? a : "")).replace(/[?&]$/, "");
     if (/KAKAOTALK/i.test(navigator.userAgent)) return "kakaotalk://web/openExternal?url=" + encodeURIComponent(url);
     if (ANDROID) return "intent://" + url.replace(/^https?:\/\//, "") + "#Intent;scheme=https;package=com.android.chrome;end";
     return "";
@@ -1089,7 +1094,11 @@
   window.__typing = { S, tts, settings };
 
   renderHome();
-  loadCounts();
+  /* 화면에서 쓰는 Pretendard 굵기를 받아 둔 뒤 보여 준다 (못 받아도 위의 0.7초 안전장치로 보인다) */
+  const fontsReady = document.fonts && document.fonts.load
+    ? Promise.all(["600", "700", "800", "900"].map(w => document.fonts.load(w + " 16px Pretendard", "가"))).catch(() => {})
+    : Promise.resolve();
+  Promise.all([fontsReady, loadCounts()]).then(() => document.documentElement.classList.add("ready"));
 })();
 </script>
 <script src="/hit.js" defer></script>
