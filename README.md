@@ -11,8 +11,8 @@ www.opennegolab.com 에 올라가는 정적 사이트입니다.
 | `baeumteo-icon.png` `baeumteo-og.png` | 위 페이지가 쓰는 이미지 |
 | `privacy.html` | 개인정보처리방침 (`/privacy` 로 열립니다) |
 | `stats.html` `stats.js` | 방문 통계 화면과 집계 (`/stats`) |
-| `typing/index.html` `typing/admin.html` | 초등학생용 타자 연습 (`/typing`) 과 문제 관리 화면 (`/typing/admin`) |
-| `typing-api.js` | 타자 연습의 문제 저장·출제·채점·문제 관리 API (`/api/typing/…`) |
+| `typing/index.html` `typing/admin.html` | 초등학생용 타자 연습 (`/typing`) 과 내 문제 관리 화면 (`/typing/admin`) |
+| `typing/store.js` | 타자 연습의 문제 저장·출제·채점. 모두 방문자 브라우저 안에서 동작 |
 | `hit.js` | 방문 기록을 서버로 보내는 조각. 모든 페이지가 불러갑니다 |
 | `robots.txt` `sitemap.xml` | 검색엔진 안내. 내용을 크게 고치면 sitemap 의 lastmod 를 갱신합니다 |
 | `favicon.ico` `favicon-*.png` | 파비콘. 512 원본에서 만든 것들이며 ico 에는 16·32·48 이 들어 있습니다 |
@@ -123,17 +123,12 @@ IP 주소는 저장하지 않습니다. 날짜·IP·브라우저를 한 덩어�
 
 초등학교 저학년용 받아쓰기·질문에 답하기 타자 연습입니다. 메인 메뉴에는 없고
 `https://www.opennegolab.com/typing` 링크로만 들어옵니다 (검색엔진에는 올리지 않음).
-설치·회원가입 없이 바로 쓰고, 학생 결과는 그 기기 브라우저에만 저장됩니다.
+설치·회원가입 없이 바로 씁니다.
 
-- 문제는 `https://www.opennegolab.com/typing/admin` (연습 화면의 "문제 넣고 빼기") 에서
-  등록·수정·삭제, 일괄 등록, JSON/CSV 내보내기·가져오기. **로그인 없이 누구나** 쓸 수 있습니다
-  (링크를 아는 사람은 문제를 지울 수도 있으니, 가끔 "전체 JSON" 으로 내려받아 두세요)
-- 문제는 통계와 같은 PostgreSQL 의 `typing_items` 표에 저장 (처음 연결할 때 표와 예시 문제를 자동으로 만듦)
-- 채점은 서버에서 합니다. 문제를 풀 때는 정답을 미리 보내지 않습니다
-- 음성은 기기에 들어 있는 한국어 음성(Web Speech API)을 씁니다. 유료 음성 API 없음
-
-### 환경변수
-
-| 이름 | 설명 |
-|---|---|
-| `DATABASE_URL` | 통계와 같은 값. **없으면 문제가 메모리에만 남아 재배포 때 사라집니다** (관리 화면에 경고가 뜹니다) |
+- **문제는 각자의 기기에만 저장됩니다.** `/typing/admin` (연습 화면의 "내 문제 넣고 빼기") 에서
+  넣고 고치고 지운 문제는 그 기기·그 브라우저의 저장 공간(localStorage)에만 남고, 서버로 보내지 않습니다.
+  처음 열면 예시 문제가 들어 있습니다
+- 다른 기기로 옮기거나 백업할 때는 JSON/CSV 내보내기 → 가져오기
+- 채점도 브라우저 안에서 합니다. 서버는 화면 파일만 내보내고 DB·환경변수가 필요 없습니다
+- 음성은 기기에 들어 있는 한국어 음성(Web Speech API)을 씁니다. 유료 음성 API 없음.
+  Windows 에서는 Microsoft Edge 로 열면 남자(InJoon)·여자(SunHi) 목소리를 함께 쓸 수 있습니다

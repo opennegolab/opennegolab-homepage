@@ -10,14 +10,13 @@ const fs = require("fs");
 const path = require("path");
 const inquiry = require("./inquiry");
 const stats = require("./stats");
-const typing = require("./typing-api");
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 
 /* 사이트 콘텐츠가 아닌 파일 — 외부에 내보내지 않는다.
    hit.js 는 방문자 브라우저가 받아 가야 하므로 여기 넣지 않는다 */
-const HIDDEN = new Set(["server.js", "inquiry.js", "stats.js", "stats.html", "typing-api.js",
+const HIDDEN = new Set(["server.js", "inquiry.js", "stats.js", "stats.html",
                         "package.json", "package-lock.json", "readme.md", ".gitignore"]);
 
 const TYPES = {
@@ -136,11 +135,8 @@ function handle(req, res) {
     return fs.createReadStream(path.join(ROOT, "stats.html")).pipe(res);
   }
 
-  /* 타자 연습 — 문제·채점·관리자 API 는 typing-api.js 가 맡는다 */
-  if (urlPath.startsWith("/api/typing/")) { typing.handle(req, res, urlPath); return; }
-
   /* 타자 연습 화면과 문제 관리 화면. 메인 메뉴에는 없고 전용 링크로만 들어온다.
-     문제 관리는 로그인 없이 누구나 쓸 수 있다 */
+     문제 저장·채점은 모두 방문자 브라우저 안에서 한다 (typing/store.js) — 서버는 파일만 내보낸다 */
   if (urlPath === "/typing" || urlPath === "/typing/" || urlPath === "/typing/admin" || urlPath === "/typing/admin/") {
     const admin = urlPath.startsWith("/typing/admin");
     res.writeHead(200, {
@@ -189,5 +185,4 @@ function handle(req, res) {
 
 /* 오래된 방문 기록은 치운다. 뜨자마자 한 번, 그 뒤로 하루에 한 번 */
 stats.prune();
-typing.warmUp();
 setInterval(() => stats.prune(), 24 * 3600 * 1000).unref();

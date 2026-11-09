@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>타자 연습 문제 관리</title>
+<title>타자 연습 — 내 문제 관리</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <style>
@@ -149,14 +149,15 @@
     <header>
       <div class="brand">
         <span class="logo" aria-hidden="true"><svg class="i"><use href="#i-pencil"/></svg></span>
-        <div><h1>타자 연습 문제 관리</h1><p>여기서 바꾼 문제는 모든 학생에게 똑같이 나와요</p></div>
+        <div><h1>내 문제 관리</h1><p>이 기기·이 브라우저에만 저장돼요</p></div>
       </div>
       <div class="row">
         <a class="btn white" href="/typing"><svg class="i" aria-hidden="true"><use href="#i-back"/></svg>연습하러 가기</a>
-        <button class="btn white" id="copyLink"><svg class="i" aria-hidden="true"><use href="#i-link"/></svg>연습 링크 복사</button>
       </div>
     </header>
-    <p class="notice"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg><span>지운 문제는 되돌릴 수 없어요. 많이 바꾸기 전에 아래 <b>전체 JSON</b>으로 내려받아 두면, 나중에 <b>가져오기</b>로 되살릴 수 있어요.</span></p>
+    <p class="notice"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg><span>여기서 넣은 문제는 <b>지금 쓰는 이 기기의 이 브라우저</b>에서만 나와요. 다른 사람이나 다른 기기에는 보이지 않아요.
+      다른 기기로 옮기거나 백업하려면 <b>전체 JSON</b>으로 내려받아 그 기기에서 <b>가져오기</b>를 하세요.
+      브라우저의 인터넷 사용 기록(사이트 데이터)을 지우면 문제도 함께 지워져요.</span></p>
     <p class="warn hidden" id="storageWarn"></p>
 
     <div class="tabs" role="tablist">
@@ -225,6 +226,7 @@
   </section>
 </div>
 
+<script src="/typing/store.js?v=3"></script>
 <script>
 (function () {
   "use strict";
@@ -235,43 +237,26 @@
   const selected = new Set();
   let editing = 0;
 
-  async function api(path, opt) {
-    opt = opt || {};
-    const init = { method: opt.method || "GET", headers: {}, credentials: "same-origin" };
-    if (opt.body !== undefined) { init.headers["Content-Type"] = "application/json"; init.body = JSON.stringify(opt.body); }
-    const r = await fetch("/api/typing/admin" + path, init);
-    let data = {};
-    try { data = await r.json(); } catch (e) {}
-    if (!r.ok || data.ok === false) throw new Error(data.message || "요청을 처리하지 못했습니다.");
-    return data;
-  }
+  /* 문제는 이 기기·이 브라우저에만 저장한다 (store.js). 서버로는 아무것도 보내지 않는다 */
+  const T = window.TypingStore;
+  const store = T.store;
 
-  $("copyLink").addEventListener("click", async () => {
-    const link = location.origin + "/typing";
-    const orig = $("copyLink").innerHTML;
-    try { await navigator.clipboard.writeText(link); $("copyLink").textContent = "복사했어요 ✓"; }
-    catch (e) { prompt("아래 주소를 복사하세요", link); }
-    setTimeout(() => { $("copyLink").innerHTML = orig; }, 1800);
-  });
-
-  async function boot() {
-    let me;
-    try { me = await api("/me"); } catch (e) { me = { note: e.message }; }
+  function boot() {
     const w = $("storageWarn");
-    const msg = me.storage === "memory" ? "⚠️ " + me.note : me.note ? "⚠️ " + me.note : "";
+    const msg = store.persistent() ? "" : "⚠️ 이 브라우저는 저장 공간을 쓸 수 없어요(사생활 보호 모드 등). 넣은 문제가 창을 닫으면 사라지니 꼭 내보내기로 받아 두세요.";
     w.textContent = msg;
     w.classList.toggle("hidden", !msg);
-    await refreshCounts();
+    refreshCounts();
     setMode(mode);
   }
 
-  async function refreshCounts() {
-    try {
-      const r = await fetch("/api/typing/info").then(r => r.json());
-      $("n-dictation").textContent = r.counts.dictation;
-      $("n-qa").textContent = r.counts.qa;
-    } catch (e) {}
+  function refreshCounts() {
+    const c = store.counts();
+    $("n-dictation").textContent = c.dictation;
+    $("n-qa").textContent = c.qa;
   }
+  /* 다른 탭에서 바꾸면 이 화면도 맞춘다 */
+  window.addEventListener("storage", e => { if (e.key === T.KEY && !editing) { refreshCounts(); load(); } });
 
   /* ---------- 탭 ---------- */
   function setMode(m) {
@@ -296,13 +281,9 @@
   }
   document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => setMode(t.dataset.mode)));
 
-  async function load() {
-    /* listMsg 는 등록·가져오기 결과를 알려 주는 자리라 여기서 지우지 않는다 */
-    if (!items.length) $("tbody").innerHTML = "<tr class='empty-row'><td colspan='4'>불러오는 중…</td></tr>";
-    try {
-      const r = await api("/items?mode=" + mode);
-      items = r.items;
-    } catch (e) { $("listMsg").textContent = e.message; items = []; }
+  /* listMsg 는 등록·가져오기 결과를 알려 주는 자리라 여기서 지우지 않는다 */
+  function load() {
+    items = store.list(mode);
     render();
   }
 
@@ -350,8 +331,7 @@
     if (act === "save") {
       const body = { prompt: tr.querySelector(".e-prompt").value, answers: mode === "qa" ? splitAnswers(tr.querySelector(".e-answers").value) : [] };
       try {
-        const r = await api("/items/" + id, { method: "PUT", body });
-        Object.assign(item, r.item);
+        Object.assign(item, store.update(id, body));
         editing = 0;
         render();
       } catch (err) { tr.querySelector(".e-err").textContent = err.message; }
@@ -360,7 +340,7 @@
     if (act === "del") {
       if (!confirm("이 문제를 지울까요?\n\n" + item.prompt + "\n\n지운 문제는 되돌릴 수 없습니다.")) return;
       try {
-        await api("/items/" + id, { method: "DELETE" });
+        store.remove([id]);
         items = items.filter(x => x.id !== id);
         selected.delete(id);
         render();
@@ -379,8 +359,8 @@
   $("delSelected").addEventListener("click", async () => {
     if (!selected.size || !confirm("선택한 " + selected.size + "개 문제를 지울까요?\n지운 문제는 되돌릴 수 없습니다.")) return;
     try {
-      const r = await api("/delete", { method: "POST", body: { ids: [...selected] } });
-      $("listMsg").textContent = r.removed + "개를 지웠습니다.";
+      const removed = store.remove([...selected]);
+      $("listMsg").textContent = removed + "개를 지웠습니다.";
       selected.clear();
       load();
     } catch (err) { alert(err.message); }
@@ -388,8 +368,8 @@
 
   /* ---------- 등록 ---------- */
   async function addItems(list, skipDuplicates) {
-    const r = await api("/items", { method: "POST", body: { mode, items: list, skipDuplicates } });
-    await load();
+    const r = store.add(mode, list, skipDuplicates);
+    load();
     return r;
   }
   $("addForm").addEventListener("submit", async e => {
@@ -453,8 +433,7 @@
   });
   $("exportAll").addEventListener("click", async () => {
     try {
-      const [d, q] = await Promise.all([api("/items?mode=dictation"), api("/items?mode=qa")]);
-      const data = { type: "opennegolab-typing", version: 1, exportedAt: new Date().toISOString(), dictation: asJson("dictation", d.items), qa: asJson("qa", q.items) };
+      const data = { type: "opennegolab-typing", version: 1, exportedAt: new Date().toISOString(), dictation: asJson("dictation", store.list("dictation")), qa: asJson("qa", store.list("qa")) };
       download("typing-all-" + stamp() + ".json", JSON.stringify(data, null, 2), "application/json");
     } catch (e) { alert(e.message); }
   });
@@ -529,14 +508,12 @@
     const msgs = [];
     try {
       for (const k of modes) {
-        for (let i = 0; i < sets[k].length; i += 2000) {
-          const r = await api("/items", { method: "POST", body: { mode: k, items: sets[k].slice(i, i + 2000), skipDuplicates: true } });
-          msgs.push((k === "qa" ? "질문 " : "받아쓰기 ") + r.added + "개 추가" + (r.skipped ? "(" + r.skipped + "개 중복 건너뜀)" : ""));
-        }
+        const r = store.add(k, sets[k], true);
+        msgs.push((k === "qa" ? "질문 " : "받아쓰기 ") + r.added + "개 추가" + (r.skipped ? "(" + r.skipped + "개 중복 건너뜀)" : ""));
       }
       $("listMsg").textContent = "가져오기 완료 — " + msgs.join(", ");
     } catch (err) { alert("가져오는 중 오류: " + err.message + (msgs.length ? "\n\n먼저 처리된 것: " + msgs.join(", ") : "")); }
-    await refreshCounts();
+    refreshCounts();
     load();
   });
 
