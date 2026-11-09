@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>타자 연습 관리</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+  :root{
+    --bg:#F6F9FD; --card:#fff; --ink:#2F3445; --ink-soft:#6B7285; --line:#E6EBF3;
+    --blue:#5B9BEA; --blue-soft:#EAF3FF; --mint:#3FBFA0; --mint-soft:#E4F7F1; --lav:#8F7AE6; --lav-soft:#F0ECFF;
+    --yellow-soft:#FFF6D9; --pink:#D9577E; --pink-soft:#FFE6EC;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:var(--bg); color:var(--ink); font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif; font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button,input,textarea,select{ font:inherit; color:inherit; }
+  button{ cursor:pointer; }
+  .wrap{ max-width:980px; margin:0 auto; padding:20px 16px 60px; }
+  .hidden{ display:none !important; }
+  header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+  h1{ font-size:1.4rem; font-weight:900; }
+  h2{ font-size:1.05rem; font-weight:800; margin-bottom:10px; }
+  .card{ background:var(--card); border-radius:18px; box-shadow:0 1px 2px rgba(47,52,69,.04),0 8px 24px rgba(47,52,69,.06); padding:18px; margin-bottom:14px; }
+  .btn{ border:none; border-radius:12px; padding:9px 14px; font-weight:700; background:var(--blue-soft); color:#2B67B5; min-height:40px; }
+  .btn:disabled{ opacity:.5; cursor:not-allowed; }
+  .btn.primary{ background:var(--blue); color:#fff; }
+  .btn.danger{ background:var(--pink-soft); color:var(--pink); }
+  .btn.ghost{ background:transparent; color:var(--ink-soft); }
+  .btn.small{ padding:5px 10px; min-height:32px; font-size:.88rem; }
+  input[type=text],input[type=password],input[type=search],textarea{
+    width:100%; border:2px solid var(--line); border-radius:12px; padding:10px 12px; background:#fff; outline:none;
+  }
+  input:focus,textarea:focus{ border-color:var(--blue); }
+  textarea{ min-height:140px; resize:vertical; font-size:.95rem; }
+  .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .grow{ flex:1; min-width:180px; }
+  .note{ color:var(--ink-soft); font-size:.88rem; }
+  .warn{ background:var(--yellow-soft); color:#7A5A00; border-radius:12px; padding:10px 14px; margin-bottom:14px; }
+  .err{ color:var(--pink); font-weight:700; min-height:1.4em; }
+  .ok{ color:#1F8A70; font-weight:700; }
+  .tabs{ display:flex; gap:8px; margin-bottom:14px; }
+  .tab{ border:2px solid var(--line); background:#fff; border-radius:999px; padding:8px 16px; font-weight:800; }
+  .tab[aria-selected="true"]{ border-color:var(--blue); background:var(--blue-soft); color:#2B67B5; }
+  .tab .n{ display:inline-block; margin-left:4px; font-size:.82rem; background:#fff; border-radius:999px; padding:0 8px; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  table{ width:100%; border-collapse:collapse; }
+  th,td{ text-align:left; padding:9px 6px; border-top:1px solid var(--line); vertical-align:top; }
+  th{ font-size:.82rem; color:var(--ink-soft); font-weight:800; border-top:none; }
+  td.num{ color:var(--ink-soft); width:52px; }
+  td.act{ width:130px; white-space:nowrap; text-align:right; }
+  td .ans{ display:inline-block; background:var(--lav-soft); color:#5E48C2; border-radius:8px; padding:1px 8px; margin:2px 4px 2px 0; font-size:.9rem; }
+  .chk{ width:28px; }
+  .login{ max-width:380px; margin:70px auto; }
+  .count{ font-weight:900; color:#2B67B5; }
+  label.f{ display:block; font-size:.85rem; font-weight:800; color:var(--ink-soft); margin:8px 0 4px; }
+  code{ background:var(--blue-soft); border-radius:6px; padding:1px 6px; font-size:.86rem; }
+  @media (max-width:760px){
+    .grid2{ grid-template-columns:1fr; }
+    td.num{ display:none; }
+    td.act{ width:auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 로그인 -->
+  <section id="loginView" class="card login hidden">
+    <h1 style="margin-bottom:6px">타자 연습 관리</h1>
+    <p class="note" style="margin-bottom:14px">관리자 비밀번호를 입력하세요.</p>
+    <form id="loginForm">
+      <input type="password" id="pw" autocomplete="current-password" placeholder="비밀번호" required>
+      <p class="err" id="loginErr" style="margin-top:8px"></p>
+      <button class="btn primary" style="width:100%; margin-top:4px">로그인</button>
+    </form>
+  </section>
+
+  <!-- 관리 화면 -->
+  <section id="adminView" class="hidden">
+    <header>
+      <h1>⌨️ 타자 연습 관리</h1>
+      <div class="row">
+        <a class="btn" href="/typing" target="_blank" rel="noopener">학습 화면 열기</a>
+        <button class="btn" id="copyLink">학습 링크 복사</button>
+        <button class="btn ghost" id="logout">로그아웃</button>
+      </div>
+    </header>
+    <p class="warn hidden" id="storageWarn"></p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-mode="dictation" aria-selected="true">🎧 받아쓰기 <span class="n" id="n-dictation">0</span></button>
+      <button class="tab" role="tab" data-mode="qa" aria-selected="false">💬 질문에 답하기 <span class="n" id="n-qa">0</span></button>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>한 문제 등록</h2>
+        <form id="addForm">
+          <label class="f" for="addPrompt" id="addPromptLabel">문장</label>
+          <input type="text" id="addPrompt" maxlength="200" autocomplete="off">
+          <div id="addAnswersWrap" class="hidden">
+            <label class="f" for="addAnswers">허용 정답 <span class="note">(여러 개면 줄을 바꾸거나 | 로 구분)</span></label>
+            <textarea id="addAnswers" style="min-height:70px" placeholder="서울&#10;서울특별시"></textarea>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn primary">등록</button>
+            <span id="addMsg" class="note"></span>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>여러 문제 한꺼번에 등록</h2>
+        <p class="note" id="bulkHelp"></p>
+        <textarea id="bulkText" style="margin-top:8px"></textarea>
+        <div class="row" style="margin-top:8px">
+          <button class="btn primary" id="bulkBtn">일괄 등록</button>
+          <label class="note"><input type="checkbox" id="bulkSkip" checked> 이미 있는 문제는 건너뛰기</label>
+        </div>
+        <p id="bulkMsg" class="note" style="margin-top:6px"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between; margin-bottom:10px">
+        <h2 style="margin:0">문제 목록 · <span class="count" id="listCount">0</span>개</h2>
+        <div class="row">
+          <button class="btn small" id="exportJson">JSON 내보내기</button>
+          <button class="btn small" id="exportCsv">CSV 내보내기</button>
+          <button class="btn small" id="exportAll" title="받아쓰기와 질문을 한 파일로">전체 JSON</button>
+          <label class="btn small" style="display:inline-flex;align-items:center">가져오기 (JSON/CSV)
+            <input type="file" id="importFile" accept=".json,.csv,application/json,text/csv" class="hidden"></label>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom:8px">
+        <input type="search" id="search" class="grow" placeholder="검색 (문장·질문·정답)">
+        <button class="btn small danger" id="delSelected" disabled>선택 삭제</button>
+      </div>
+      <p id="listMsg" class="note"></p>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th class="chk"><input type="checkbox" id="checkAll" aria-label="모두 선택"></th><th>번호</th><th id="thPrompt">문장</th><th></th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="note">
+      CSV 형식 — 받아쓰기: 첫 줄 <code>문장</code>, 그 아래 한 줄에 한 문제.
+      질문에 답하기: 첫 줄 <code>질문,정답</code>, 정답이 여러 개면 <code>서울|서울특별시</code>처럼 | 로 나누거나 옆 칸(정답2, 정답3…)에 적습니다.
+      엑셀에서 연 그대로 저장해도 됩니다 (UTF-8).
+    </p>
+  </section>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  let mode = "dictation";
+  let items = [];
+  const selected = new Set();
+  let editing = 0;
+
+  async function api(path, opt) {
+    opt = opt || {};
+    const init = { method: opt.method || "GET", headers: {}, credentials: "same-origin" };
+    if (opt.body !== undefined) { init.headers["Content-Type"] = "application/json"; init.body = JSON.stringify(opt.body); }
+    const r = await fetch("/api/typing/admin" + path, init);
+    let data = {};
+    try { data = await r.json(); } catch (e) {}
+    if (r.status === 401 && path !== "/login") { showLogin(data.configured === false ? data.message : ""); throw new Error("로그인이 필요합니다."); }
+    if (!r.ok || data.ok === false) throw new Error(data.message || "요청을 처리하지 못했습니다.");
+    return data;
+  }
+
+  /* ---------- 로그인 ---------- */
+  function showLogin(msg) {
+    $("adminView").classList.add("hidden");
+    $("loginView").classList.remove("hidden");
+    $("loginErr").textContent = msg || "";
+    $("pw").focus();
+  }
+  $("loginForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    $("loginErr").textContent = "";
+    try {
+      await api("/login", { method: "POST", body: { password: $("pw").value } });
+      $("pw").value = "";
+      boot();
+    } catch (err) { $("loginErr").textContent = err.message; }
+  });
+  $("logout").addEventListener("click", async () => {
+    try { await api("/logout", { method: "POST", body: {} }); } catch (e) {}
+    showLogin("로그아웃했습니다.");
+  });
+  $("copyLink").addEventListener("click", async () => {
+    const link = location.origin + "/typing";
+    try { await navigator.clipboard.writeText(link); $("copyLink").textContent = "복사했어요 ✓"; }
+    catch (e) { prompt("아래 주소를 복사하세요", link); }
+    setTimeout(() => { $("copyLink").textContent = "학습 링크 복사"; }, 1800);
+  });
+
+  async function boot() {
+    let me;
+    try { me = await api("/me"); } catch (e) { return; }
+    $("loginView").classList.add("hidden");
+    $("adminView").classList.remove("hidden");
+    const w = $("storageWarn");
+    const msg = me.storage === "memory" ? "⚠️ " + me.note : me.note ? "⚠️ " + me.note : "";
+    w.textContent = msg;
+    w.classList.toggle("hidden", !msg);
+    await refreshCounts();
+    setMode(mode);
+  }
+
+  async function refreshCounts() {
+    try {
+      const r = await fetch("/api/typing/info").then(r => r.json());
+      $("n-dictation").textContent = r.counts.dictation;
+      $("n-qa").textContent = r.counts.qa;
+    } catch (e) {}
+  }
+
+  /* ---------- 탭 ---------- */
+  function setMode(m) {
+    mode = m;
+    editing = 0;
+    selected.clear();
+    document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.mode === m)));
+    const qa = m === "qa";
+    $("addPromptLabel").textContent = qa ? "질문" : "문장 (단어 또는 문장)";
+    $("addPrompt").placeholder = qa ? "우리나라의 수도는?" : "오늘은 날씨가 좋아요.";
+    $("addAnswersWrap").classList.toggle("hidden", !qa);
+    $("thPrompt").textContent = qa ? "질문 / 허용 정답" : "문장";
+    $("bulkHelp").innerHTML = qa
+      ? "한 줄에 한 문제. <code>질문 | 정답 | 다른 정답</code> 처럼 | 로 나눕니다 (엑셀에서 붙여 넣은 탭도 됩니다)."
+      : "한 줄에 한 문제씩 적습니다. 빈 줄은 건너뜁니다.";
+    $("bulkText").placeholder = qa ? "우리나라의 수도는? | 서울 | 서울특별시\n학교 이름은? | 창인학교" : "오늘은 날씨가 좋아요.\n나무\n학교에 가요.";
+    $("bulkMsg").textContent = "";
+    $("addMsg").textContent = "";
+    $("listMsg").textContent = "";
+    items = [];
+    load();
+  }
+  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => setMode(t.dataset.mode)));
+
+  async function load() {
+    /* listMsg 는 등록·가져오기 결과를 알려 주는 자리라 여기서 지우지 않는다 */
+    if (!items.length) $("tbody").innerHTML = "<tr><td colspan='4' class='note' style='padding:20px 6px'>불러오는 중…</td></tr>";
+    try {
+      const r = await api("/items?mode=" + mode);
+      items = r.items;
+    } catch (e) { $("listMsg").textContent = e.message; items = []; }
+    render();
+  }
+
+  function splitAnswers(s) {
+    return String(s || "").split(/\r?\n|\|/).map(x => x.trim()).filter(Boolean);
+  }
+
+  /* ---------- 목록 ---------- */
+  function render() {
+    const q = $("search").value.trim().normalize("NFC").toLowerCase();
+    const shown = items.filter(x => !q || (x.prompt + " " + x.answers.join(" ")).toLowerCase().includes(q));
+    $("listCount").textContent = q ? shown.length + " / " + items.length : items.length;
+    $("n-" + mode).textContent = items.length;
+    const qa = mode === "qa";
+    $("tbody").innerHTML = shown.map((x, k) => {
+      if (x.id === editing) {
+        return "<tr data-id='" + x.id + "'><td class='chk'></td><td class='num'>" + (k + 1) + "</td><td>" +
+          "<input type='text' class='e-prompt' maxlength='200' value='" + esc(x.prompt) + "'>" +
+          (qa ? "<textarea class='e-answers' style='min-height:64px;margin-top:6px' placeholder='정답 (줄바꿈 또는 | 로 구분)'>" + esc(x.answers.join("\n")) + "</textarea>" : "") +
+          "<div class='err e-err'></div></td><td class='act'><button class='btn small primary' data-act='save'>저장</button> <button class='btn small ghost' data-act='cancel'>취소</button></td></tr>";
+      }
+      return "<tr data-id='" + x.id + "'><td class='chk'><input type='checkbox' data-act='pick'" + (selected.has(x.id) ? " checked" : "") + " aria-label='선택'></td>" +
+        "<td class='num'>" + (k + 1) + "</td><td><div>" + esc(x.prompt) + "</div>" +
+        (qa ? "<div>" + x.answers.map(a => "<span class='ans'>" + esc(a) + "</span>").join("") + "</div>" : "") +
+        "</td><td class='act'><button class='btn small' data-act='edit'>수정</button> <button class='btn small danger' data-act='del'>삭제</button></td></tr>";
+    }).join("") || "<tr><td colspan='4' class='note' style='padding:20px 6px'>" + (q ? "검색 결과가 없습니다." : "아직 등록된 문제가 없습니다.") + "</td></tr>";
+    $("delSelected").disabled = !selected.size;
+    $("delSelected").textContent = selected.size ? "선택 삭제 (" + selected.size + ")" : "선택 삭제";
+    $("checkAll").checked = shown.length > 0 && shown.every(x => selected.has(x.id));
+    const ep = document.querySelector(".e-prompt");
+    if (ep) ep.focus();
+  }
+  $("search").addEventListener("input", render);
+
+  $("tbody").addEventListener("click", async e => {
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    const tr = btn.closest("tr");
+    const id = Number(tr.dataset.id);
+    const item = items.find(x => x.id === id);
+    const act = btn.dataset.act;
+    if (act === "pick") { btn.checked ? selected.add(id) : selected.delete(id); render(); return; }
+    if (act === "edit") { editing = id; render(); return; }
+    if (act === "cancel") { editing = 0; render(); return; }
+    if (act === "save") {
+      const body = { prompt: tr.querySelector(".e-prompt").value, answers: mode === "qa" ? splitAnswers(tr.querySelector(".e-answers").value) : [] };
+      try {
+        const r = await api("/items/" + id, { method: "PUT", body });
+        Object.assign(item, r.item);
+        editing = 0;
+        render();
+      } catch (err) { tr.querySelector(".e-err").textContent = err.message; }
+      return;
+    }
+    if (act === "del") {
+      if (!confirm("이 문제를 지울까요?\n\n" + item.prompt + "\n\n지운 문제는 되돌릴 수 없습니다.")) return;
+      try {
+        await api("/items/" + id, { method: "DELETE" });
+        items = items.filter(x => x.id !== id);
+        selected.delete(id);
+        render();
+      } catch (err) { alert(err.message); load(); }
+    }
+  });
+  $("tbody").addEventListener("keydown", e => {
+    if (e.key === "Enter" && e.target.classList.contains("e-prompt")) { e.preventDefault(); e.target.closest("tr").querySelector("[data-act=save]").click(); }
+    if (e.key === "Escape") { editing = 0; render(); }
+  });
+  $("checkAll").addEventListener("change", e => {
+    const q = $("search").value.trim().normalize("NFC").toLowerCase();
+    for (const x of items) if (!q || (x.prompt + " " + x.answers.join(" ")).toLowerCase().includes(q)) e.target.checked ? selected.add(x.id) : selected.delete(x.id);
+    render();
+  });
+  $("delSelected").addEventListener("click", async () => {
+    if (!selected.size || !confirm("선택한 " + selected.size + "개 문제를 지울까요?\n지운 문제는 되돌릴 수 없습니다.")) return;
+    try {
+      const r = await api("/delete", { method: "POST", body: { ids: [...selected] } });
+      $("listMsg").textContent = r.removed + "개를 지웠습니다.";
+      selected.clear();
+      load();
+    } catch (err) { alert(err.message); }
+  });
+
+  /* ---------- 등록 ---------- */
+  async function addItems(list, skipDuplicates) {
+    const r = await api("/items", { method: "POST", body: { mode, items: list, skipDuplicates } });
+    await load();
+    return r;
+  }
+  $("addForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const m = $("addMsg");
+    m.className = "note";
+    const prompt = $("addPrompt").value.trim();
+    const answers = splitAnswers($("addAnswers").value);
+    if (!prompt) { m.textContent = mode === "qa" ? "질문을 입력하세요." : "문장을 입력하세요."; return; }
+    if (mode === "qa" && !answers.length) { m.textContent = "정답을 하나 이상 입력하세요."; return; }
+    try {
+      const r = await addItems([{ prompt, answers }], true);
+      if (r.added) { m.className = "ok"; m.textContent = "등록했습니다."; $("addPrompt").value = ""; $("addAnswers").value = ""; $("addPrompt").focus(); }
+      else { m.textContent = "이미 같은 문제가 있습니다."; }
+    } catch (err) { m.textContent = err.message; }
+  });
+
+  function parseBulk(text) {
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    if (mode === "dictation") return { list: lines.map(l => ({ prompt: l, answers: [] })), bad: [] };
+    const list = [], bad = [];
+    lines.forEach((l, k) => {
+      const parts = l.split(l.includes("\t") ? "\t" : "|").map(x => x.trim()).filter(Boolean);
+      if (parts.length < 2) bad.push(k + 1);
+      else list.push({ prompt: parts[0], answers: parts.slice(1).flatMap(splitAnswers) });
+    });
+    return { list, bad };
+  }
+  $("bulkBtn").addEventListener("click", async () => {
+    const m = $("bulkMsg");
+    const { list, bad } = parseBulk($("bulkText").value);
+    if (bad.length) { m.className = "err"; m.textContent = bad.slice(0, 10).join(", ") + "번째 줄에 정답이 없습니다. '질문 | 정답' 형식으로 적어 주세요."; return; }
+    if (!list.length) { m.className = "err"; m.textContent = "등록할 내용이 없습니다."; return; }
+    if (!confirm(list.length + "개 문제를 등록할까요?")) return;
+    try {
+      const r = await addItems(list, $("bulkSkip").checked);
+      m.className = "ok";
+      m.textContent = r.added + "개 등록" + (r.skipped ? " · 이미 있는 " + r.skipped + "개는 건너뜀" : "") + ".";
+      $("bulkText").value = "";
+    } catch (err) { m.className = "err"; m.textContent = err.message; }
+  });
+
+  /* ---------- 내보내기 ---------- */
+  function download(name, text, type) {
+    const blob = new Blob([text], { type });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+  const stamp = () => new Date().toISOString().slice(0, 10);
+  const asJson = (m, list) => m === "qa" ? list.map(x => ({ question: x.prompt, answers: x.answers })) : list.map(x => ({ text: x.prompt }));
+  function csvCell(s) { s = String(s); return /[",\r\n]/.test(s) || /^[=+\-@]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+
+  $("exportJson").addEventListener("click", () => {
+    const data = { type: "opennegolab-typing", version: 1, exportedAt: new Date().toISOString() };
+    data[mode] = asJson(mode, items);
+    download("typing-" + mode + "-" + stamp() + ".json", JSON.stringify(data, null, 2), "application/json");
+  });
+  $("exportAll").addEventListener("click", async () => {
+    try {
+      const [d, q] = await Promise.all([api("/items?mode=dictation"), api("/items?mode=qa")]);
+      const data = { type: "opennegolab-typing", version: 1, exportedAt: new Date().toISOString(), dictation: asJson("dictation", d.items), qa: asJson("qa", q.items) };
+      download("typing-all-" + stamp() + ".json", JSON.stringify(data, null, 2), "application/json");
+    } catch (e) { alert(e.message); }
+  });
+  $("exportCsv").addEventListener("click", () => {
+    const rows = mode === "qa" ? [["질문", "정답"]].concat(items.map(x => [x.prompt, x.answers.join("|")])) : [["문장"]].concat(items.map(x => [x.prompt]));
+    /* 맨 앞 BOM 은 엑셀이 한글을 깨뜨리지 않게 한다 */
+    download("typing-" + mode + "-" + stamp() + ".csv", "﻿" + rows.map(r => r.map(csvCell).join(",")).join("\r\n"), "text/csv;charset=utf-8");
+  });
+
+  /* ---------- 가져오기 ---------- */
+  function parseCsv(text) {
+    const rows = []; let row = [], cell = "", q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) {
+        if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+        else cell += c;
+      } else if (c === '"') q = true;
+      else if (c === ",") { row.push(cell); cell = ""; }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(cell); rows.push(row); row = []; cell = "";
+      } else cell += c;
+    }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    return rows.map(r => r.map(x => x.trim())).filter(r => r.some(Boolean));
+  }
+
+  function fromJsonList(m, list) {
+    return (Array.isArray(list) ? list : []).map(x => {
+      if (typeof x === "string") return m === "qa" ? null : { prompt: x, answers: [] };
+      if (!x || typeof x !== "object") return null;
+      const prompt = x.prompt || x.text || x.question || x["문장"] || x["질문"] || "";
+      let answers = x.answers || x.answer || x["정답"] || [];
+      if (!Array.isArray(answers)) answers = splitAnswers(answers);
+      return m === "qa" ? { prompt, answers } : { prompt, answers: [] };
+    }).filter(x => x && String(x.prompt).trim());
+  }
+
+  $("importFile").addEventListener("change", async e => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    let text = await file.text();
+    text = text.replace(/^﻿/, "");
+    const sets = {};
+    try {
+      if (/\.json$/i.test(file.name) || /^\s*[\[{]/.test(text)) {
+        const data = JSON.parse(text);
+        if (Array.isArray(data)) sets[mode] = fromJsonList(mode, data);
+        else {
+          if (data.dictation) sets.dictation = fromJsonList("dictation", data.dictation);
+          if (data.qa) sets.qa = fromJsonList("qa", data.qa);
+          if (!data.dictation && !data.qa && data.items) sets[data.mode === "qa" ? "qa" : mode] = fromJsonList(data.mode === "qa" ? "qa" : mode, data.items);
+        }
+      } else {
+        const rows = parseCsv(text);
+        const head = (rows[0] || []).join(",");
+        const body = /문장|질문|정답|text|question|prompt|answer/i.test(head) ? rows.slice(1) : rows;
+        sets[mode] = mode === "qa"
+          ? body.map(r => ({ prompt: r[0] || "", answers: r.slice(1).flatMap(splitAnswers) })).filter(x => x.prompt)
+          : body.map(r => ({ prompt: r[0] || "", answers: [] })).filter(x => x.prompt);
+      }
+    } catch (err) { alert("파일을 읽지 못했습니다: " + err.message); return; }
+
+    const modes = Object.keys(sets).filter(k => sets[k].length);
+    if (!modes.length) { alert("가져올 문제가 없습니다. 파일 형식을 확인해 주세요."); return; }
+    const missing = (sets.qa || []).filter(x => !x.answers.length).length;
+    if (missing) { alert("정답이 없는 질문이 " + missing + "개 있습니다. 파일을 확인해 주세요."); return; }
+    const summary = modes.map(k => (k === "qa" ? "질문에 답하기 " : "받아쓰기 ") + sets[k].length + "개").join(", ");
+    if (!confirm(summary + "를 가져올까요?\n(이미 있는 같은 문제는 건너뜁니다)")) return;
+    const msgs = [];
+    try {
+      for (const k of modes) {
+        for (let i = 0; i < sets[k].length; i += 2000) {
+          const r = await api("/items", { method: "POST", body: { mode: k, items: sets[k].slice(i, i + 2000), skipDuplicates: true } });
+          msgs.push((k === "qa" ? "질문 " : "받아쓰기 ") + r.added + "개 추가" + (r.skipped ? "(" + r.skipped + "개 중복 건너뜀)" : ""));
+        }
+      }
+      $("listMsg").textContent = "가져오기 완료 — " + msgs.join(", ");
+    } catch (err) { alert("가져오는 중 오류: " + err.message + (msgs.length ? "\n\n먼저 처리된 것: " + msgs.join(", ") : "")); }
+    await refreshCounts();
+    load();
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>

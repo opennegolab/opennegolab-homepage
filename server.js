@@ -10,13 +10,14 @@ const fs = require("fs");
 const path = require("path");
 const inquiry = require("./inquiry");
 const stats = require("./stats");
+const typing = require("./typing-api");
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 
 /* 사이트 콘텐츠가 아닌 파일 — 외부에 내보내지 않는다.
    hit.js 는 방문자 브라우저가 받아 가야 하므로 여기 넣지 않는다 */
-const HIDDEN = new Set(["server.js", "inquiry.js", "stats.js", "stats.html",
+const HIDDEN = new Set(["server.js", "inquiry.js", "stats.js", "stats.html", "typing-api.js",
                         "package.json", "package-lock.json", "readme.md", ".gitignore"]);
 
 const TYPES = {
@@ -135,6 +136,24 @@ function handle(req, res) {
     return fs.createReadStream(path.join(ROOT, "stats.html")).pipe(res);
   }
 
+  /* 타자 연습 — 문제·채점·관리자 API 는 typing-api.js 가 맡는다 */
+  if (urlPath.startsWith("/api/typing/")) { typing.handle(req, res, urlPath); return; }
+
+  /* 타자 연습 화면. 메인 메뉴에는 없고 전용 링크로만 들어온다.
+     관리자 화면은 껍데기만 내보내고, 문제 목록·수정은 로그인한 사람에게만 API 로 준다 */
+  if (urlPath === "/typing" || urlPath === "/typing/" || urlPath === "/typing/admin" || urlPath === "/typing/admin/") {
+    const admin = urlPath.startsWith("/typing/admin");
+    res.writeHead(200, {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": admin ? "no-store" : "no-cache",
+      "X-Content-Type-Options": "nosniff",
+      "X-Robots-Tag": "noindex, nofollow",
+      "Referrer-Policy": "same-origin",
+      ...(admin ? { "X-Frame-Options": "DENY" } : {}),
+    });
+    return fs.createReadStream(path.join(ROOT, "typing", admin ? "admin.html" : "index.html")).pipe(res);
+  }
+
   let file = path.join(ROOT, urlPath);
 
   /* ROOT 밖(../)이나 숨김 파일·.git 요청은 홈으로 돌린다 */
@@ -170,4 +189,5 @@ function handle(req, res) {
 
 /* 오래된 방문 기록은 치운다. 뜨자마자 한 번, 그 뒤로 하루에 한 번 */
 stats.prune();
+typing.warmUp();
 setInterval(() => stats.prune(), 24 * 3600 * 1000).unref();

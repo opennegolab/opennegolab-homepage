@@ -11,6 +11,8 @@ www.opennegolab.com 에 올라가는 정적 사이트입니다.
 | `baeumteo-icon.png` `baeumteo-og.png` | 위 페이지가 쓰는 이미지 |
 | `privacy.html` | 개인정보처리방침 (`/privacy` 로 열립니다) |
 | `stats.html` `stats.js` | 방문 통계 화면과 집계 (`/stats`) |
+| `typing/index.html` `typing/admin.html` | 초등학생용 타자 연습 (`/typing`) 과 그 관리 화면 (`/typing/admin`) |
+| `typing-api.js` | 타자 연습의 문제 저장·출제·채점·관리자 API (`/api/typing/…`) |
 | `hit.js` | 방문 기록을 서버로 보내는 조각. 모든 페이지가 불러갑니다 |
 | `robots.txt` `sitemap.xml` | 검색엔진 안내. 내용을 크게 고치면 sitemap 의 lastmod 를 갱신합니다 |
 | `favicon.ico` `favicon-*.png` | 파비콘. 512 원본에서 만든 것들이며 ico 에는 16·32·48 이 들어 있습니다 |
@@ -116,3 +118,22 @@ IP 주소는 저장하지 않습니다. 날짜·IP·브라우저를 한 덩어�
 
 시뮬레이터 주소를 나중에 `sim.opennegolab.com` 등으로 바꾸면
 `index.html` 의 `SIMULATOR` 섹션 주석에 적힌 두 곳만 고치면 됩니다.
+
+## 타자 연습 — `/typing`
+
+초등학교 저학년용 받아쓰기·질문에 답하기 타자 연습입니다. 메인 메뉴에는 없고
+`https://www.opennegolab.com/typing` 링크로만 들어옵니다 (검색엔진에는 올리지 않음).
+설치·회원가입 없이 바로 쓰고, 학생 결과는 그 기기 브라우저에만 저장됩니다.
+
+- 문제는 `https://www.opennegolab.com/typing/admin` 에서 등록·수정·삭제, 일괄 등록, JSON/CSV 내보내기·가져오기
+- 문제는 통계와 같은 PostgreSQL 의 `typing_items` 표에 저장 (처음 연결할 때 표와 예시 문제를 자동으로 만듦)
+- 채점은 서버에서 합니다. 질문의 정답은 채점 전에 브라우저로 보내지 않습니다
+  (받아쓰기 문장은 브라우저가 소리 내어 읽어야 하므로, 읽을 차례에 한 문제씩만 보냅니다)
+- 음성은 기기에 들어 있는 한국어 음성(Web Speech API)을 씁니다. 유료 음성 API 없음
+
+### 환경변수
+
+| 이름 | 설명 |
+|---|---|
+| `TYPING_ADMIN_PASSWORD` | 관리자 비밀번호. 없으면 `STATS_PASSWORD` 를 그대로 씁니다. 둘 다 없으면 관리자 화면에 로그인할 수 없습니다 |
+| `DATABASE_URL` | 통계와 같은 값. **없으면 문제가 메모리에만 남아 재배포 때 사라집니다** (관리자 화면에 경고가 뜹니다) |
