@@ -619,7 +619,6 @@
       const n = counts[settings.mode];
       if (sets && !sets.length) w = "";
       else if (!n) w = "이 문제집에는 " + (settings.mode === "qa" ? "질문" : "받아쓰기") + " 문제가 없어요. '문제 설정'에서 넣어 주세요.";
-      else if (settings.count !== "all" && n < Number(settings.count)) w = "등록된 문제가 " + n + "개라서 " + n + "문제만 풀어요.";
     }
     if (loadError) w = loadError;
     if (settings.mode === "dictation" && !tts.ok) w = (w ? w + " " : "") + "이 브라우저는 소리 내어 읽기를 지원하지 않아 받아쓰기를 할 수 없어요.";
