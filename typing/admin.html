@@ -220,7 +220,7 @@
           <label class="f" for="addPrompt" id="addPromptLabel">문장</label>
           <input type="text" id="addPrompt" maxlength="200" autocomplete="off">
           <div id="addAnswersWrap" class="hidden">
-            <label class="f" for="addAnswers">허용 정답 <span class="note" style="font-weight:600">· 여러 개면 줄을 바꾸거나 | 로 구분</span></label>
+            <label class="f" for="addAnswers">허용 정답 <span class="note" style="font-weight:600">· 여러 개면 줄을 바꾸거나 / 로 구분</span></label>
             <textarea id="addAnswers" style="min-height:84px" placeholder="서울&#10;서울특별시"></textarea>
           </div>
           <div class="row foot">
@@ -402,9 +402,9 @@
     $("addAnswersWrap").classList.toggle("hidden", !qa);
     $("thPrompt").textContent = qa ? "질문 / 허용 정답" : "문장";
     $("bulkHelp").innerHTML = qa
-      ? "한 줄에 한 문제. <code>질문 | 정답 | 다른 정답</code> 처럼 | 로 나눕니다 (엑셀에서 붙여 넣은 탭도 됩니다)."
+      ? "한 줄에 한 문제. <code>질문 / 정답</code> 처럼 / 로 나눕니다. 정답이 여러 개면 <code>질문 / 정답 / 다른 정답</code> (엑셀에서 붙여 넣은 탭도 됩니다)."
       : "한 줄에 한 문제씩 적습니다. 빈 줄은 건너뜁니다.";
-    $("bulkText").placeholder = qa ? "우리나라의 수도는? | 서울 | 서울특별시\n학교 이름은? | 창인학교" : "오늘은 날씨가 좋아요.\n나무\n학교에 가요.";
+    $("bulkText").placeholder = qa ? "우리나라의 수도는? / 서울 / 서울특별시\n학교 이름은? / 창인학교" : "오늘은 날씨가 좋아요.\n나무\n학교에 가요.";
     $("bulkMsg").textContent = "";
     $("addMsg").textContent = "";
     $("listMsg").textContent = "";
@@ -431,7 +431,7 @@
   }
 
   function splitAnswers(s) {
-    return String(s || "").split(/\r?\n|\|/).map(x => x.trim()).filter(Boolean);
+    return String(s || "").split(/\r?\n|\//).map(x => x.trim()).filter(Boolean);
   }
 
   /* ---------- 목록 ---------- */
@@ -452,7 +452,7 @@
       if (x.id === editing) {
         return "<tr data-id='" + x.id + "' class='editing'><td class='chk'></td><td class='num'>" + (k + 1) + "</td><td>" +
           "<input type='text' class='e-prompt' maxlength='200' value='" + esc(x.prompt) + "'>" +
-          (qa ? "<textarea class='e-answers' style='min-height:64px;margin-top:6px' placeholder='정답 (줄바꿈 또는 | 로 구분)'>" + esc(x.answers.join("\n")) + "</textarea>" : "") +
+          (qa ? "<textarea class='e-answers' style='min-height:64px;margin-top:6px' placeholder='정답 (줄바꿈 또는 / 로 구분)'>" + esc(x.answers.join("\n")) + "</textarea>" : "") +
           "<div class='err e-err'></div></td><td class='act'><button class='btn small primary' data-act='save'>저장</button> <button class='btn small ghost' data-act='cancel'>취소</button></td></tr>";
       }
       return "<tr data-id='" + x.id + "'><td class='chk'><input type='checkbox' data-act='pick'" + (selected.has(x.id) ? " checked" : "") + " aria-label='선택'></td>" +
@@ -576,7 +576,7 @@
     if (mode === "dictation") return { list: lines.map(l => ({ prompt: l, answers: [] })), bad: [] };
     const list = [], bad = [];
     lines.forEach((l, k) => {
-      const parts = l.split(l.includes("\t") ? "\t" : "|").map(x => x.trim()).filter(Boolean);
+      const parts = l.split(l.includes("\t") ? "\t" : "/").map(x => x.trim()).filter(Boolean);
       if (parts.length < 2) bad.push(k + 1);
       else list.push({ prompt: parts[0], answers: parts.slice(1).flatMap(splitAnswers) });
     });
@@ -585,7 +585,7 @@
   $("bulkBtn").addEventListener("click", async () => {
     const m = $("bulkMsg");
     const { list, bad } = parseBulk($("bulkText").value);
-    if (bad.length) { m.className = "err"; m.textContent = bad.slice(0, 10).join(", ") + "번째 줄에 정답이 없습니다. '질문 | 정답' 형식으로 적어 주세요."; return; }
+    if (bad.length) { m.className = "err"; m.textContent = bad.slice(0, 10).join(", ") + "번째 줄에 정답이 없습니다. '질문 / 정답' 형식으로 적어 주세요."; return; }
     if (!list.length) { m.className = "err"; m.textContent = "등록할 내용이 없습니다."; return; }
     if (!confirm(list.length + "개 문제를 등록할까요?")) return;
     try {
