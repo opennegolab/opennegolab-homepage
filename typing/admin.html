@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>타자 연습 관리</title>
+<title>타자 연습 문제 관리</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <style>
@@ -52,7 +52,6 @@
   td.act{ width:130px; white-space:nowrap; text-align:right; }
   td .ans{ display:inline-block; background:var(--lav-soft); color:#5E48C2; border-radius:8px; padding:1px 8px; margin:2px 4px 2px 0; font-size:.9rem; }
   .chk{ width:28px; }
-  .login{ max-width:380px; margin:70px auto; }
   .count{ font-weight:900; color:#2B67B5; }
   label.f{ display:block; font-size:.85rem; font-weight:800; color:var(--ink-soft); margin:8px 0 4px; }
   code{ background:var(--blue-soft); border-radius:6px; padding:1px 6px; font-size:.86rem; }
@@ -66,27 +65,16 @@
 <body>
 <div class="wrap">
 
-  <!-- 로그인 -->
-  <section id="loginView" class="card login hidden">
-    <h1 style="margin-bottom:6px">타자 연습 관리</h1>
-    <p class="note" style="margin-bottom:14px">관리자 비밀번호를 입력하세요.</p>
-    <form id="loginForm">
-      <input type="password" id="pw" autocomplete="current-password" placeholder="비밀번호" required>
-      <p class="err" id="loginErr" style="margin-top:8px"></p>
-      <button class="btn primary" style="width:100%; margin-top:4px">로그인</button>
-    </form>
-  </section>
-
   <!-- 관리 화면 -->
-  <section id="adminView" class="hidden">
+  <section id="adminView">
     <header>
-      <h1>⌨️ 타자 연습 관리</h1>
+      <h1>✏️ 타자 연습 문제 관리</h1>
       <div class="row">
-        <a class="btn" href="/typing" target="_blank" rel="noopener">학습 화면 열기</a>
-        <button class="btn" id="copyLink">학습 링크 복사</button>
-        <button class="btn ghost" id="logout">로그아웃</button>
+        <a class="btn" href="/typing">← 연습하러 가기</a>
+        <button class="btn" id="copyLink">연습 링크 복사</button>
       </div>
     </header>
+    <p class="note" style="margin-bottom:12px">여기서 넣고 뺀 문제는 이 링크로 연습하는 모든 사람에게 똑같이 나옵니다. 지운 문제는 되돌릴 수 없으니, 많이 바꾸기 전에 <b>전체 JSON</b>으로 내려받아 두세요.</p>
     <p class="warn hidden" id="storageWarn"></p>
 
     <div class="tabs" role="tablist">
@@ -172,43 +160,20 @@
     const r = await fetch("/api/typing/admin" + path, init);
     let data = {};
     try { data = await r.json(); } catch (e) {}
-    if (r.status === 401 && path !== "/login") { showLogin(data.configured === false ? data.message : ""); throw new Error("로그인이 필요합니다."); }
     if (!r.ok || data.ok === false) throw new Error(data.message || "요청을 처리하지 못했습니다.");
     return data;
   }
 
-  /* ---------- 로그인 ---------- */
-  function showLogin(msg) {
-    $("adminView").classList.add("hidden");
-    $("loginView").classList.remove("hidden");
-    $("loginErr").textContent = msg || "";
-    $("pw").focus();
-  }
-  $("loginForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    $("loginErr").textContent = "";
-    try {
-      await api("/login", { method: "POST", body: { password: $("pw").value } });
-      $("pw").value = "";
-      boot();
-    } catch (err) { $("loginErr").textContent = err.message; }
-  });
-  $("logout").addEventListener("click", async () => {
-    try { await api("/logout", { method: "POST", body: {} }); } catch (e) {}
-    showLogin("로그아웃했습니다.");
-  });
   $("copyLink").addEventListener("click", async () => {
     const link = location.origin + "/typing";
     try { await navigator.clipboard.writeText(link); $("copyLink").textContent = "복사했어요 ✓"; }
     catch (e) { prompt("아래 주소를 복사하세요", link); }
-    setTimeout(() => { $("copyLink").textContent = "학습 링크 복사"; }, 1800);
+    setTimeout(() => { $("copyLink").textContent = "연습 링크 복사"; }, 1800);
   });
 
   async function boot() {
     let me;
-    try { me = await api("/me"); } catch (e) { return; }
-    $("loginView").classList.add("hidden");
-    $("adminView").classList.remove("hidden");
+    try { me = await api("/me"); } catch (e) { me = { note: e.message }; }
     const w = $("storageWarn");
     const msg = me.storage === "memory" ? "⚠️ " + me.note : me.note ? "⚠️ " + me.note : "";
     w.textContent = msg;

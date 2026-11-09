@@ -139,8 +139,8 @@ function handle(req, res) {
   /* 타자 연습 — 문제·채점·관리자 API 는 typing-api.js 가 맡는다 */
   if (urlPath.startsWith("/api/typing/")) { typing.handle(req, res, urlPath); return; }
 
-  /* 타자 연습 화면. 메인 메뉴에는 없고 전용 링크로만 들어온다.
-     관리자 화면은 껍데기만 내보내고, 문제 목록·수정은 로그인한 사람에게만 API 로 준다 */
+  /* 타자 연습 화면과 문제 관리 화면. 메인 메뉴에는 없고 전용 링크로만 들어온다.
+     문제 관리는 로그인 없이 누구나 쓸 수 있다 */
   if (urlPath === "/typing" || urlPath === "/typing/" || urlPath === "/typing/admin" || urlPath === "/typing/admin/") {
     const admin = urlPath.startsWith("/typing/admin");
     res.writeHead(200, {

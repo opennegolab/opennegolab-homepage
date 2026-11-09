@@ -11,16 +11,14 @@
      DATABASE_URL 이 있는데 연결이 안 되면 메모리로 떨어지지 않고 오류를 낸다.
      관리자가 등록한 문제가 조용히 메모리에만 들어갔다가 사라지면 안 되기 때문이다.
 
-   정답 보호
-     질문에 답하기의 정답은 채점 결과와 함께, 그 문제 하나에 대해서만 내보낸다.
-     문제 목록·질문에는 정답이 들어 있지 않다.
-     받아쓰기는 브라우저가 소리 내어 읽어야 하므로 문장을 브라우저에 보내야 한다.
-     그래서 출제 목록에는 넣지 않고, 그 문제를 읽을 차례에 한 문제씩만 내준다(/speak).
+   출제와 채점
+     문제를 풀 때는 정답을 미리 보내지 않고 서버에서 채점한다.
+     받아쓰기는 브라우저가 소리 내어 읽어야 하므로 그 문제를 읽을 차례에 한 문제씩만 내준다(/speak).
 
-   관리자 인증
-     /stats 와 같은 방식 — 비밀번호를 맞히면 서명한 쿠키를 준다.
-     TYPING_ADMIN_PASSWORD 를 쓰고, 없으면 STATS_PASSWORD 를 그대로 쓴다.
-     모든 변경 요청은 서버에서 쿠키를 확인한다.
+   문제 관리
+     로그인 없이 누구나 /typing/admin 에서 문제를 넣고 뺄 수 있다 (운영자 요청).
+     그래서 관리 화면에서는 정답이 보인다. 다른 사이트에서 보낸 요청과
+     너무 잦은 변경만 막는다.
    ============================================================ */
 const crypto = require("crypto");
 
@@ -358,46 +356,10 @@ function limiter(max, windowMs) {
 const limitStart = limiter(40, 60000);
 const limitSpeak = limiter(240, 60000);
 const limitGrade = limiter(240, 60000);
-const limitLogin = limiter(10, 10 * 60000);
+const limitWrite = limiter(60, 60000);     /* 문제 등록·수정·삭제 */
 
-/* ---------- 관리자 인증 (stats.js 와 같은 방식) ---------- */
-const COOKIE = "onl_typing";
-const LOGIN_DAYS = 14;
-
-function secret() { return process.env.TYPING_ADMIN_PASSWORD || process.env.STATS_PASSWORD || ""; }
-function configured() { return !!secret(); }
-
-function same(a, b) {
-  const A = Buffer.from(String(a)), B = Buffer.from(String(b));
-  return A.length === B.length && crypto.timingSafeEqual(A, B);
-}
-/* 통계 쿠키와 섞이지 않도록 서명할 때 'typing' 을 붙인다 */
-function sign(exp) {
-  return crypto.createHmac("sha256", "typing|" + secret()).update(String(exp)).digest("hex").slice(0, 32);
-}
-function readCookie(req, name) {
-  for (const part of (req.headers.cookie || "").split(";")) {
-    const i = part.indexOf("=");
-    if (i > 0 && part.slice(0, i).trim() === name) {
-      try { return decodeURIComponent(part.slice(i + 1).trim()); } catch { return null; }
-    }
-  }
-  return null;
-}
-function authorized(req) {
-  if (!configured()) return false;
-  const m = /^(\d{10,16})\.([0-9a-f]{32})$/.exec(String(readCookie(req, COOKIE) || ""));
-  if (!m || Number(m[1]) < Date.now()) return false;
-  return same(m[2], sign(m[1]));
-}
-function cookieHeader(req, value, maxAge) {
-  const https = (req.headers["x-forwarded-proto"] || "").split(",")[0].trim() === "https";
-  return COOKIE + "=" + encodeURIComponent(value) +
-    "; Path=/; Max-Age=" + maxAge + "; HttpOnly; SameSite=Strict" + (https ? "; Secure" : "");
-}
-
-/* 다른 사이트에서 관리자 브라우저를 빌려 요청을 보내는 것(CSRF)을 막는다.
-   쿠키를 SameSite=Strict 로 주고, Origin 이 붙어 오면 우리 주소인지 한 번 더 본다 */
+/* 다른 사이트의 페이지가 방문자 브라우저를 빌려 문제를 바꾸지 못하게 한다.
+   Origin 이 붙어 오면 우리 주소인지 본다 */
 function sameOrigin(req) {
   const origin = req.headers.origin;
   if (!origin) return true;
@@ -498,25 +460,11 @@ async function route(req, res, urlPath) {
     return send(res, 200, { ok: true, ...grade(item, input) });
   }
 
-  /* ----- 관리자 ----- */
+  /* ----- 문제 관리 (누구나) ----- */
   if (!sub.startsWith("/admin")) return send(res, 404, { ok: false, message: "없는 주소입니다." });
   if (method !== "GET" && !sameOrigin(req)) return send(res, 403, { ok: false, message: "허용되지 않은 요청입니다." });
 
-  if (sub === "/admin/login" && method === "POST") {
-    const body = await readJson(req);
-    if (!configured()) return send(res, 503, { ok: false, message: "관리자 비밀번호(TYPING_ADMIN_PASSWORD)가 설정되지 않았습니다." });
-    if (limitLogin(ip)) return send(res, 429, { ok: false, message: "너무 여러 번 시도했습니다. 10분 뒤에 다시 해 주세요." });
-    if (!same(String(body.password || ""), secret())) return send(res, 401, { ok: false, message: "비밀번호가 맞지 않습니다." });
-    const exp = Date.now() + LOGIN_DAYS * 86400000;
-    return send(res, 200, { ok: true }, { "Set-Cookie": cookieHeader(req, exp + "." + sign(exp), LOGIN_DAYS * 86400) });
-  }
-  if (sub === "/admin/logout" && method === "POST") {
-    return send(res, 200, { ok: true }, { "Set-Cookie": cookieHeader(req, "", 0) });
-  }
-
-  if (!authorized(req)) {
-    return send(res, 401, { ok: false, configured: configured(), message: "관리자 로그인이 필요합니다." });
-  }
+  if (method !== "GET" && limitWrite(ip)) return send(res, 429, { ok: false, message: "너무 빠르게 바꾸고 있어요. 1분 뒤에 다시 해 주세요." });
 
   if (sub === "/admin/me" && method === "GET") {
     let dbNote = "";

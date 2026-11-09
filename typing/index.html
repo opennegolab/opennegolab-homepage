@@ -97,13 +97,12 @@
   }
   .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
   .start{ width:100%; font-size:1.25rem; min-height:62px; border-radius:20px; }
+  .manage{ display:inline-block; color:var(--ink-soft); font-weight:700; font-size:.95rem; text-decoration:none; padding:8px 14px; border-radius:999px; }
+  .manage:hover{ background:var(--blue-soft); color:#2B67B5; }
   .history{ list-style:none; }
   .history li{ display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-top:1px solid var(--line); font-size:.92rem; }
   .history li:first-child{ border-top:none; }
   .history .s{ font-weight:800; color:#2B67B5; }
-  details.tips summary{ cursor:pointer; font-weight:700; color:var(--ink-soft); font-size:.92rem; padding:4px 0; }
-  details.tips ul{ margin:8px 0 0 18px; }
-  details.tips li{ margin:4px 0; }
 
   /* ---------- 학습 화면 ---------- */
   .topbar{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
@@ -291,20 +290,12 @@
         <button type="button" class="chip" data-rate="fast" aria-pressed="false">🐇 빠르게</button>
       </div>
       <p class="note" id="voiceStatus" style="margin-top:12px"></p>
-      <details class="tips" style="margin-top:8px">
-        <summary>목소리·키보드 도움말</summary>
-        <ul class="note">
-          <li>목소리는 이 기기와 브라우저에 들어 있는 한국어 음성을 씁니다. 기기마다 목소리 종류와 품질이 다를 수 있어요.</li>
-          <li>남자·여자 구분은 이름으로 확실히 알 수 있는 목소리만 표시합니다. 구분할 수 없는 목소리는 <b>‘구분 정보 없음’</b>으로 보여요.</li>
-          <li><b>오프라인 가능</b> 표시가 있는 목소리는 인터넷 없이도 읽어요. <b>인터넷 필요</b> 목소리는 연결이 끊기면 읽지 못할 수 있어요. 문제를 가져오고 채점하는 데에는 인터넷이 필요합니다.</li>
-          <li>한국어 목소리가 없다면 — Windows: 설정 › 시간 및 언어 › 음성 › 음성 추가에서 ‘한국어’를 설치하세요. 갤럭시: 설정 › 일반 › 텍스트 음성 변환(TTS)에서 한국어 음성 데이터를 내려받으세요.</li>
-          <li>갤럭시 삼성 키보드의 <b>추천 단어</b>는 웹페이지에서 끌 수 없어요. 키보드 설정 › 입력 › 예측 텍스트(스마트 타이핑)를 끄면 연습에 더 좋아요.</li>
-        </ul>
-      </details>
     </div>
 
     <p class="warn hidden" id="homeWarn" role="alert"></p>
     <button type="button" class="btn btn-primary start" id="startBtn" disabled>연습 시작</button>
+
+    <p style="text-align:center"><a class="manage" href="/typing/admin">✏️ 문제 넣고 빼기</a></p>
 
     <div class="card hidden" id="historyCard">
       <div class="label">📒 최근 기록 <span class="note" style="font-weight:500">(이 기기에만 저장돼요)</span></div>
@@ -533,7 +524,7 @@
     if (!tts.ok) {
       parts.push("<b>이 브라우저는 음성 읽기를 지원하지 않아요.</b> 크롬, 엣지, 삼성 인터넷 최신 버전을 써 주세요.");
     } else if (!vs.length) {
-      parts.push("<b>이 기기에서 한국어 목소리 목록을 찾지 못했어요.</b> 기기 기본 음성으로 읽어 볼게요. 소리가 나지 않으면 아래 도움말을 봐 주세요.");
+      parts.push("<b>이 기기에서 한국어 목소리 목록을 찾지 못했어요.</b> 기기 기본 음성으로 읽어 볼게요. 소리가 나지 않으면 기기 설정에서 한국어 음성을 설치해 주세요.");
     } else {
       if (chosen) parts.push("지금 목소리: <b>" + esc(voiceLabel(chosen)) + "</b>");
       if (!has.m) parts.push("이 기기에는 남자 선생님 목소리가 없어요.");
