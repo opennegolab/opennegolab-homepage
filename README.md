@@ -14,7 +14,7 @@ www.opennegolab.com 에 올라가는 정적 사이트입니다.
 | `typing/index.html` `typing/admin.html` | 초등학생용 타자 연습 (`/typing`) 과 문제 설정 화면 (`/typing/admin`) |
 | `typing/store.js` | 타자 연습의 채점·출제(브라우저 쪽)와 문제 불러오기 |
 | `typing-api.js` | 타자 연습의 문제집·문제 저장 (`/api/typing/…`) |
-| `hit.js` | 방문 기록을 서버로 보내는 조각. 모든 페이지가 불러갑니다 |
+| `hit.js` | 방문 기록을 서버로 보내는 조각. 홈페이지 페이지들이 불러갑니다 (타자 연습 `/typing` 은 통계에서 뺍니다) |
 | `robots.txt` `sitemap.xml` | 검색엔진 안내. 내용을 크게 고치면 sitemap 의 lastmod 를 갱신합니다 |
 | `favicon.ico` `favicon-*.png` | 파비콘. 512 원본에서 만든 것들이며 ico 에는 16·32·48 이 들어 있습니다 |
 | `server.js` | 이 폴더를 그대로 내보내는 정적 서버 + 문의 접수 라우트 |

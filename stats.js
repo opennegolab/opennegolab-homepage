@@ -25,6 +25,10 @@ const crypto = require("crypto");
 const KINDS = new Set(["view", "inquiry_open", "generate_lead", "simulator_click"]);
 const KEEP_DAYS = 400;
 
+/* 홈페이지가 아닌 화면 — 같은 서버에 있어도 홈페이지 방문자로 세지 않는다.
+   타자 연습(/typing)은 아이들이 쓰는 별도 서비스라 숫자에 섞이면 안 된다 */
+const NOT_HOMEPAGE = /^\/typing(\/|$)/i;
+
 /* ---------- 저장소 ---------- */
 let pool = null;
 let connecting = null;
@@ -185,6 +189,7 @@ async function record(req, body) {
   if (BOT.test(ua)) return;                       /* 검색엔진 수집기는 방문자가 아니다 */
   const kind = String(body.kind || "");
   if (!KINDS.has(kind)) return;
+  if (NOT_HOMEPAGE.test(String(body.path || ""))) return;
   if (tooMany(clientIp(req))) return;
 
   const when = new Date();
@@ -221,14 +226,15 @@ async function rowsSince(since) {
   if (p) {
     try {
       const r = await p.query(
-        `SELECT at, kind, ref, device, visitor FROM hp_hits WHERE at >= $1 ORDER BY at`, [since]);
+        `SELECT at, kind, ref, device, visitor FROM hp_hits
+          WHERE at >= $1 AND (path IS NULL OR path !~* '^/typing(/|$)') ORDER BY at`, [since]);
       return { rows: r.rows, mode: "db" };
     } catch (e) {
       console.error("통계 조회 실패:", e && e.message);
       note = "DB에서 읽지 못했습니다 — " + (e && e.message);
     }
   }
-  return { rows: memory.filter(r => r.at >= since), mode: "memory" };
+  return { rows: memory.filter(r => r.at >= since && !NOT_HOMEPAGE.test(r.path || "")), mode: "memory" };
 }
 
 function countTop(rows, key, limit) {
