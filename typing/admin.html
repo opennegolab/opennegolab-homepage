@@ -134,7 +134,6 @@
   <symbol id="i-stack" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.3-4.3"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
-  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 15V4M7 9l5-5 5 5M5 20h14"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
   <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
@@ -194,8 +193,6 @@
           <button class="btn small line" id="exportJson"><svg class="i" aria-hidden="true"><use href="#i-down"/></svg>JSON</button>
           <button class="btn small line" id="exportCsv"><svg class="i" aria-hidden="true"><use href="#i-down"/></svg>CSV</button>
           <button class="btn small line" id="exportAll" title="받아쓰기와 질문을 한 파일로"><svg class="i" aria-hidden="true"><use href="#i-down"/></svg>전체 JSON</button>
-          <label class="btn small" style="cursor:pointer"><svg class="i" aria-hidden="true"><use href="#i-up"/></svg>가져오기 (JSON/CSV)
-            <input type="file" id="importFile" accept=".json,.csv,application/json,text/csv" class="hidden"></label>
         </div>
       </div>
       <div class="row">
@@ -269,7 +266,7 @@
   }
   document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => setMode(t.dataset.mode)));
 
-  /* listMsg 는 등록·가져오기 결과를 알려 주는 자리라 여기서 지우지 않는다 */
+  /* listMsg 는 삭제 결과를 알려 주는 자리라 여기서 지우지 않는다 */
   function load() {
     items = store.list(mode);
     render();
@@ -429,80 +426,6 @@
     const rows = mode === "qa" ? [["질문", "정답"]].concat(items.map(x => [x.prompt, x.answers.join("|")])) : [["문장"]].concat(items.map(x => [x.prompt]));
     /* 맨 앞 BOM 은 엑셀이 한글을 깨뜨리지 않게 한다 */
     download("typing-" + mode + "-" + stamp() + ".csv", "﻿" + rows.map(r => r.map(csvCell).join(",")).join("\r\n"), "text/csv;charset=utf-8");
-  });
-
-  /* ---------- 가져오기 ---------- */
-  function parseCsv(text) {
-    const rows = []; let row = [], cell = "", q = false;
-    for (let i = 0; i < text.length; i++) {
-      const c = text[i];
-      if (q) {
-        if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
-        else cell += c;
-      } else if (c === '"') q = true;
-      else if (c === ",") { row.push(cell); cell = ""; }
-      else if (c === "\n" || c === "\r") {
-        if (c === "\r" && text[i + 1] === "\n") i++;
-        row.push(cell); rows.push(row); row = []; cell = "";
-      } else cell += c;
-    }
-    if (cell || row.length) { row.push(cell); rows.push(row); }
-    return rows.map(r => r.map(x => x.trim())).filter(r => r.some(Boolean));
-  }
-
-  function fromJsonList(m, list) {
-    return (Array.isArray(list) ? list : []).map(x => {
-      if (typeof x === "string") return m === "qa" ? null : { prompt: x, answers: [] };
-      if (!x || typeof x !== "object") return null;
-      const prompt = x.prompt || x.text || x.question || x["문장"] || x["질문"] || "";
-      let answers = x.answers || x.answer || x["정답"] || [];
-      if (!Array.isArray(answers)) answers = splitAnswers(answers);
-      return m === "qa" ? { prompt, answers } : { prompt, answers: [] };
-    }).filter(x => x && String(x.prompt).trim());
-  }
-
-  $("importFile").addEventListener("change", async e => {
-    const file = e.target.files[0];
-    e.target.value = "";
-    if (!file) return;
-    let text = await file.text();
-    text = text.replace(/^﻿/, "");
-    const sets = {};
-    try {
-      if (/\.json$/i.test(file.name) || /^\s*[\[{]/.test(text)) {
-        const data = JSON.parse(text);
-        if (Array.isArray(data)) sets[mode] = fromJsonList(mode, data);
-        else {
-          if (data.dictation) sets.dictation = fromJsonList("dictation", data.dictation);
-          if (data.qa) sets.qa = fromJsonList("qa", data.qa);
-          if (!data.dictation && !data.qa && data.items) sets[data.mode === "qa" ? "qa" : mode] = fromJsonList(data.mode === "qa" ? "qa" : mode, data.items);
-        }
-      } else {
-        const rows = parseCsv(text);
-        const head = (rows[0] || []).join(",");
-        const body = /문장|질문|정답|text|question|prompt|answer/i.test(head) ? rows.slice(1) : rows;
-        sets[mode] = mode === "qa"
-          ? body.map(r => ({ prompt: r[0] || "", answers: r.slice(1).flatMap(splitAnswers) })).filter(x => x.prompt)
-          : body.map(r => ({ prompt: r[0] || "", answers: [] })).filter(x => x.prompt);
-      }
-    } catch (err) { alert("파일을 읽지 못했습니다: " + err.message); return; }
-
-    const modes = Object.keys(sets).filter(k => sets[k].length);
-    if (!modes.length) { alert("가져올 문제가 없습니다. 파일 형식을 확인해 주세요."); return; }
-    const missing = (sets.qa || []).filter(x => !x.answers.length).length;
-    if (missing) { alert("정답이 없는 질문이 " + missing + "개 있습니다. 파일을 확인해 주세요."); return; }
-    const summary = modes.map(k => (k === "qa" ? "질문에 답하기 " : "받아쓰기 ") + sets[k].length + "개").join(", ");
-    if (!confirm(summary + "를 가져올까요?\n(이미 있는 같은 문제는 건너뜁니다)")) return;
-    const msgs = [];
-    try {
-      for (const k of modes) {
-        const r = store.add(k, sets[k], true);
-        msgs.push((k === "qa" ? "질문 " : "받아쓰기 ") + r.added + "개 추가" + (r.skipped ? "(" + r.skipped + "개 중복 건너뜀)" : ""));
-      }
-      $("listMsg").textContent = "가져오기 완료 — " + msgs.join(", ");
-    } catch (err) { alert("가져오는 중 오류: " + err.message + (msgs.length ? "\n\n먼저 처리된 것: " + msgs.join(", ") : "")); }
-    refreshCounts();
-    load();
   });
 
   boot();
