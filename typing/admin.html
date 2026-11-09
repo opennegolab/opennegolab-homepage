@@ -219,8 +219,8 @@
           <label class="f" for="addPrompt" id="addPromptLabel">문장</label>
           <input type="text" id="addPrompt" maxlength="200" autocomplete="off">
           <div id="addAnswersWrap" class="hidden">
-            <label class="f" for="addAnswers">허용 정답 <span class="note" style="font-weight:600">· 여러 개면 줄을 바꾸거나 / 로 구분</span></label>
-            <textarea id="addAnswers" style="min-height:84px" placeholder="서울&#10;서울특별시"></textarea>
+            <label class="f" for="addAnswers">허용 정답 <span class="note" style="font-weight:600">· 여러 개면 / 로 구분</span></label>
+            <input type="text" id="addAnswers" maxlength="1000" autocomplete="off" placeholder="서울 / 서울특별시">
           </div>
           <div class="row foot">
             <button class="btn primary"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>등록</button>
@@ -451,7 +451,7 @@
       if (x.id === editing) {
         return "<tr data-id='" + x.id + "' class='editing'><td class='chk'></td><td class='num'>" + (k + 1) + "</td><td>" +
           "<input type='text' class='e-prompt' maxlength='200' value='" + esc(x.prompt) + "'>" +
-          (qa ? "<textarea class='e-answers' style='min-height:64px;margin-top:6px' placeholder='정답 (줄바꿈 또는 / 로 구분)'>" + esc(x.answers.join("\n")) + "</textarea>" : "") +
+          (qa ? "<input type='text' class='e-answers' style='margin-top:6px' maxlength='1000' placeholder='정답 (여러 개면 / 로 구분)' value='" + esc(x.answers.join(" / ")) + "'>" : "") +
           "<div class='err e-err'></div></td><td class='act'><button class='btn small primary' data-act='save'>저장</button> <button class='btn small ghost' data-act='cancel'>취소</button></td></tr>";
       }
       return "<tr data-id='" + x.id + "'><td class='chk'><input type='checkbox' data-act='pick'" + (selected.has(x.id) ? " checked" : "") + " aria-label='선택'></td>" +
@@ -528,7 +528,7 @@
     }
   });
   $("tbody").addEventListener("keydown", e => {
-    if (e.key === "Enter" && e.target.classList.contains("e-prompt")) { e.preventDefault(); e.target.closest("tr").querySelector("[data-act=save]").click(); }
+    if (e.key === "Enter" && (e.target.classList.contains("e-prompt") || e.target.classList.contains("e-answers"))) { e.preventDefault(); e.target.closest("tr").querySelector("[data-act=save]").click(); }
     if (e.key === "Escape") { editing = 0; render(); }
   });
   /* 모두 선택은 지금 보이는 페이지의 문제만 */
@@ -555,20 +555,52 @@
     refreshCounts();
     return r;
   }
-  $("addForm").addEventListener("submit", async e => {
-    e.preventDefault();
+  /* 한 문제 등록 — 버튼이나 Enter 로. 한 번 누른 것이 두 번 등록되지 않게 막는다 */
+  let adding = false, addedAt = 0;
+  async function addOne() {
+    if (adding) return;
     const m = $("addMsg");
-    m.className = "note";
     const prompt = $("addPrompt").value.trim();
     const answers = splitAnswers($("addAnswers").value);
-    if (!prompt) { m.textContent = mode === "qa" ? "질문을 입력하세요." : "문장을 입력하세요."; return; }
-    if (mode === "qa" && !answers.length) { m.textContent = "정답을 하나 이상 입력하세요."; return; }
+    if (!prompt && !answers.length && Date.now() - addedAt < 800) return;   /* 방금 등록한 Enter 가 한 번 더 들어왔다 */
+    m.className = "note";
+    if (!prompt) { m.textContent = mode === "qa" ? "질문을 입력하세요." : "문장을 입력하세요."; $("addPrompt").focus(); return; }
+    if (mode === "qa" && !answers.length) { m.textContent = "정답을 하나 이상 입력하세요."; $("addAnswers").focus(); return; }
+    adding = true;
     try {
       const r = await addItems([{ prompt, answers }], true);
-      if (r.added) { m.className = "ok"; m.textContent = "등록했습니다."; $("addPrompt").value = ""; $("addAnswers").value = ""; $("addPrompt").focus(); }
+      if (r.added) { addedAt = Date.now(); m.className = "ok"; m.textContent = "등록했습니다."; $("addPrompt").value = ""; $("addAnswers").value = ""; $("addPrompt").focus(); }
       else { m.textContent = "이미 같은 문제가 있습니다."; }
     } catch (err) { m.textContent = err.message; }
+    finally { adding = false; }
+  }
+  $("addForm").addEventListener("submit", e => { e.preventDefault(); addOne(); });
+
+  /* Enter 처리
+     - 질문 칸에서 Enter: 질문에 답하기이고 정답이 비어 있으면 정답 칸으로 넘어간다. 아니면 등록
+     - 정답 칸(또는 받아쓰기 문장 칸)에서 Enter: 바로 등록
+     한글을 조합하는 중에 누른 Enter 는 조합이 끝난 뒤에 처리한다 — 마지막 글자가 빠지거나
+     기기에 따라 Enter 가 두 번 들어와 두 번 등록되는 것을 막는다 */
+  function onEnter(el, fn) {
+    let pending = false;
+    el.addEventListener("keydown", e => {
+      if (e.key !== "Enter" && e.code !== "Enter" && e.code !== "NumpadEnter") return;
+      e.preventDefault();                       /* 폼이 스스로 제출하지 않게 — 여기서만 처리 */
+      if (e.isComposing || e.keyCode === 229) { pending = true; setTimeout(() => { if (pending) { pending = false; fn(); } }, 250); return; }
+      pending = false;
+      fn();
+    });
+    el.addEventListener("compositionend", () => { if (pending) { pending = false; setTimeout(fn, 0); } });
+  }
+  onEnter($("addPrompt"), () => {
+    if (mode === "qa" && !splitAnswers($("addAnswers").value).length) {
+      if ($("addPrompt").value.trim()) { $("addMsg").textContent = ""; $("addAnswers").focus(); }
+      else addOne();
+      return;
+    }
+    addOne();
   });
+  onEnter($("addAnswers"), addOne);
 
   function parseBulk(text) {
     const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
