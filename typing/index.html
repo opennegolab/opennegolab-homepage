@@ -2,6 +2,16 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<script>
+/* 카카오톡에서 링크를 열면 카톡 안 화면에서는 소리가 나지 않는다.
+   열자마자 휴대폰 기본 브라우저(크롬 등)로 다시 연다. 같은 창에서는 한 번만 시도해,
+   안 되더라도 계속 되풀이하지 않는다 (그때는 화면의 '크롬으로 열기' 버튼을 쓴다) */
+(function () {
+  if (!/KAKAOTALK/i.test(navigator.userAgent)) return;
+  try { if (sessionStorage.getItem("typing.ext")) return; sessionStorage.setItem("typing.ext", "1"); } catch (e) {}
+  location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href);
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>오선빈 타자연습</title>
 <meta name="description" content="듣고 쓰는 받아쓰기, 질문에 답하기로 한글 타자를 연습해요.">
@@ -678,7 +688,9 @@
     if (!tts.ok || IN_APP) {
       const p = document.createElement("div");
       p.textContent = IN_APP
-        ? "카카오톡·네이버 같은 앱 안에서 열면 문제를 소리 내어 읽지 못할 수 있어요. 크롬이나 삼성 인터넷으로 열어 주세요."
+        ? (/KAKAOTALK/i.test(navigator.userAgent)
+            ? "카카오톡 안에서는 소리가 나지 않아요. 크롬에서 열리지 않았다면 아래 버튼을 눌러 주세요."
+            : "카카오톡·네이버 같은 앱 안에서 열면 문제를 소리 내어 읽지 못할 수 있어요. 크롬이나 삼성 인터넷으로 열어 주세요.")
         : "이 화면에서는 소리 내어 읽기를 쓸 수 없어요" + (settings.mode === "dictation" ? " (받아쓰기는 소리가 있어야 해요)" : "") + ". 크롬이나 삼성 인터넷으로 열어 주세요.";
       if (w) p.style.marginTop = "8px";
       warn.appendChild(p);
