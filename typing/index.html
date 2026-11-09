@@ -555,6 +555,20 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
       : "소리가 안 나요? 컴퓨터 소리를 키우고, 설정에서 한국어 음성이 설치됐는지 확인해 주세요.");
   }
 
+  /* 소리로 읽을 때만 수식 기호를 말로 바꾼다 — 기계 음성은 '+' 를 '플러스', '=' 를 '이퀄'로 읽기도 한다.
+     '9 + 6 = ?' → '9 더하기 6은?'  (은/는은 숫자의 끝소리에 맞춘다: 0·1·3·6·7·8 → 은)
+     '= ?' 로 묻는 계산 문제에서만 바꾼다 */
+  function speakable(t) {
+    t = String(t);
+    if (!/\d\s*=\s*\?/.test(t)) return t;      /* '= ?' 로 묻는 계산 문제만 — '1/2 컵' 같은 글은 그대로 */
+    return t
+      .replace(/(\d)\s*=\s*\?/g, (m, d) => d + ("013678".includes(d) ? "은" : "는") + "?")
+      .replace(/(\d)\s*\+\s*(?=\d)/g, "$1 더하기 ")
+      .replace(/(\d)\s*[-−]\s*(?=\d)/g, "$1 빼기 ")
+      .replace(/(\d)\s*[×x*]\s*(?=\d)/g, "$1 곱하기 ")
+      .replace(/(\d)\s*[÷/]\s*(?=\d)/g, "$1 나누기 ");
+  }
+
   const tts = {
     ok: "speechSynthesis" in window && "SpeechSynthesisUtterance" in window,
     voices: [],
@@ -586,6 +600,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
          휴대폰에 설정된 한국어 기본 목소리를 그대로 쓴다 */
     speak(text) {
       if (!this.ok || !text) return false;
+      text = speakable(text);
       const t = ++this.token;
       const busy = speechSynthesis.speaking || speechSynthesis.pending;
       if (busy) speechSynthesis.cancel();
