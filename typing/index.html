@@ -7,227 +7,351 @@
 <meta name="description" content="듣고 쓰는 받아쓰기, 질문에 답하기로 한글 타자를 연습해요.">
 <!-- 전용 링크로만 들어오는 학습 화면이라 검색에는 올리지 않는다 -->
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#EAF3FF">
+<meta name="theme-color" content="#F4F7FC">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
   :root{
-    --bg:#F6F9FD; --card:#FFFFFF; --ink:#2F3445; --ink-soft:#6B7285; --line:#E6EBF3;
-    --blue:#5B9BEA; --blue-soft:#EAF3FF; --blue-mid:#CFE3FB;
-    --mint:#3FBFA0; --mint-soft:#E4F7F1;
-    --lav:#8F7AE6; --lav-soft:#F0ECFF;
-    --yellow:#F5C04A; --yellow-soft:#FFF6D9;
-    --pink:#D9577E; --pink-soft:#FFE6EC;
-    --radius:22px;
-    --shadow:0 1px 2px rgba(47,52,69,.04), 0 10px 28px rgba(47,52,69,.07);
+    --bg:#F4F7FC; --card:#FFFFFF; --ink:#232B40; --ink-2:#4A536B; --ink-soft:#7A839A; --line:#E6EBF3; --line-2:#D5DDEA;
+    --blue:#4C8DF0; --blue-d:#2F6FD6; --blue-soft:#EAF2FF; --blue-mid:#CFE1FD;
+    --mint:#25B08C; --mint-d:#168469; --mint-soft:#E1F6EF;
+    --lav:#8A72E6; --lav-d:#5E45C4; --lav-soft:#EFEBFF;
+    --yellow:#F2B42A; --yellow-d:#8C6400; --yellow-soft:#FFF4D4;
+    --coral:#E05C7C; --coral-soft:#FFE8EE;
+    --r-lg:28px; --r:20px; --r-sm:14px;
+    --shadow:0 1px 1px rgba(35,43,64,.03), 0 2px 6px rgba(35,43,64,.04), 0 16px 40px -12px rgba(35,43,64,.12);
+    --shadow-sm:0 1px 2px rgba(35,43,64,.05), 0 4px 12px -4px rgba(35,43,64,.10);
+    --ease:cubic-bezier(.2,.8,.2,1);
   }
   *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
   html{ -webkit-text-size-adjust:100%; }
   body{
     background:var(--bg); color:var(--ink);
     font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
-    font-size:17px; line-height:1.5; -webkit-font-smoothing:antialiased;
-    min-height:100vh; min-height:100dvh;
+    font-size:17px; line-height:1.5; letter-spacing:-.01em; -webkit-font-smoothing:antialiased;
+    min-height:100vh; min-height:100dvh; position:relative;
   }
-  button{ font:inherit; color:inherit; cursor:pointer; touch-action:manipulation; }
+  /* 은은한 파스텔 배경 */
+  body::before{
+    content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:
+      radial-gradient(40rem 26rem at 8% -6%, rgba(76,141,240,.13), transparent 70%),
+      radial-gradient(34rem 24rem at 100% 4%, rgba(138,114,230,.12), transparent 70%),
+      radial-gradient(36rem 26rem at 50% 108%, rgba(37,176,140,.10), transparent 70%);
+  }
+  button{ font:inherit; color:inherit; cursor:pointer; touch-action:manipulation; border:none; background:none; }
   button:disabled{ cursor:not-allowed; }
-  :focus-visible{ outline:3px solid var(--blue); outline-offset:2px; }
-  .wrap{ width:100%; max-width:760px; margin:0 auto; padding:18px 16px 40px; }
+  a{ color:inherit; }
+  :focus-visible{ outline:3px solid rgba(76,141,240,.55); outline-offset:3px; border-radius:12px; }
+  svg.i{ width:1.2em; height:1.2em; flex:none; fill:none; stroke:currentColor; stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round; }
+  .wrap{ width:100%; max-width:720px; margin:0 auto; padding:28px 18px 48px; }
   .hidden{ display:none !important; }
   .sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 
   /* ---------- 공통 ---------- */
-  .card{ background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
+  .card{ background:var(--card); border-radius:var(--r-lg); box-shadow:var(--shadow); padding:26px; border:1px solid rgba(230,235,243,.7); }
   .stack > * + *{ margin-top:16px; }
-  .label{ font-size:.95rem; font-weight:700; color:var(--ink-soft); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
-  .chips{ display:flex; gap:8px; flex-wrap:wrap; }
-  .chip{
-    border:2px solid var(--line); background:#fff; border-radius:999px; padding:10px 18px;
-    font-weight:700; font-size:1rem; min-height:46px; transition:all .15s;
-  }
-  .chip[aria-pressed="true"]{ border-color:var(--blue); background:var(--blue-soft); color:#2B67B5; }
-  .chip:disabled{ opacity:.45; }
+  .step{ display:flex; align-items:center; gap:10px; font-size:1.02rem; font-weight:800; color:var(--ink); margin-bottom:14px; }
+  .step .n{ width:26px; height:26px; border-radius:9px; display:grid; place-items:center; font-size:.82rem; font-weight:900; background:var(--blue-soft); color:var(--blue-d); }
+  .step .side{ margin-left:auto; }
+  .sub-label{ font-size:.86rem; font-weight:800; color:var(--ink-soft); margin:20px 0 10px; }
+  .note{ font-size:.86rem; color:var(--ink-soft); line-height:1.6; }
+  .note b{ color:var(--ink-2); }
+  .warn{ display:flex; gap:10px; align-items:flex-start; background:var(--yellow-soft); color:var(--yellow-d); border-radius:var(--r); padding:14px 16px; font-size:.93rem; font-weight:600; line-height:1.55; }
+
+  /* 버튼 */
   .btn{
-    border:none; border-radius:16px; padding:14px 22px; font-weight:800; font-size:1.05rem;
-    min-height:52px; display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    transition:transform .1s, background .15s, box-shadow .15s;
+    border-radius:16px; padding:14px 20px; font-weight:800; font-size:1.02rem; min-height:54px;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .12s var(--ease), background .15s, box-shadow .15s, color .15s;
   }
-  .btn:active{ transform:scale(.98); }
-  .btn-primary{ background:var(--blue); color:#fff; box-shadow:0 6px 16px rgba(91,155,234,.35); }
-  .btn-primary:hover{ background:#4C8EE0; }
-  .btn-primary:disabled{ background:#B9CCE4; box-shadow:none; }
-  .btn-soft{ background:var(--blue-soft); color:#2B67B5; }
-  .btn-mint{ background:var(--mint-soft); color:#1F8A70; }
-  .btn-lav{ background:var(--lav-soft); color:#5E48C2; }
-  .btn-yellow{ background:var(--yellow-soft); color:#8A6400; }
-  .btn-ghost{ background:transparent; color:var(--ink-soft); }
-  .note{ font-size:.88rem; color:var(--ink-soft); line-height:1.6; }
-  .note b{ color:var(--ink); }
-  .warn{ background:var(--yellow-soft); color:#7A5A00; border-radius:14px; padding:12px 14px; font-size:.92rem; line-height:1.55; }
+  .btn:active:not(:disabled){ transform:translateY(1px) scale(.99); }
+  .btn-primary{ background:linear-gradient(180deg,#5B98F3,var(--blue)); color:#fff; box-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 8px 20px -6px rgba(76,141,240,.65); }
+  .btn-primary:hover:not(:disabled){ background:linear-gradient(180deg,#4C8DF0,var(--blue-d)); }
+  .btn-primary:disabled{ background:#C4D3EA; box-shadow:none; color:#F4F7FC; }
+  .btn-soft{ background:var(--blue-soft); color:var(--blue-d); }
+  .btn-soft:hover{ background:#DDEAFE; }
+  .btn-mint{ background:var(--mint-soft); color:var(--mint-d); }
+  .btn-lav{ background:var(--lav-soft); color:var(--lav-d); }
+  .btn-yellow{ background:var(--yellow-soft); color:var(--yellow-d); }
+  .btn-white{ background:#fff; color:var(--ink-2); box-shadow:var(--shadow-sm); }
+  .btn:disabled:not(.btn-primary){ opacity:.5; }
+
+  /* 세그먼트 (문제 수 · 빠르기) */
+  .seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:4px; background:#F1F4FA; padding:5px; border-radius:18px; }
+  .seg button{ border-radius:14px; min-height:48px; font-weight:800; color:var(--ink-soft); display:flex; align-items:center; justify-content:center; gap:8px; transition:background .15s, color .15s, box-shadow .15s; }
+  .seg button:hover{ color:var(--ink-2); }
+  .seg button[aria-pressed="true"]{ background:#fff; color:var(--blue-d); box-shadow:var(--shadow-sm); }
+  .speed{ display:inline-flex; gap:2px; align-items:flex-end; height:14px; }
+  .speed i{ width:4px; border-radius:2px; background:currentColor; opacity:.25; }
+  .speed i:nth-child(1){ height:6px; } .speed i:nth-child(2){ height:10px; } .speed i:nth-child(3){ height:14px; }
+  .speed.s1 i:nth-child(1), .speed.s2 i:nth-child(-n+2), .speed.s3 i{ opacity:1; }
 
   /* ---------- 처음 화면 ---------- */
-  .hero{ text-align:center; padding:12px 0 18px; }
-  .hero h1{ font-size:2rem; font-weight:900; letter-spacing:-.02em; }
-  .hero h1 .key{ display:inline-block; background:var(--yellow-soft); border-radius:12px; padding:0 10px; margin-right:4px; }
-  .hero p{ color:var(--ink-soft); margin-top:4px; }
+  .hero{ text-align:center; padding:10px 0 22px; }
+  .keys{ display:inline-flex; gap:8px; align-items:flex-end; }
+  .keycap{
+    display:grid; place-items:center; width:62px; height:62px; border-radius:16px; font-size:1.9rem; font-weight:900; color:var(--ink);
+    background:linear-gradient(180deg,#fff,#F6F8FC); border:1px solid var(--line-2);
+    box-shadow:0 5px 0 var(--line-2), 0 12px 22px -10px rgba(35,43,64,.25);
+    animation:keyin .5s var(--ease) both;
+  }
+  .keycap:nth-child(2){ animation-delay:.06s; background:linear-gradient(180deg,#fff,var(--blue-soft)); }
+  .keycap:nth-child(4){ animation-delay:.12s; background:linear-gradient(180deg,#fff,var(--lav-soft)); }
+  .keycap:nth-child(5){ animation-delay:.18s; background:linear-gradient(180deg,#fff,var(--mint-soft)); }
+  .keys .gap{ width:6px; }
+  @keyframes keyin{ from{ transform:translateY(-10px); opacity:0; } to{ transform:none; opacity:1; } }
+  .hero p{ color:var(--ink-soft); margin-top:16px; font-weight:600; }
 
   .modes{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .mode{
-    text-align:left; border:3px solid transparent; background:var(--blue-soft); border-radius:20px;
-    padding:18px 16px; min-height:128px; display:flex; flex-direction:column; gap:4px; transition:all .15s;
+    position:relative; text-align:left; border:2px solid var(--line); background:#fff; border-radius:22px;
+    padding:18px; display:flex; flex-direction:column; gap:2px; transition:border-color .15s, box-shadow .2s, transform .15s var(--ease);
   }
-  .mode.qa{ background:var(--lav-soft); }
-  .mode .ico{ font-size:2rem; line-height:1; }
-  .mode .name{ font-size:1.2rem; font-weight:900; margin-top:6px; }
-  .mode .desc{ font-size:.9rem; color:var(--ink-soft); }
-  .mode .cnt{ font-size:.82rem; font-weight:700; color:var(--ink-soft); margin-top:auto; }
-  .mode[aria-pressed="true"]{ border-color:var(--blue); box-shadow:0 6px 18px rgba(91,155,234,.25); }
-  .mode.qa[aria-pressed="true"]{ border-color:var(--lav); box-shadow:0 6px 18px rgba(143,122,230,.25); }
+  .mode:hover{ border-color:var(--line-2); transform:translateY(-1px); }
+  .mode .ico{ width:52px; height:52px; border-radius:16px; display:grid; place-items:center; background:var(--blue-soft); color:var(--blue); margin-bottom:12px; }
+  .mode .ico svg{ width:28px; height:28px; }
+  .mode.qa .ico{ background:var(--lav-soft); color:var(--lav); }
+  .mode .name{ font-size:1.16rem; font-weight:900; }
+  .mode .desc{ font-size:.88rem; color:var(--ink-soft); }
+  .mode .cnt{ align-self:flex-start; margin-top:12px; font-size:.78rem; font-weight:800; color:var(--ink-soft); background:#F1F4FA; border-radius:999px; padding:3px 10px; }
+  .mode .tick{ position:absolute; top:14px; right:14px; width:26px; height:26px; border-radius:50%; display:grid; place-items:center; border:2px solid var(--line-2); color:transparent; transition:all .15s; }
+  .mode .tick svg{ width:15px; height:15px; stroke-width:3; }
+  .mode[aria-pressed="true"]{ border-color:var(--blue); background:linear-gradient(180deg,#fff, #F6F9FF); box-shadow:0 10px 24px -12px rgba(76,141,240,.6); }
+  .mode[aria-pressed="true"] .tick{ background:var(--blue); border-color:var(--blue); color:#fff; }
+  .mode[aria-pressed="true"] .cnt{ background:var(--blue-soft); color:var(--blue-d); }
+  .mode.qa[aria-pressed="true"]{ border-color:var(--lav); background:linear-gradient(180deg,#fff,#F9F7FF); box-shadow:0 10px 24px -12px rgba(138,114,230,.6); }
+  .mode.qa[aria-pressed="true"] .tick{ background:var(--lav); border-color:var(--lav); }
+  .mode.qa[aria-pressed="true"] .cnt{ background:var(--lav-soft); color:var(--lav-d); }
 
-  .voice-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
-  .voice-head button{ border:none; background:none; color:#2B67B5; font-weight:700; padding:6px 4px; }
-  .teacher{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .teacher .chip{ border-radius:16px; padding:12px; display:flex; flex-direction:column; align-items:center; gap:2px; }
-  .teacher .chip small{ font-weight:600; font-size:.78rem; color:var(--ink-soft); }
-  select{
-    width:100%; font:inherit; font-size:.95rem; padding:12px 14px; border-radius:14px; border:2px solid var(--line);
-    background:#fff; color:var(--ink); min-height:48px;
+  .preview{ white-space:nowrap; display:inline-flex; align-items:center; gap:6px; font-weight:800; font-size:.9rem; color:var(--blue-d); background:var(--blue-soft); padding:8px 14px; border-radius:999px; }
+  .preview svg{ width:14px; height:14px; fill:currentColor; stroke:none; }
+  .teacher{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .tcard{
+    display:flex; align-items:center; gap:12px; text-align:left; border:2px solid var(--line); border-radius:20px; padding:12px 14px; min-height:72px;
+    transition:border-color .15s, background .15s;
   }
-  .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-  .start{ width:100%; font-size:1.25rem; min-height:62px; border-radius:20px; }
-  .manage{ display:inline-block; color:var(--ink-soft); font-weight:700; font-size:.95rem; text-decoration:none; padding:8px 14px; border-radius:999px; }
-  .manage:hover{ background:var(--blue-soft); color:#2B67B5; }
+  .tcard .av{ width:44px; height:44px; border-radius:50%; display:grid; place-items:center; flex:none; }
+  .tcard .av svg{ width:24px; height:24px; }
+  .tcard[data-teacher="f"] .av{ background:var(--coral-soft); color:var(--coral); }
+  .tcard[data-teacher="m"] .av{ background:var(--blue-soft); color:var(--blue); }
+  .tcard b{ display:block; font-size:1rem; font-weight:800; }
+  .tcard small{ display:block; font-size:.78rem; font-weight:600; color:var(--ink-soft); }
+  .tcard[aria-pressed="true"]{ border-color:var(--blue); background:#F7FAFF; }
+  .tcard:disabled{ opacity:.55; background:#FAFBFD; }
+  .tcard:disabled .av{ background:#EEF1F6; color:#A9B1C3; }
+  .selwrap{ position:relative; margin-top:12px; }
+  .selwrap svg{ position:absolute; right:14px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--ink-soft); }
+  select{
+    width:100%; font:inherit; font-size:.92rem; font-weight:600; padding:12px 40px 12px 14px; border-radius:14px; border:2px solid var(--line);
+    background:#fff; color:var(--ink-2); min-height:50px; appearance:none; -webkit-appearance:none;
+  }
+  select:disabled{ background:#FAFBFD; color:var(--ink-soft); }
+  .vstatus{ display:flex; gap:10px; align-items:flex-start; margin-top:16px; padding:12px 14px; border-radius:var(--r-sm); background:#F7F9FC; }
+  .vstatus .dot{ width:8px; height:8px; border-radius:50%; background:var(--mint); margin-top:.55em; flex:none; box-shadow:0 0 0 4px var(--mint-soft); }
+  .vstatus.bad .dot{ background:var(--yellow); box-shadow:0 0 0 4px var(--yellow-soft); }
+
+  .start-wrap{ padding-top:4px; }
+  .start{ width:100%; font-size:1.2rem; min-height:64px; border-radius:22px; }
+  .start svg{ width:22px; height:22px; transition:transform .2s var(--ease); }
+  .start:hover:not(:disabled) svg{ transform:translateX(3px); }
+  .links{ text-align:center; }
+  .manage{ display:inline-flex; align-items:center; gap:6px; color:var(--ink-soft); font-weight:700; font-size:.92rem; text-decoration:none; padding:9px 16px; border-radius:999px; transition:background .15s, color .15s; }
+  .manage svg{ width:16px; height:16px; }
+  .manage:hover{ background:#fff; color:var(--blue-d); box-shadow:var(--shadow-sm); }
   .history{ list-style:none; }
-  .history li{ display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-top:1px solid var(--line); font-size:.92rem; }
-  .history li:first-child{ border-top:none; }
-  .history .s{ font-weight:800; color:#2B67B5; }
+  .history li{ display:flex; align-items:center; gap:12px; padding:11px 0; border-top:1px solid var(--line); font-size:.92rem; }
+  .history li:first-child{ border-top:none; padding-top:0; }
+  .history .m{ width:34px; height:34px; border-radius:11px; display:grid; place-items:center; background:var(--blue-soft); color:var(--blue); flex:none; }
+  .history .m.qa{ background:var(--lav-soft); color:var(--lav); }
+  .history .m svg{ width:18px; height:18px; }
+  .history .t{ flex:1; min-width:0; }
+  .history .t b{ display:block; font-weight:700; }
+  .history .t span{ font-size:.8rem; color:var(--ink-soft); }
+  .history .s{ font-weight:900; font-size:1.05rem; color:var(--blue-d); }
 
   /* ---------- 학습 화면 ---------- */
-  .topbar{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
-  .topbar .home{ border:none; background:#fff; border-radius:14px; width:46px; height:46px; box-shadow:var(--shadow); font-size:1.2rem; flex:none; }
-  .progress{ flex:1; }
-  .progress .txt{ display:flex; justify-content:space-between; font-size:.92rem; font-weight:700; color:var(--ink-soft); margin-bottom:6px; }
-  .progress .txt b{ color:var(--ink); font-size:1.05rem; }
-  .bar{ height:12px; background:var(--blue-mid); border-radius:999px; overflow:hidden; }
-  .bar i{ display:block; height:100%; width:0; background:linear-gradient(90deg,var(--blue),var(--mint)); border-radius:999px; transition:width .4s; }
+  .topbar{ display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+  .iconbtn{ width:48px; height:48px; border-radius:16px; background:#fff; box-shadow:var(--shadow-sm); display:grid; place-items:center; color:var(--ink-2); flex:none; transition:color .15s; }
+  .iconbtn:hover{ color:var(--blue-d); }
+  .progress{ flex:1; min-width:0; }
+  .progress .txt{ display:flex; justify-content:space-between; align-items:baseline; font-size:.9rem; font-weight:700; color:var(--ink-soft); margin-bottom:8px; }
+  .progress .txt b{ color:var(--ink); font-size:1.15rem; font-weight:900; }
+  .avg{ display:inline-flex; align-items:center; gap:6px; background:#fff; border-radius:999px; padding:4px 12px; box-shadow:var(--shadow-sm); font-size:.84rem; }
+  .avg b{ font-size:1rem !important; color:var(--blue-d) !important; }
+  .segs{ display:flex; gap:4px; height:10px; }
+  .segs i{ flex:1; border-radius:999px; background:var(--blue-mid); opacity:.55; transition:background .3s, opacity .3s; }
+  .segs i.p{ background:var(--mint); opacity:1; } .segs i.h{ background:var(--yellow); opacity:1; } .segs i.z{ background:var(--lav); opacity:1; }
+  .segs i.now{ background:var(--blue); opacity:1; }
+  .segs.dense{ gap:0; border-radius:999px; overflow:hidden; background:var(--blue-mid); }
+  .segs.dense i{ border-radius:0; }
 
-  .stage{ min-height:210px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; position:relative; overflow:hidden; }
-  .qtag{ display:inline-block; font-size:.85rem; font-weight:800; padding:4px 12px; border-radius:999px; background:var(--blue-soft); color:#2B67B5; margin-bottom:12px; }
-  .qtag.qa{ background:var(--lav-soft); color:#5E48C2; }
-  .question{ font-size:clamp(1.6rem, 5.5vw, 2.4rem); font-weight:900; line-height:1.35; word-break:keep-all; overflow-wrap:anywhere; }
-  .listen{
-    margin-top:16px; border:none; border-radius:999px; padding:12px 22px; background:var(--yellow-soft); color:#7A5A00;
-    font-weight:800; font-size:1.05rem; display:inline-flex; align-items:center; gap:8px; min-height:52px;
+  .stage{ min-height:250px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; position:relative; overflow:hidden; padding:30px 24px; }
+  .qtag{ display:inline-flex; align-items:center; gap:6px; font-size:.82rem; font-weight:800; padding:5px 12px; border-radius:999px; background:var(--blue-soft); color:var(--blue-d); margin-bottom:16px; }
+  .qtag svg{ width:15px; height:15px; }
+  .qtag.qa{ background:var(--lav-soft); color:var(--lav-d); }
+  .question{ font-size:clamp(1.65rem, 5.4vw, 2.5rem); font-weight:900; line-height:1.35; letter-spacing:-.02em; word-break:keep-all; overflow-wrap:anywhere; max-width:22ch; }
+  /* 받아쓰기: 큰 스피커 버튼 */
+  .listen-big{
+    position:relative; width:118px; height:118px; border-radius:50%; display:grid; place-items:center; color:#fff;
+    background:radial-gradient(circle at 35% 30%, #74ADF6, var(--blue) 60%, var(--blue-d)); box-shadow:0 14px 30px -10px rgba(76,141,240,.75);
+    transition:transform .15s var(--ease);
   }
-  .listen .wave{ display:inline-flex; gap:3px; align-items:flex-end; height:18px; }
-  .listen .wave i{ width:4px; height:6px; background:currentColor; border-radius:2px; opacity:.55; }
-  .listen.speaking .wave i{ animation:wave .8s infinite ease-in-out; }
-  .listen.speaking .wave i:nth-child(2){ animation-delay:.15s; }
-  .listen.speaking .wave i:nth-child(3){ animation-delay:.3s; }
+  .listen-big:hover{ transform:scale(1.03); }
+  .listen-big svg{ width:50px; height:50px; stroke-width:2; }
+  .listen-big::before, .listen-big::after{ content:""; position:absolute; inset:0; border-radius:50%; border:3px solid var(--blue); opacity:0; }
+  .listen-big.speaking::before{ animation:ring 1.6s ease-out infinite; }
+  .listen-big.speaking::after{ animation:ring 1.6s .8s ease-out infinite; }
+  @keyframes ring{ from{ transform:scale(1); opacity:.5; } to{ transform:scale(1.55); opacity:0; } }
+  .listen-cap{ margin-top:14px; font-weight:800; color:var(--ink-2); }
+  .hint{ color:var(--ink-soft); margin-top:2px; font-size:.92rem; }
+  /* 질문 모드: 작은 다시 듣기 버튼 */
+  .listen-pill{ margin-top:20px; display:inline-flex; align-items:center; gap:8px; padding:10px 18px; min-height:48px; border-radius:999px; background:var(--yellow-soft); color:var(--yellow-d); font-weight:800; }
+  .wave{ display:inline-flex; gap:3px; align-items:center; height:18px; }
+  .wave i{ width:4px; height:6px; background:currentColor; border-radius:2px; opacity:.6; }
+  .speaking .wave i{ animation:wave .8s infinite ease-in-out; }
+  .speaking .wave i:nth-child(2){ animation-delay:.15s; } .speaking .wave i:nth-child(3){ animation-delay:.3s; }
   @keyframes wave{ 0%,100%{ height:5px; } 50%{ height:18px; } }
-  .bigear{ font-size:3.2rem; line-height:1; }
-  .hint{ color:var(--ink-soft); margin-top:8px; font-size:.95rem; }
 
-  .answer-form{ margin-top:14px; display:flex; gap:10px; scroll-margin:90px; }
-  .answer{
-    flex:1; min-width:0; font:inherit; font-size:clamp(1.35rem, 4.5vw, 1.8rem); font-weight:700;
-    padding:16px 18px; border-radius:18px; border:3px solid var(--blue-mid); background:#fff; color:var(--ink);
-    min-height:68px; outline:none; transition:border-color .15s, box-shadow .15s;
+  .answer-box{
+    margin-top:14px; display:flex; align-items:center; gap:10px; background:#fff; border-radius:24px; padding:8px 8px 8px 18px;
+    border:2px solid var(--blue-mid); box-shadow:var(--shadow); scroll-margin:90px; transition:border-color .15s, box-shadow .15s;
   }
-  .answer:focus{ border-color:var(--blue); box-shadow:0 0 0 5px rgba(91,155,234,.18); }
-  .answer::placeholder{ color:#A9B1C2; font-weight:500; }
-  .submit{ flex:none; min-width:96px; border-radius:18px; }
-  .under{ display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:.85rem; color:var(--ink-soft); gap:8px; flex-wrap:wrap; }
-  .msg{ min-height:1.4em; color:#B0476A; font-weight:700; }
-  kbd{ font-family:inherit; font-size:.8rem; font-weight:700; background:#fff; border:1px solid var(--line); border-bottom-width:2px; border-radius:6px; padding:1px 6px; }
+  .answer-box:focus-within{ border-color:var(--blue); box-shadow:0 0 0 6px rgba(76,141,240,.14), var(--shadow); }
+  .answer-box > svg{ width:26px; height:26px; color:var(--blue); opacity:.8; }
+  .answer{
+    flex:1; min-width:0; font:inherit; font-size:clamp(1.35rem, 4.6vw, 1.85rem); font-weight:700; letter-spacing:.01em;
+    padding:12px 4px; border:none; background:transparent; color:var(--ink); outline:none; min-height:60px;
+  }
+  .answer::placeholder{ color:#AEB6C7; font-weight:600; }
+  .submit{ flex:none; min-width:104px; border-radius:18px; min-height:60px; }
+  .submit svg{ width:18px; height:18px; }
+  .under{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding:0 6px; font-size:.84rem; color:var(--ink-soft); gap:8px; flex-wrap:wrap; }
+  .msg{ min-height:1.4em; color:var(--coral); font-weight:800; }
+  kbd{ font-family:inherit; font-size:.76rem; font-weight:800; color:var(--ink-2); background:#fff; border:1px solid var(--line-2); border-bottom-width:3px; border-radius:7px; padding:1px 7px; }
 
-  /* 평가 결과 */
-  .fb{ width:100%; animation:pop .25s ease-out; }
-  @keyframes pop{ from{ transform:scale(.96); opacity:0; } to{ transform:none; opacity:1; } }
-  .fb .score{ font-size:3.2rem; font-weight:900; line-height:1; }
-  .fb .score small{ font-size:1.2rem; font-weight:800; margin-left:2px; }
-  .fb .say{ font-size:1.25rem; font-weight:800; margin-top:6px; }
-  .fb.s100 .score{ color:var(--mint); }
-  .fb.smid .score{ color:var(--blue); }
-  .fb.slow .score{ color:var(--lav); }
-  .fb .fq{ font-size:.9rem; color:var(--ink-soft); margin-bottom:8px; }
-  .compare{ margin:14px auto 0; text-align:left; max-width:560px; display:grid; grid-template-columns:auto 1fr; gap:6px 12px; align-items:baseline; }
-  .compare dt{ font-size:.82rem; font-weight:800; color:var(--ink-soft); white-space:nowrap; }
-  .compare dd{ font-size:1.25rem; font-weight:700; word-break:break-all; letter-spacing:.02em; }
-  mark{ background:none; color:inherit; border-radius:4px; padding:0 1px; }
-  mark.wrong{ background:var(--pink-soft); color:var(--pink); }
-  mark.extra{ background:var(--pink-soft); color:var(--pink); text-decoration:line-through; }
-  mark.miss{ background:var(--yellow-soft); color:#8A6400; box-shadow:inset 0 -3px 0 var(--yellow); }
-  mark.fix{ background:var(--mint-soft); color:#1F8A70; }
-  mark.sp{ font-size:.75em; opacity:.85; }
-  .legend{ font-size:.8rem; color:var(--ink-soft); margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-  .next-row{ margin-top:16px; display:flex; flex-direction:column; align-items:center; gap:8px; }
-  .timer{ width:160px; height:6px; border-radius:999px; background:var(--line); overflow:hidden; }
-  .timer i{ display:block; height:100%; width:100%; background:var(--blue); transform-origin:left; }
+  /* 점수 원 */
+  .ring{ position:relative; width:var(--sz,132px); height:var(--sz,132px); margin:0 auto; }
+  .ring svg{ width:100%; height:100%; transform:rotate(-90deg); }
+  .ring circle{ fill:none; stroke-width:10; }
+  .ring .bg{ stroke:#EEF2F8; }
+  .ring .fg{ stroke:var(--c,var(--blue)); stroke-linecap:round; stroke-dasharray:var(--len); stroke-dashoffset:var(--len); animation:fill .9s .1s var(--ease) forwards; }
+  @keyframes fill{ to{ stroke-dashoffset:var(--off); } }
+  .ring .score{ position:absolute; inset:0; display:grid; place-items:center; align-content:center; font-weight:900; font-size:calc(var(--sz,132px) * .3); line-height:1; color:var(--c,var(--blue)); letter-spacing:-.03em; }
+  .ring .score small{ font-size:.38em; font-weight:800; margin-top:4px; color:var(--ink-soft); letter-spacing:0; }
+  .t100{ --c:var(--mint); } .tmid{ --c:var(--blue); } .tlow{ --c:var(--lav); }
+
+  .fb{ width:100%; animation:pop .3s var(--ease); }
+  @keyframes pop{ from{ transform:translateY(6px) scale(.98); opacity:0; } to{ transform:none; opacity:1; } }
+  .fb .say{ font-size:1.3rem; font-weight:900; margin-top:12px; letter-spacing:-.02em; }
+  .fb .fq{ font-size:.9rem; font-weight:700; color:var(--ink-soft); margin-bottom:14px; }
+  .compare{ margin:18px auto 0; text-align:left; max-width:540px; background:#F7F9FC; border-radius:var(--r); padding:14px 16px; display:grid; grid-template-columns:auto 1fr; gap:8px 14px; align-items:baseline; }
+  .compare dt{ font-size:.76rem; font-weight:900; color:var(--ink-soft); white-space:nowrap; padding:2px 8px; border-radius:8px; background:#fff; }
+  .compare dd{ font-size:1.2rem; font-weight:700; word-break:break-all; letter-spacing:.02em; }
+  mark{ background:none; color:inherit; border-radius:5px; padding:0 1px; }
+  mark.wrong{ background:var(--coral-soft); color:var(--coral); }
+  mark.extra{ background:var(--coral-soft); color:var(--coral); text-decoration:line-through; text-decoration-thickness:2px; }
+  mark.miss{ background:var(--yellow-soft); color:var(--yellow-d); box-shadow:inset 0 -3px 0 var(--yellow); }
+  mark.fix{ background:var(--mint-soft); color:var(--mint-d); }
+  mark.sp{ font-size:.75em; opacity:.9; }
+  .legend{ font-size:.78rem; font-weight:600; color:var(--ink-soft); margin-top:10px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  .next-row{ margin-top:20px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .next-row .btn{ min-height:48px; padding:10px 20px; }
+  .next-row .btn svg{ width:18px; height:18px; }
+  .timer{ width:140px; height:5px; border-radius:999px; background:var(--line); overflow:hidden; }
+  .timer i{ display:block; height:100%; width:100%; background:var(--blue); transform-origin:left; border-radius:999px; }
   .timer i.run{ animation:shrink var(--t,1.8s) linear forwards; }
   @keyframes shrink{ from{ transform:scaleX(1); } to{ transform:scaleX(0); } }
 
   /* 별 축하 */
   .burst{ position:absolute; inset:0; pointer-events:none; }
-  .burst span{ position:absolute; left:50%; top:42%; font-size:1.4rem; animation:fly .9s ease-out forwards; }
-  @keyframes fly{ from{ transform:translate(-50%,-50%) scale(.4); opacity:1; } to{ transform:translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1.1) rotate(var(--r)); opacity:0; } }
+  .burst span{ position:absolute; left:50%; top:30%; width:22px; height:22px; animation:fly 1s var(--ease) forwards; }
+  .burst svg{ width:100%; height:100%; }
+  @keyframes fly{ from{ transform:translate(-50%,-50%) scale(.3); opacity:1; } to{ transform:translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1) rotate(var(--r)); opacity:0; } }
 
   /* ---------- 결과 화면 ---------- */
-  .final{ text-align:center; position:relative; overflow:hidden; }
-  .final .trophy{ font-size:3.6rem; line-height:1; animation:bounce 1.2s ease-out; }
-  @keyframes bounce{ 0%{ transform:scale(.3); } 55%{ transform:scale(1.15); } 100%{ transform:scale(1); } }
-  .final .big{ font-size:4rem; font-weight:900; color:var(--blue); line-height:1.1; margin-top:6px; }
-  .final .big small{ font-size:1.4rem; }
-  .final .say{ font-size:1.2rem; font-weight:800; margin-top:4px; }
-  .tiles{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:18px; }
-  .tile{ border-radius:16px; padding:12px 6px; background:var(--blue-soft); }
+  .final{ text-align:center; position:relative; overflow:hidden; padding-top:30px; }
+  .final .medal{ display:inline-flex; align-items:center; gap:6px; font-size:.84rem; font-weight:800; padding:6px 14px; border-radius:999px; background:var(--yellow-soft); color:var(--yellow-d); margin-bottom:18px; }
+  .final .medal svg{ width:18px; height:18px; }
+  .final .say{ font-size:1.35rem; font-weight:900; margin-top:16px; letter-spacing:-.02em; }
+  .final .mode-name{ font-size:.86rem; color:var(--ink-soft); font-weight:700; margin-top:2px; }
+  .tiles{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:22px; }
+  .tile{ border-radius:18px; padding:14px 6px; background:#F4F7FC; }
   .tile b{ display:block; font-size:1.6rem; font-weight:900; line-height:1.2; }
-  .tile span{ font-size:.82rem; font-weight:700; color:var(--ink-soft); }
-  .tile.t100{ background:var(--mint-soft); } .tile.t100 b{ color:#1F8A70; }
-  .tile.tpart{ background:var(--yellow-soft); } .tile.tpart b{ color:#8A6400; }
-  .tile.t0{ background:var(--lav-soft); } .tile.t0 b{ color:#5E48C2; }
+  .tile span{ font-size:.8rem; font-weight:700; color:var(--ink-soft); }
+  .tile.t100{ background:var(--mint-soft); } .tile.t100 b{ color:var(--mint-d); }
+  .tile.tpart{ background:var(--yellow-soft); } .tile.tpart b{ color:var(--yellow-d); }
+  .tile.t0{ background:var(--lav-soft); } .tile.t0 b{ color:var(--lav-d); }
   .actions{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .actions .btn{ width:100%; }
+  .actions .btn{ width:100%; justify-content:flex-start; padding:14px 18px; }
+  .actions .btn svg{ width:20px; height:20px; }
+  .actions .btn.wide{ grid-column:1 / -1; justify-content:center; }
+  .list-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+  .list-head .seg{ grid-auto-columns:auto; }
+  .list-head .seg button{ min-height:38px; padding:0 14px; font-size:.88rem; }
   .rlist{ list-style:none; }
-  .rlist li{ padding:14px 0; border-top:1px solid var(--line); display:grid; grid-template-columns:auto 1fr auto; gap:4px 12px; align-items:start; }
+  .rlist li{ padding:16px 0; border-top:1px solid var(--line); display:grid; grid-template-columns:auto 1fr auto; gap:4px 14px; align-items:start; }
   .rlist li:first-child{ border-top:none; }
-  .rlist .no{ font-weight:800; color:var(--ink-soft); width:2.2em; }
-  .rlist .q{ font-size:.88rem; color:var(--ink-soft); }
-  .rlist .line{ font-size:1.08rem; font-weight:700; word-break:break-all; }
-  .rlist .line em{ font-style:normal; font-size:.75rem; font-weight:800; color:var(--ink-soft); margin-right:6px; }
-  .badge{ font-weight:900; border-radius:999px; padding:4px 10px; font-size:.9rem; white-space:nowrap; }
-  .badge.b100{ background:var(--mint-soft); color:#1F8A70; }
-  .badge.bmid{ background:var(--yellow-soft); color:#8A6400; }
-  .badge.b0{ background:var(--lav-soft); color:#5E48C2; }
-  .tabs{ display:flex; gap:8px; }
+  .rlist .no{ width:30px; height:30px; border-radius:10px; display:grid; place-items:center; background:#F1F4FA; font-weight:800; font-size:.85rem; color:var(--ink-soft); }
+  .rlist .q{ font-size:.86rem; font-weight:700; color:var(--ink-soft); margin-bottom:2px; }
+  .rlist .line{ font-size:1.06rem; font-weight:700; word-break:break-all; line-height:1.7; }
+  .rlist .line em{ font-style:normal; font-size:.7rem; font-weight:900; color:var(--ink-soft); background:#F1F4FA; border-radius:6px; padding:1px 6px; margin-right:8px; vertical-align:2px; }
+  .badge{ font-weight:900; border-radius:999px; padding:5px 11px; font-size:.86rem; white-space:nowrap; }
+  .badge.b100{ background:var(--mint-soft); color:var(--mint-d); }
+  .badge.bmid{ background:var(--yellow-soft); color:var(--yellow-d); }
+  .badge.b0{ background:var(--lav-soft); color:var(--lav-d); }
+  .empty{ text-align:center; padding:18px 0 6px; color:var(--ink-soft); font-weight:700; }
 
-  .loading{ text-align:center; color:var(--ink-soft); padding:30px 0; }
-  .spinner{ width:34px; height:34px; border:4px solid var(--blue-mid); border-top-color:var(--blue); border-radius:50%; margin:0 auto 10px; animation:spin .8s linear infinite; }
+  .loading{ text-align:center; color:var(--ink-soft); font-weight:700; }
+  .spinner{ width:38px; height:38px; border:4px solid var(--blue-mid); border-top-color:var(--blue); border-radius:50%; margin:0 auto 12px; animation:spin .8s linear infinite; }
   @keyframes spin{ to{ transform:rotate(360deg); } }
 
-  @media (max-width:520px){
+  @media (max-width:560px){
     body{ font-size:16px; }
-    .wrap{ padding:12px 12px 28px; }
-    .card{ padding:18px 16px; }
-    .hero h1{ font-size:1.7rem; }
-    .mode{ min-height:116px; padding:14px 12px; }
-    .mode .name{ font-size:1.08rem; }
-    .stage{ min-height:170px; }
+    .wrap{ padding:16px 14px 28px; }
+    .card{ padding:20px 18px; border-radius:24px; }
+    .keycap{ width:52px; height:52px; font-size:1.55rem; border-radius:14px; }
+    .mode{ padding:14px; }
+    .mode .ico{ width:44px; height:44px; border-radius:14px; margin-bottom:10px; }
+    .mode .ico svg{ width:24px; height:24px; }
+    .mode .name{ font-size:1rem; white-space:nowrap; letter-spacing:-.03em; }
+    .mode .desc{ font-size:.8rem; word-break:keep-all; }
+    .step{ font-size:.96rem; word-break:keep-all; }
+    .preview{ padding:7px 11px; font-size:.84rem; }
+    .mode .tick{ top:12px; right:12px; width:22px; height:22px; }
+    .teacher{ gap:8px; }
+    .tcard{ flex-direction:column; text-align:center; padding:12px 8px; gap:6px; }
+    .tcard .av{ width:38px; height:38px; }
+    .tcard b{ font-size:.92rem; white-space:nowrap; }
+    .tcard small{ white-space:nowrap; }
+    .stage{ min-height:210px; padding:24px 16px; }
+    .listen-big{ width:100px; height:100px; }
+    .listen-big svg{ width:42px; height:42px; }
     .tiles{ grid-template-columns:repeat(2,1fr); }
     .actions{ grid-template-columns:1fr; }
-    .submit{ min-width:76px; padding:0 14px; }
-    .answer{ padding:14px; }
+    .answer-box{ padding:6px 6px 6px 14px; border-radius:20px; }
+    .answer-box > svg{ display:none; }
+    .submit{ min-width:80px; padding:0 14px; min-height:56px; }
+    .answer{ min-height:56px; }
+    .under .keyhint{ display:none; }
   }
   /* 휴대폰 키보드가 올라와 화면이 낮아지면 위쪽을 줄여 입력창이 보이게 한다 */
-  body.kbd .stage{ min-height:0; padding:14px 16px; }
-  body.kbd .bigear, body.kbd .stage .hint{ display:none; }
+  body.kbd .wrap{ padding-top:10px; }
+  body.kbd .stage{ min-height:0; padding:16px; }
+  body.kbd .listen-big{ width:64px; height:64px; }
+  body.kbd .listen-big svg{ width:28px; height:28px; }
+  body.kbd .listen-cap, body.kbd .stage .hint, body.kbd .qtag{ display:none; }
   body.kbd .question{ font-size:1.4rem; }
-  body.kbd .topbar{ margin-bottom:8px; }
-  body.kbd .fb .score{ font-size:2.2rem; }
-  body.kbd .compare dd{ font-size:1.05rem; }
+  body.kbd .listen-pill{ margin-top:10px; min-height:40px; }
+  body.kbd .topbar{ margin-bottom:10px; }
+  body.kbd .ring{ --sz:84px !important; }
+  body.kbd .fb .say{ font-size:1.05rem; margin-top:6px; }
+  body.kbd .compare{ margin-top:10px; padding:10px 12px; }
+  body.kbd .compare dd{ font-size:1.02rem; }
   body.kbd .legend{ display:none; }
+  body.kbd .next-row{ margin-top:10px; }
 
   @media (prefers-reduced-motion:reduce){
     *, *::before, *::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
@@ -236,86 +360,122 @@
 </style>
 </head>
 <body>
+<!-- 아이콘 모음 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-headphones" viewBox="0 0 24 24"><path d="M3 15v-3a9 9 0 0 1 18 0v3"/><path d="M3 15a2 2 0 0 1 2-2h1.5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2z"/><path d="M21 15a2 2 0 0 0-2-2h-1.5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1H19a2 2 0 0 0 2-2z"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4a8 8 0 1 1 15.3-3.9z"/><path d="M9 11.5h.01M12.5 11.5h.01M16 11.5h.01" stroke-width="2.8"/></symbol>
+  <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M11 5 6.5 9H3.5v6h3L11 19z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6"/><path d="M18.5 6a8.5 8.5 0 0 1 0 12"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
+  <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M16 4h4v4"/><path d="M4 18c6 0 8-12 16-14"/><path d="M16 20h4v-4"/><path d="M4 6c3 0 5 2.5 6.5 5.5M13 15c1.6 2.5 3.8 4.5 7 5"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol>
+  <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="3"/><path d="M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M8 14.5h8"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 14v3M8.5 20h7l-1-3h-5z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5M12 16h.01"/></symbol>
+</svg>
+
 <div class="wrap">
 
   <!-- ================= 처음 화면 ================= -->
   <section id="home" class="stack" aria-label="처음 화면">
     <header class="hero">
-      <h1><span class="key">⌨️</span>타자 연습</h1>
+      <h1 class="keys" aria-label="타자 연습">
+        <span class="keycap" aria-hidden="true">타</span><span class="keycap" aria-hidden="true">자</span>
+        <span class="gap"></span>
+        <span class="keycap" aria-hidden="true">연</span><span class="keycap" aria-hidden="true">습</span>
+      </h1>
       <p>잘 듣고, 또박또박 써 봐요.</p>
     </header>
 
     <div class="card">
-      <div class="label">무엇을 연습할까요?</div>
+      <div class="step"><span class="n">1</span>무엇을 연습할까요?</div>
       <div class="modes" role="group" aria-label="연습 종류">
         <button type="button" class="mode" data-mode="dictation" aria-pressed="true">
-          <span class="ico" aria-hidden="true">🎧</span>
+          <span class="tick" aria-hidden="true"><svg class="i"><use href="#i-check"/></svg></span>
+          <span class="ico" aria-hidden="true"><svg class="i"><use href="#i-headphones"/></svg></span>
           <span class="name">받아쓰기</span>
           <span class="desc">듣고 그대로 써요</span>
           <span class="cnt" id="cnt-dictation">불러오는 중…</span>
         </button>
         <button type="button" class="mode qa" data-mode="qa" aria-pressed="false">
-          <span class="ico" aria-hidden="true">💬</span>
+          <span class="tick" aria-hidden="true"><svg class="i"><use href="#i-check"/></svg></span>
+          <span class="ico" aria-hidden="true"><svg class="i"><use href="#i-chat"/></svg></span>
           <span class="name">질문에 답하기</span>
           <span class="desc">질문을 보고 답을 써요</span>
           <span class="cnt" id="cnt-qa">불러오는 중…</span>
         </button>
       </div>
 
-      <div class="label" style="margin-top:20px">몇 문제 풀까요?</div>
-      <div class="chips" role="group" aria-label="문제 수" id="counts">
-        <button type="button" class="chip" data-count="10" aria-pressed="true">10문제</button>
-        <button type="button" class="chip" data-count="20" aria-pressed="false">20문제</button>
-        <button type="button" class="chip" data-count="all" aria-pressed="false">전체</button>
+      <div class="step" style="margin-top:26px"><span class="n">2</span>몇 문제 풀까요?</div>
+      <div class="seg" role="group" aria-label="문제 수" id="counts">
+        <button type="button" data-count="10" aria-pressed="true">10문제</button>
+        <button type="button" data-count="20" aria-pressed="false">20문제</button>
+        <button type="button" data-count="all" aria-pressed="false">전체</button>
       </div>
     </div>
 
     <div class="card" id="voiceCard">
-      <div class="voice-head">
-        <div class="label" style="margin:0">🔈 목소리</div>
-        <button type="button" id="previewBtn">▶ 미리 듣기</button>
+      <div class="step"><span class="n">3</span>누가 읽어 줄까요?
+        <button type="button" class="preview side" id="previewBtn"><svg class="i"><use href="#i-play"/></svg>미리 듣기</button>
       </div>
-      <div class="teacher" role="group" aria-label="선생님 목소리" style="margin-top:12px">
-        <button type="button" class="chip" data-teacher="f" aria-pressed="false">👩‍🏫 여자 선생님<small id="fNote"></small></button>
-        <button type="button" class="chip" data-teacher="m" aria-pressed="false">👨‍🏫 남자 선생님<small id="mNote"></small></button>
+      <div class="teacher" role="group" aria-label="선생님 목소리">
+        <button type="button" class="tcard" data-teacher="f" aria-pressed="false">
+          <span class="av" aria-hidden="true"><svg class="i"><use href="#i-user"/></svg></span>
+          <span><b>여자 선생님</b><small id="fNote"></small></span>
+        </button>
+        <button type="button" class="tcard" data-teacher="m" aria-pressed="false">
+          <span class="av" aria-hidden="true"><svg class="i"><use href="#i-user"/></svg></span>
+          <span><b>남자 선생님</b><small id="mNote"></small></span>
+        </button>
       </div>
-      <div style="margin-top:12px">
+      <div class="selwrap">
         <label class="sr" for="voiceSel">한국어 목소리 고르기</label>
         <select id="voiceSel"></select>
+        <svg class="i" aria-hidden="true"><use href="#i-chevron"/></svg>
       </div>
-      <div class="label" style="margin-top:16px">읽기 빠르기</div>
-      <div class="chips" role="group" aria-label="읽기 빠르기" id="rates">
-        <button type="button" class="chip" data-rate="slow" aria-pressed="false">🐢 느리게</button>
-        <button type="button" class="chip" data-rate="normal" aria-pressed="true">보통</button>
-        <button type="button" class="chip" data-rate="fast" aria-pressed="false">🐇 빠르게</button>
+      <div class="sub-label">읽기 빠르기</div>
+      <div class="seg" role="group" aria-label="읽기 빠르기" id="rates">
+        <button type="button" data-rate="slow" aria-pressed="false"><span class="speed s1" aria-hidden="true"><i></i><i></i><i></i></span>느리게</button>
+        <button type="button" data-rate="normal" aria-pressed="true"><span class="speed s2" aria-hidden="true"><i></i><i></i><i></i></span>보통</button>
+        <button type="button" data-rate="fast" aria-pressed="false"><span class="speed s3" aria-hidden="true"><i></i><i></i><i></i></span>빠르게</button>
       </div>
-      <p class="note" id="voiceStatus" style="margin-top:12px"></p>
+      <div class="vstatus" id="vstatusBox"><span class="dot" aria-hidden="true"></span><p class="note" id="voiceStatus"></p></div>
     </div>
 
     <p class="warn hidden" id="homeWarn" role="alert"></p>
-    <button type="button" class="btn btn-primary start" id="startBtn" disabled>연습 시작</button>
-
-    <p style="text-align:center"><a class="manage" href="/typing/admin">✏️ 문제 넣고 빼기</a></p>
+    <div class="start-wrap">
+      <button type="button" class="btn btn-primary start" id="startBtn" disabled>연습 시작<svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+    </div>
 
     <div class="card hidden" id="historyCard">
-      <div class="label">📒 최근 기록 <span class="note" style="font-weight:500">(이 기기에만 저장돼요)</span></div>
+      <div class="step"><span class="n"><svg class="i" style="width:15px;height:15px"><use href="#i-clock"/></svg></span>최근 기록<span class="note side">이 기기에만 저장돼요</span></div>
       <ul class="history" id="historyList"></ul>
     </div>
+
+    <p class="links"><a class="manage" href="/typing/admin"><svg class="i" aria-hidden="true"><use href="#i-pencil"/></svg>문제 넣고 빼기</a></p>
   </section>
 
   <!-- ================= 학습 화면 ================= -->
   <section id="play" class="hidden" aria-label="문제 풀기">
     <div class="topbar">
-      <button type="button" class="home" id="quitBtn" aria-label="처음 화면으로">🏠</button>
+      <button type="button" class="iconbtn" id="quitBtn" aria-label="처음 화면으로"><svg class="i"><use href="#i-home"/></svg></button>
       <div class="progress">
-        <div class="txt"><span><b id="qNo">1</b> / <span id="qTotal">10</span> 문제</span><span>평균 <b id="avgNow">-</b>점</span></div>
-        <div class="bar" role="progressbar" aria-label="진행률" aria-valuemin="0" aria-valuemax="100" id="barWrap"><i id="bar"></i></div>
+        <div class="txt"><span><b id="qNo">1</b> / <span id="qTotal">10</span> 문제</span><span class="avg">평균 <b id="avgNow">-</b>점</span></div>
+        <div class="segs" role="progressbar" aria-label="진행률" aria-valuemin="0" aria-valuemax="100" id="barWrap"></div>
       </div>
     </div>
 
     <div class="card stage" id="stage" aria-live="polite"></div>
 
-    <form class="answer-form" id="form" autocomplete="off" novalidate>
+    <form class="answer-box" id="form" autocomplete="off" novalidate>
+      <svg class="i" aria-hidden="true"><use href="#i-keyboard"/></svg>
       <label class="sr" for="answer">답 쓰기</label>
       <input id="answer" class="answer" type="text" name="typing-answer-field"
              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
@@ -325,7 +485,7 @@
     </form>
     <div class="under">
       <span class="msg" id="msg" role="status"></span>
-      <span class="keys"><kbd>Enter</kbd> 제출 · <kbd>Esc</kbd> 다시 듣기</span>
+      <span class="keyhint"><kbd>Enter</kbd> 제출 &nbsp;·&nbsp; <kbd>Esc</kbd> 다시 듣기</span>
     </div>
   </section>
 
@@ -333,20 +493,20 @@
   <section id="result" class="hidden stack" aria-label="결과">
     <div class="card final" id="finalCard"></div>
     <div class="actions" id="actions">
-      <button type="button" class="btn btn-yellow" id="retryWrong">✏️ 100점 아닌 문제만 다시</button>
-      <button type="button" class="btn btn-mint" id="retryAll">🔁 같은 문제 전체 다시</button>
-      <button type="button" class="btn btn-lav" id="newRandom">🎲 새로운 문제로 시작</button>
-      <button type="button" class="btn btn-soft" id="toHome">🏠 처음 화면</button>
+      <button type="button" class="btn btn-yellow wide" id="retryWrong">100점 아닌 문제만 다시</button>
+      <button type="button" class="btn btn-mint" id="retryAll"><svg class="i" aria-hidden="true"><use href="#i-redo"/></svg>같은 문제 전체 다시</button>
+      <button type="button" class="btn btn-lav" id="newRandom"><svg class="i" aria-hidden="true"><use href="#i-shuffle"/></svg>새로운 문제로 시작</button>
+      <button type="button" class="btn btn-white wide" id="toHome"><svg class="i" aria-hidden="true"><use href="#i-home"/></svg>처음 화면</button>
     </div>
     <div class="card">
-      <div class="row" style="justify-content:space-between; margin-bottom:6px">
-        <div class="label" style="margin:0">문제별 결과</div>
-        <div class="tabs" role="group" aria-label="보기">
-          <button type="button" class="chip" data-filter="all" aria-pressed="true">전체</button>
-          <button type="button" class="chip" data-filter="wrong" aria-pressed="false">다시 볼 문제</button>
+      <div class="list-head">
+        <div class="step" style="margin:0">문제별 결과</div>
+        <div class="seg" role="group" aria-label="보기">
+          <button type="button" data-filter="all" aria-pressed="true">전체</button>
+          <button type="button" data-filter="wrong" aria-pressed="false">다시 볼 문제</button>
         </div>
       </div>
-      <div class="legend" style="justify-content:flex-start">
+      <div class="legend" style="justify-content:flex-start; margin:0 0 4px">
         <span><mark class="wrong">가</mark> 틀린 글자</span><span><mark class="extra">가</mark> 더 쓴 글자</span><span><mark class="miss">가</mark> 빠진 글자</span>
       </div>
       <ul class="rlist" id="rlist"></ul>
@@ -372,6 +532,16 @@
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  const icon = n => "<svg class='i' aria-hidden='true'><use href='#i-" + n + "'/></svg>";
+  const tier = sc => sc === 100 ? "t100" : sc >= 50 ? "tmid" : "tlow";
+  /* 점수 원 — 둘레만큼 칠한다 */
+  function ring(score, size) {
+    const r = 52, len = (2 * Math.PI * r).toFixed(1), off = (len * (1 - score / 100)).toFixed(1);
+    return "<div class='ring " + tier(score) + "' style='--sz:" + size + "px;--len:" + len + ";--off:" + off + "'>" +
+      "<svg viewBox='0 0 120 120' aria-hidden='true'><circle class='bg' cx='60' cy='60' r='" + r + "'/><circle class='fg' cx='60' cy='60' r='" + r + "'/></svg>" +
+      "<div class='score'>" + score + "<small>점</small></div></div>";
   }
 
   async function api(path, body) {
@@ -533,6 +703,7 @@
       parts.push(offline ? "인터넷 없이도 읽을 수 있는 목소리가 " + offline + "개 있어요." : "이 기기의 한국어 목소리는 모두 인터넷이 필요해요.");
     }
     status.innerHTML = parts.join("<br>");
+    $("vstatusBox").classList.toggle("bad", !tts.ok || !vs.length || !has.m || !has.f);
     saveSettings();
   }
 
@@ -603,7 +774,10 @@
     $("historyList").innerHTML = h.slice(0, 5).map(r => {
       const d = new Date(r.at);
       const when = (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
-      return "<li><span>" + when + " · " + (r.mode === "qa" ? "질문에 답하기" : "받아쓰기") + " " + r.total + "문제</span><span class='s'>" + r.avg + "점</span></li>";
+      const qa = r.mode === "qa";
+      return "<li><span class='m" + (qa ? " qa" : "") + "'>" + icon(qa ? "chat" : "headphones") + "</span>" +
+        "<span class='t'><b>" + (qa ? "질문에 답하기" : "받아쓰기") + " · " + r.total + "문제</b><span>" + when + "</span></span>" +
+        "<span class='s'>" + r.avg + "점</span></li>";
     }).join("");
   }
 
@@ -678,8 +852,16 @@
     const done = S.results.length;
     $("qNo").textContent = Math.min(S.i + 1, S.items.length);
     const pct = Math.round(done / S.items.length * 100);
-    $("bar").style.width = pct + "%";
-    $("barWrap").setAttribute("aria-valuenow", pct);
+    const bar = $("barWrap");
+    bar.setAttribute("aria-valuenow", pct);
+    /* 문제마다 한 칸 — 끝난 문제는 점수에 따라 색을 칠한다. 너무 많으면 칸 사이를 붙인다 */
+    bar.classList.toggle("dense", S.items.length > 30);
+    let h = "";
+    for (let k = 0; k < S.items.length; k++) {
+      const r = S.results[k];
+      h += "<i class='" + (r ? (r.score === 100 ? "p" : r.score > 0 ? "h" : "z") : k === S.i ? "now" : "") + "'></i>";
+    }
+    bar.innerHTML = h;
     $("avgNow").textContent = done ? Math.round(S.results.reduce((s, r) => s + r.score, 0) / done) : "-";
   }
 
@@ -696,12 +878,13 @@
     $("submitBtn").textContent = "제출";
 
     const qa = S.mode === "qa";
-    $("stage").innerHTML =
-      "<span class='qtag" + (qa ? " qa" : "") + "'>" + (qa ? "💬 질문에 답하기" : "🎧 받아쓰기") + "</span>" +
-      (qa ? "<div class='question'>" + esc(item.question) + "</div>"
-          : "<div class='bigear' aria-hidden='true'>👂</div><div class='hint'>잘 듣고 그대로 써 보세요</div>") +
-      "<button type='button' class='listen' id='listenBtn'><span class='wave' aria-hidden='true'><i></i><i></i><i></i></span>" +
-      (qa ? "질문 다시 듣기" : "다시 듣기") + "</button>";
+    $("stage").innerHTML = qa
+      ? "<span class='qtag qa'>" + icon("chat") + "질문에 답하기</span>" +
+        "<div class='question'>" + esc(item.question) + "</div>" +
+        "<button type='button' class='listen listen-pill' id='listenBtn'><span class='wave' aria-hidden='true'><i></i><i></i><i></i></span>질문 다시 듣기</button>"
+      : "<span class='qtag'>" + icon("headphones") + "받아쓰기</span>" +
+        "<button type='button' class='listen listen-big' id='listenBtn' aria-label='다시 듣기'>" + icon("speaker") + "</button>" +
+        "<div class='listen-cap'>눌러서 다시 듣기</div><div class='hint'>잘 듣고 그대로 써 보세요</div>";
     const lb = $("listenBtn");
     lb.addEventListener("pointerdown", e => e.preventDefault());     /* 입력창 포커스를 빼앗지 않는다 (휴대폰 키보드 유지) */
     lb.addEventListener("click", replay);
@@ -783,18 +966,16 @@
     S.phase = "feedback";
     S.fbAt = Date.now();
     updateTop();
-    const cls = r.score === 100 ? "s100" : r.score >= 50 ? "smid" : "slow";
-    const emoji = r.score === 100 ? "⭐" : r.score >= 80 ? "👍" : r.score >= 50 ? "💪" : "🌱";
     const last = S.i + 1 >= S.items.length;
     $("stage").innerHTML =
-      "<div class='fb " + cls + "'>" +
+      "<div class='fb'>" +
         (S.mode === "qa" ? "<div class='fq'>" + esc(item.question) + "</div>" : "") +
-        "<div class='score'>" + r.score + "<small>점</small></div>" +
-        "<div class='say'>" + emoji + " " + esc(r.feedback) + "</div>" +
+        ring(r.score, 124) +
+        "<div class='say'>" + esc(r.feedback) + "</div>" +
         (r.score === 100 ? "" :
           "<dl class='compare'><dt>정답</dt><dd>" + diffHtml(r.ops, "answer") + "</dd><dt>내 답</dt><dd>" + diffHtml(r.ops, "input") + "</dd></dl>" +
           "<div class='legend'><span><mark class='wrong'>가</mark> 틀린 글자</span><span><mark class='extra'>가</mark> 더 쓴 글자</span><span><mark class='miss'>가</mark> 빠진 글자</span></div>") +
-        "<div class='next-row'><button type='button' class='btn btn-soft' id='nextBtn'>" + (last ? "결과 보기 →" : "바로 다음 문제 →") + "</button>" +
+        "<div class='next-row'><button type='button' class='btn btn-soft' id='nextBtn'>" + (last ? "결과 보기" : "바로 다음 문제") + icon("arrow") + "</button>" +
         "<div class='timer' aria-hidden='true'><i class='run' style='--t:" + FEEDBACK_MS + "ms'></i></div></div>" +
       "</div>" +
       (r.score === 100 ? "<div class='burst' aria-hidden='true'>" + stars() + "</div>" : "");
@@ -812,7 +993,9 @@
     for (let k = 0; k < 10; k++) {
       const ang = (k / 10) * Math.PI * 2;
       const dist = 90 + Math.random() * 60;
-      h += "<span style='--x:" + Math.round(Math.cos(ang) * dist) + "px;--y:" + Math.round(Math.sin(ang) * dist * .7) + "px;--r:" + Math.round(Math.random() * 180) + "deg'>" + (k % 3 ? "⭐" : "✨") + "</span>";
+      const color = ["#F2B42A", "#25B08C", "#4C8DF0", "#8A72E6", "#E05C7C"][k % 5];
+      h += "<span style='--x:" + Math.round(Math.cos(ang) * dist) + "px;--y:" + Math.round(Math.sin(ang) * dist * .7) + "px;--r:" + Math.round(Math.random() * 180) + "deg'>" +
+        "<svg viewBox='0 0 24 24'><use href='#i-star' fill='" + color + "' stroke='none'/></svg></span>";
     }
     return h;
   }
@@ -931,13 +1114,13 @@
     h.unshift({ at: Date.now(), mode: S.mode, total, avg, perfect, partial, zero });
     local.set("history", h.slice(0, 30));
 
-    const trophy = avg === 100 ? "🏆" : avg >= 80 ? "🌟" : avg >= 50 ? "😊" : "🌱";
+    const medal = avg === 100 ? icon("trophy") + "모두 100점" : avg >= 80 ? icon("star") + "아주 잘했어요" : icon("check") + "연습 완료";
     const say = avg === 100 ? "모두 맞았어요! 정말 멋져요." : avg >= 80 ? "아주 잘했어요!" : avg >= 50 ? "끝까지 잘했어요! 조금만 더 연습해요." : "끝까지 해낸 것이 대단해요. 다시 해 봐요!";
     $("finalCard").innerHTML =
-      "<div class='trophy' aria-hidden='true'>" + trophy + "</div>" +
-      "<div class='note' style='margin-top:6px'>" + (S.mode === "qa" ? "질문에 답하기" : "받아쓰기") + " 평균 점수</div>" +
-      "<div class='big'>" + avg + "<small>점</small></div>" +
+      "<div class='medal'>" + medal + "</div>" +
+      ring(avg, 168) +
       "<div class='say'>" + say + "</div>" +
+      "<div class='mode-name'>" + (S.mode === "qa" ? "질문에 답하기" : "받아쓰기") + " 평균 점수</div>" +
       "<div class='tiles'>" +
         "<div class='tile'><b>" + total + "</b><span>전체 문제</span></div>" +
         "<div class='tile t100'><b>" + perfect + "</b><span>100점</span></div>" +
@@ -948,7 +1131,7 @@
 
     const wrong = rs.filter(r => r.score < 100).length;
     $("retryWrong").disabled = !wrong;
-    $("retryWrong").textContent = wrong ? "✏️ 100점 아닌 문제만 다시 (" + wrong + "개)" : "✏️ 다시 풀 문제가 없어요";
+    $("retryWrong").innerHTML = icon("pencil") + (wrong ? "100점 아닌 문제만 다시 (" + wrong + "개)" : "다시 풀 문제가 없어요");
     filter = wrong ? "wrong" : "all";
     renderList();
     show("result");
@@ -964,7 +1147,7 @@
         "<div class='line'><em>정답</em>" + (r.score === 100 ? esc(r.answer) : diffHtml(r.ops, "answer")) + "</div>" +
         "<div class='line'><em>내 답</em>" + (r.score === 100 ? esc(r.input) : diffHtml(r.ops, "input")) + "</div>" +
         "</div><span class='badge " + b + "'>" + r.score + "점</span></li>";
-    }).join("") : "<li><span></span><div class='note'>모든 문제를 100점 받았어요! 🎉</div><span></span></li>";
+    }).join("") : "<li style='display:block'><div class='empty'>모든 문제를 100점 받았어요!</div></li>";
   }
   document.querySelectorAll("[data-filter]").forEach(b => b.addEventListener("click", () => { filter = b.dataset.filter; renderList(); }));
 
