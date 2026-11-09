@@ -11,7 +11,7 @@ www.opennegolab.com 에 올라가는 정적 사이트입니다.
 | `baeumteo-icon.png` `baeumteo-og.png` | 위 페이지가 쓰는 이미지 |
 | `privacy.html` | 개인정보처리방침 (`/privacy` 로 열립니다) |
 | `stats.html` `stats.js` | 방문 통계 화면과 집계 (`/stats`) |
-| `typing/index.html` `typing/admin.html` | 초등학생용 타자 연습 (`/typing`) 과 내 문제 관리 화면 (`/typing/admin`) |
+| `typing/index.html` `typing/admin.html` | 초등학생용 타자 연습 (`/typing`) 과 문제 설정 화면 (`/typing/admin`) |
 | `typing/store.js` | 타자 연습의 문제 저장·출제·채점. 모두 방문자 브라우저 안에서 동작 |
 | `hit.js` | 방문 기록을 서버로 보내는 조각. 모든 페이지가 불러갑니다 |
 | `robots.txt` `sitemap.xml` | 검색엔진 안내. 내용을 크게 고치면 sitemap 의 lastmod 를 갱신합니다 |
@@ -125,7 +125,7 @@ IP 주소는 저장하지 않습니다. 날짜·IP·브라우저를 한 덩어�
 `https://www.opennegolab.com/typing` 링크로만 들어옵니다 (검색엔진에는 올리지 않음).
 설치·회원가입 없이 바로 씁니다.
 
-- **문제는 각자의 기기에만 저장됩니다.** `/typing/admin` (연습 화면의 "내 문제 넣고 빼기") 에서
+- **문제는 각자의 기기에만 저장됩니다.** `/typing/admin` (연습 화면의 "문제 설정") 에서
   넣고 고치고 지운 문제는 그 기기·그 브라우저의 저장 공간(localStorage)에만 남고, 서버로 보내지 않습니다.
   처음 열면 예시 문제가 들어 있습니다
 - 다른 기기로 옮기거나 백업할 때는 JSON/CSV 내보내기 → 가져오기
