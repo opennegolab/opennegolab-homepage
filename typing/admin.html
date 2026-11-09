@@ -14,6 +14,7 @@
     --mint:#38B48E; --mint-d:#1D8766; --mint-soft:#E2F4EB;
     --lav:#9B7FE6; --lav-d:#6B50C2; --lav-soft:#F1ECFD;
     --yellow:#F2B33F; --yellow-d:#8A5E06; --yellow-soft:#FFF3D8;
+    --peach:#F0965E; --peach-d:#B4561C; --peach-soft:#FFEDE0;
     --coral:#E2698A; --coral-soft:#FFE9EF;
     --shadow:0 1px 1px rgba(70,52,34,.03), 0 2px 6px rgba(70,52,34,.04), 0 16px 40px -14px rgba(70,52,34,.12);
     --shadow-sm:0 1px 2px rgba(70,52,34,.05), 0 4px 12px -4px rgba(70,52,34,.10);
@@ -78,6 +79,19 @@
   .tab[aria-selected="true"] .n{ background:var(--blue-soft); }
   .tab[data-mode="qa"][aria-selected="true"]{ color:var(--lav-d); }
   .tab[data-mode="qa"][aria-selected="true"] .n{ background:var(--lav-soft); }
+
+  /* 문제집 */
+  .setcard-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .newset{ display:flex; gap:8px; flex:1; max-width:420px; min-width:240px; }
+  .newset input{ padding:8px 12px !important; border-radius:12px !important; }
+  .sets{ display:flex; flex-wrap:wrap; gap:8px; }
+  .set{ display:inline-flex; align-items:center; gap:8px; padding:9px 12px 9px 14px; border-radius:14px; border:2px solid var(--line); background:#fff; font-weight:800; color:var(--ink-2); transition:border-color .15s, background .15s; }
+  .set:hover{ border-color:var(--line-2); }
+  .set small{ font-size:.74rem; font-weight:800; color:var(--ink-soft); background:#F5EFE6; border-radius:999px; padding:1px 8px; }
+  .set[aria-pressed="true"]{ border-color:var(--peach); background:var(--peach-soft); color:var(--peach-d); }
+  .set[aria-pressed="true"] small{ background:#fff; color:var(--peach-d); }
+  .setactions{ margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); }
+  .setactions b{ color:var(--ink); }
 
   /* 등록 방법 탭 — 위쪽 연습 종류 탭과 헷갈리지 않게 밑줄 모양 */
   .subtabs{ display:flex; gap:22px; border-bottom:2px solid var(--line); margin:-4px 0 6px; }
@@ -145,6 +159,7 @@
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M8 7h8"/></symbol>
   <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
   <symbol id="i-headphones" viewBox="0 0 24 24"><path d="M3 15v-3a9 9 0 0 1 18 0v3"/><path d="M3 15a2 2 0 0 1 2-2h1.5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2z"/><path d="M21 15a2 2 0 0 0-2-2h-1.5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1H19a2 2 0 0 0 2-2z"/></symbol>
   <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4a8 8 0 1 1 15.3-3.9z"/></symbol>
@@ -162,7 +177,7 @@
     <header>
       <div class="brand">
         <span class="logo" aria-hidden="true"><svg class="i"><use href="#i-gear"/></svg></span>
-        <div><h1>문제 설정</h1><p>이 기기·이 브라우저에만 저장돼요</p></div>
+        <div><h1>문제 설정</h1><p>여기서 바꾼 문제는 모든 사람에게 똑같이 나와요</p></div>
       </div>
       <div class="row">
         <a class="btn white" href="/typing"><svg class="i" aria-hidden="true"><use href="#i-back"/></svg>연습하러 가기</a>
@@ -170,6 +185,25 @@
     </header>
     <p class="warn hidden" id="storageWarn"></p>
 
+    <div class="card setcard">
+      <div class="setcard-head">
+        <h2><svg class="i" aria-hidden="true"><use href="#i-book"/></svg>문제집</h2>
+        <form class="newset" id="newSetForm">
+          <input type="text" id="newSetName" maxlength="30" placeholder="새 문제집 이름" autocomplete="off">
+          <button class="btn primary small" id="newSetBtn"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>만들기</button>
+        </form>
+      </div>
+      <div class="sets" id="sets" role="group" aria-label="문제집 고르기"><span class="note">불러오는 중…</span></div>
+      <div class="row setactions" id="setActions">
+        <span class="note">고른 문제집: <b id="curSetName">-</b></span>
+        <span class="grow"></span>
+        <button class="btn small line" id="renameSet">이름 바꾸기</button>
+        <button class="btn small danger" id="deleteSet">문제집 삭제</button>
+      </div>
+      <p id="setMsg" class="note" style="margin-top:8px"></p>
+    </div>
+
+    <div id="setBody">
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" data-mode="dictation" aria-selected="true"><svg class="i" aria-hidden="true"><use href="#i-headphones"/></svg>받아쓰기 <span class="n" id="n-dictation">0</span></button>
       <button class="tab" role="tab" data-mode="qa" aria-selected="false"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg>질문에 답하기 <span class="n" id="n-qa">0</span></button>
@@ -224,11 +258,12 @@
       </div>
       <nav class="pager hidden" id="pager" aria-label="문제 목록 페이지"></nav>
     </div>
+    </div>
 
   </section>
 </div>
 
-<script src="/typing/store.js?v=3"></script>
+<script src="/typing/store.js?v=4"></script>
 <script>
 (function () {
   "use strict";
@@ -241,26 +276,102 @@
   let page = 1;
   const PER_PAGE = 10;
 
-  /* 문제는 이 기기·이 브라우저에만 저장한다 (store.js). 서버로는 아무것도 보내지 않는다 */
+  /* 문제는 서버에 저장한다 (store.js → /api/typing). 여기서 바꾸면 모든 사람에게 똑같이 나온다 */
   const T = window.TypingStore;
   const store = T.store;
 
-  function boot() {
-    const w = $("storageWarn");
-    const msg = store.persistent() ? "" : "⚠️ 이 브라우저는 저장 공간을 쓸 수 없어요(사생활 보호 모드 등). 넣은 문제가 창을 닫으면 사라져요.";
-    w.textContent = msg;
-    w.classList.toggle("hidden", !msg);
-    refreshCounts();
+  function warn(msg) {
+    $("storageWarn").textContent = msg ? "⚠️ " + msg : "";
+    $("storageWarn").classList.toggle("hidden", !msg);
+  }
+  async function boot() {
+    /* 서버가 DB 없이 돌고 있으면 재배포할 때 문제가 사라진다 — 미리 알린다 */
+    try {
+      const st = await store.status();
+      warn(st.storage === "memory" ? "서버에 DB(DATABASE_URL)가 연결되지 않아, 넣은 문제가 서버를 다시 켜면 사라져요." : st.note);
+    } catch (e) { warn("문제를 불러오지 못했어요. " + e.message); }
+    await refreshCounts();
     setMode(mode);
   }
 
-  function refreshCounts() {
-    const c = store.counts();
-    $("n-dictation").textContent = c.dictation;
-    $("n-qa").textContent = c.qa;
+  /* ---------- 문제집 ----------
+     주소의 ?set=번호 → 이 기기에서 마지막에 본 문제집 → 첫 문제집 순으로 고른다 */
+  let sets = [];
+  let curSet = Number(new URLSearchParams(location.search).get("set")) || Number(localGet("adminSet")) || 0;
+  function localGet(k) { try { return localStorage.getItem("typing." + k); } catch (e) { return null; } }
+  function localSet(k, v) { try { localStorage.setItem("typing." + k, String(v)); } catch (e) {} }
+  const curSetObj = () => sets.find(x => x.id === curSet) || null;
+
+  async function refreshCounts() {
+    try { sets = await store.sets(); }
+    catch (e) { $("setMsg").textContent = "문제집을 불러오지 못했어요. " + e.message; return; }
+    if (!curSetObj()) curSet = sets.length ? sets[0].id : 0;
+    renderSets();
   }
-  /* 다른 탭에서 바꾸면 이 화면도 맞춘다 */
-  window.addEventListener("storage", e => { if (e.key === T.KEY && !editing) { refreshCounts(); load(); } });
+
+  function renderSets() {
+    const cur = curSetObj();
+    $("sets").innerHTML = sets.length
+      ? sets.map(x => "<button type='button' class='set' data-set='" + x.id + "' aria-pressed='" + (x.id === curSet) + "'>" + esc(x.name) +
+          "<small>" + (x.counts.dictation + x.counts.qa) + "</small></button>").join("")
+      : "<span class='note'>아직 문제집이 없어요. 위에서 이름을 넣고 '만들기'를 눌러 주세요.</span>";
+    $("setActions").classList.toggle("hidden", !cur);
+    $("setBody").classList.toggle("hidden", !cur);
+    $("curSetName").textContent = cur ? cur.name : "-";
+    $("n-dictation").textContent = cur ? cur.counts.dictation : 0;
+    $("n-qa").textContent = cur ? cur.counts.qa : 0;
+    if (cur) {
+      localSet("adminSet", cur.id);
+      history.replaceState(null, "", "/typing/admin?set=" + cur.id);
+      document.querySelector('a[href^="/typing"].btn').href = "/typing?set=" + cur.id;
+    }
+  }
+
+  $("sets").addEventListener("click", e => {
+    const b = e.target.closest("[data-set]");
+    if (!b || Number(b.dataset.set) === curSet) return;
+    curSet = Number(b.dataset.set);
+    $("setMsg").textContent = "";
+    renderSets();
+    setMode(mode);
+  });
+  $("newSetForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const name = $("newSetName").value.trim();
+    if (!name) { $("setMsg").textContent = "새 문제집 이름을 입력해 주세요."; $("newSetName").focus(); return; }
+    try {
+      const st = await store.createSet(name);
+      $("newSetName").value = "";
+      curSet = st.id;
+      await refreshCounts();
+      $("setMsg").textContent = "'" + st.name + "' 문제집을 만들었어요. 이제 문제를 넣어 보세요.";
+      setMode(mode);
+      $("addPrompt").focus();
+    } catch (err) { $("setMsg").textContent = err.message; }
+  });
+  $("renameSet").addEventListener("click", async () => {
+    const cur = curSetObj();
+    if (!cur) return;
+    const name = prompt("문제집의 새 이름을 입력하세요.", cur.name);
+    if (name == null || !name.trim() || name.trim() === cur.name) return;
+    try { await store.renameSet(cur.id, name.trim()); await refreshCounts(); $("setMsg").textContent = "이름을 바꿨어요."; }
+    catch (err) { $("setMsg").textContent = err.message; }
+  });
+  $("deleteSet").addEventListener("click", async () => {
+    const cur = curSetObj();
+    if (!cur) return;
+    const n = cur.counts.dictation + cur.counts.qa;
+    if (!confirm("'" + cur.name + "' 문제집을 지울까요?\n\n안에 있는 문제 " + n + "개도 함께 지워지고, 되돌릴 수 없어요.")) return;
+    try {
+      await store.removeSet(cur.id);
+      curSet = 0;
+      await refreshCounts();
+      $("setMsg").textContent = "'" + cur.name + "' 문제집을 지웠어요.";
+      if (curSetObj()) setMode(mode);
+    } catch (err) { $("setMsg").textContent = err.message; }
+  });
+  /* 다른 사람이 바꿨을 수 있으니, 이 창으로 돌아오면 새로 받는다 */
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && !editing) { refreshCounts(); load(); } });
 
   /* ---------- 등록 방법 탭 ---------- */
   function setPane(which) {
@@ -303,8 +414,19 @@
   document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => setMode(t.dataset.mode)));
 
   /* listMsg 는 삭제 결과를 알려 주는 자리라 여기서 지우지 않는다 */
-  function load() {
-    items = store.list(mode);
+  let loadSeq = 0;
+  async function load() {
+    const seq = ++loadSeq, m = mode;
+    if (!curSet) { items = []; render(); return; }
+    if (!items.length) $("tbody").innerHTML = "<tr class='empty-row'><td colspan='4'>불러오는 중…</td></tr>";
+    try {
+      const list = await store.list(curSet, m);
+      if (seq !== loadSeq) return;          /* 그사이 탭을 바꿨다 */
+      items = list;
+    } catch (e) {
+      if (seq !== loadSeq) return;
+      $("listMsg").textContent = "문제를 불러오지 못했어요. " + e.message;
+    }
     render();
   }
 
@@ -388,19 +510,21 @@
     if (act === "save") {
       const body = { prompt: tr.querySelector(".e-prompt").value, answers: mode === "qa" ? splitAnswers(tr.querySelector(".e-answers").value) : [] };
       try {
-        Object.assign(item, store.update(id, body));
+        Object.assign(item, await store.update(id, body));
         editing = 0;
         render();
       } catch (err) { tr.querySelector(".e-err").textContent = err.message; }
       return;
     }
     if (act === "del") {
+      if (!item) return;
       if (!confirm("이 문제를 지울까요?\n\n" + item.prompt + "\n\n지운 문제는 되돌릴 수 없습니다.")) return;
       try {
-        store.remove([id]);
+        await store.remove([id]);
         items = items.filter(x => x.id !== id);
         selected.delete(id);
         render();
+        refreshCounts();
       } catch (err) { alert(err.message); load(); }
     }
   });
@@ -416,18 +540,20 @@
   $("delSelected").addEventListener("click", async () => {
     if (!selected.size || !confirm("선택한 " + selected.size + "개 문제를 지울까요?\n지운 문제는 되돌릴 수 없습니다.")) return;
     try {
-      const removed = store.remove([...selected]);
+      const removed = await store.remove([...selected]);
       $("listMsg").textContent = removed + "개를 지웠습니다.";
       selected.clear();
       load();
+      refreshCounts();
     } catch (err) { alert(err.message); }
   });
 
   /* ---------- 등록 ---------- */
   async function addItems(list, skipDuplicates) {
-    const r = store.add(mode, list, skipDuplicates);
+    const r = await store.add(curSet, mode, list, skipDuplicates);
     page = 1;
-    load();
+    await load();
+    refreshCounts();
     return r;
   }
   $("addForm").addEventListener("submit", async e => {

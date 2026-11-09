@@ -80,6 +80,16 @@
   .btn:disabled:not(.btn-primary){ opacity:.5; }
 
   /* 세그먼트 (문제 수 · 빠르기) */
+  /* 문제집 고르기 — 이름표 모양, 많아지면 줄을 바꿔 이어진다 */
+  .sets{ display:flex; flex-wrap:wrap; gap:8px; }
+  .set{
+    display:inline-flex; align-items:center; gap:8px; padding:10px 14px 10px 16px; border-radius:16px; min-height:48px;
+    border:2px solid var(--line); background:#fff; font-weight:800; color:var(--ink-2); transition:border-color .15s, background .15s, color .15s;
+  }
+  .set:hover{ border-color:var(--line-2); }
+  .set small{ font-size:.76rem; font-weight:800; color:var(--ink-soft); background:#F5EFE6; border-radius:999px; padding:1px 8px; }
+  .set[aria-pressed="true"]{ border-color:var(--blue); background:var(--blue-soft); color:var(--blue-d); }
+  .set[aria-pressed="true"] small{ background:#fff; color:var(--blue-d); }
   .seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:4px; background:#F5EFE6; padding:5px; border-radius:18px; }
   .seg button{ border-radius:14px; min-height:48px; font-weight:800; color:var(--ink-soft); display:flex; align-items:center; justify-content:center; gap:8px; transition:background .15s, color .15s, box-shadow .15s; }
   .seg button:hover{ color:var(--ink-2); }
@@ -374,7 +384,10 @@
     </header>
 
     <div class="card">
-      <div class="step"><span class="n">1</span>무엇을 연습할까요?</div>
+      <div class="step"><span class="n">1</span>어떤 문제집으로 할까요?</div>
+      <div class="sets" id="sets" role="group" aria-label="문제집"><span class="note">불러오는 중…</span></div>
+
+      <div class="step" style="margin-top:26px"><span class="n">2</span>무엇을 연습할까요?</div>
       <div class="modes" role="group" aria-label="연습 종류">
         <button type="button" class="mode" data-mode="dictation" aria-pressed="true">
           <span class="tick" aria-hidden="true"><svg class="i"><use href="#i-check"/></svg></span>
@@ -390,16 +403,16 @@
           <span class="desc">질문을 보고 답을 써요</span>
           <span class="cnt" id="cnt-qa">불러오는 중…</span>
         </button>
-        <a class="mode setup" href="/typing/admin">
+        <a class="mode setup" href="/typing/admin" id="setupLink">
           <span class="tick" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg></span>
           <span class="ico" aria-hidden="true"><svg class="i"><use href="#i-gear"/></svg></span>
           <span class="txt"><span class="name">문제 설정</span>
           <span class="desc">문제를 만들고 고쳐요</span></span>
-          <span class="cnt">이 기기에만 저장</span>
+          <span class="cnt">문제집 만들기</span>
         </a>
       </div>
 
-      <div class="step" style="margin-top:26px"><span class="n">2</span>몇 문제 풀까요?</div>
+      <div class="step" style="margin-top:26px"><span class="n">3</span>몇 문제 풀까요?</div>
       <div class="seg" role="group" aria-label="문제 수" id="counts">
         <button type="button" data-count="10" aria-pressed="true">10문제</button>
         <button type="button" data-count="20" aria-pressed="false">20문제</button>
@@ -470,7 +483,7 @@
   </section>
 </div>
 
-<script src="/typing/store.js?v=3"></script>
+<script src="/typing/store.js?v=4"></script>
 <script>
 (function () {
   "use strict";
@@ -484,7 +497,7 @@
     get(k, d) { try { const v = localStorage.getItem("typing." + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
     set(k, v) { try { localStorage.setItem("typing." + k, JSON.stringify(v)); } catch (e) {} },
   };
-  const settings = Object.assign({ mode: "dictation", count: "10" }, local.get("settings", {}));
+  const settings = Object.assign({ mode: "dictation", count: "10", set: 0 }, local.get("settings", {}));
   const saveSettings = () => local.set("settings", settings);
 
   function esc(s) {
@@ -589,7 +602,29 @@
     window.scrollTo(0, 0);
   }
 
+  let sets = null;
+  const currentSet = () => (sets || []).find(x => x.id === settings.set) || null;
+
+  function renderSets() {
+    const el = $("sets");
+    if (!sets) return;
+    if (!sets.length) { el.innerHTML = "<span class='note'>아직 문제집이 없어요. '문제 설정'에서 만들어 주세요.</span>"; return; }
+    el.innerHTML = sets.map(x =>
+      "<button type='button' class='set' data-set='" + x.id + "' aria-pressed='" + (x.id === settings.set) + "'>" + esc(x.name) +
+      "<small>" + (x.counts.dictation + x.counts.qa) + "</small></button>").join("");
+  }
+  $("sets").addEventListener("click", e => {
+    const b = e.target.closest("[data-set]");
+    if (!b) return;
+    settings.set = Number(b.dataset.set); saveSettings();
+    renderHome();
+  });
+
   function renderHome() {
+    const cur = currentSet();
+    counts = cur ? cur.counts : (sets ? { dictation: 0, qa: 0 } : null);
+    renderSets();
+    $("setupLink").href = "/typing/admin" + (cur ? "?set=" + cur.id : "");
     document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === settings.mode)));
     document.querySelectorAll("[data-count]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.count === settings.count)));
     const warn = $("homeWarn");
@@ -598,10 +633,11 @@
       $("cnt-dictation").textContent = "문제 " + counts.dictation + "개";
       $("cnt-qa").textContent = "문제 " + counts.qa + "개";
       const n = counts[settings.mode];
-      if (!n) w = "아직 문제가 없어요. '문제 설정'에서 문제를 만들어 주세요.";
+      if (sets && !sets.length) w = "";
+      else if (!n) w = "이 문제집에는 " + (settings.mode === "qa" ? "질문" : "받아쓰기") + " 문제가 없어요. '문제 설정'에서 넣어 주세요.";
       else if (settings.count !== "all" && n < Number(settings.count)) w = "등록된 문제가 " + n + "개라서 " + n + "문제만 풀어요.";
     }
-    if (!T.store.persistent()) w = (w ? w + " " : "") + "이 브라우저는 저장 공간을 쓸 수 없어, 넣은 문제가 창을 닫으면 사라져요.";
+    if (loadError) w = loadError;
     if (settings.mode === "dictation" && !tts.ok) w = (w ? w + " " : "") + "이 브라우저는 소리 내어 읽기를 지원하지 않아 받아쓰기를 할 수 없어요.";
     warn.textContent = w;
     warn.classList.toggle("hidden", !w);
@@ -617,21 +653,33 @@
       const when = (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
       const qa = r.mode === "qa";
       return "<li><span class='m" + (qa ? " qa" : "") + "'>" + icon(qa ? "chat" : "headphones") + "</span>" +
-        "<span class='t'><b>" + (qa ? "질문에 답하기" : "받아쓰기") + " · " + r.total + "문제</b><span>" + when + "</span></span>" +
+        "<span class='t'><b>" + (r.set ? esc(r.set) + " · " : "") + (qa ? "질문에 답하기" : "받아쓰기") + " · " + r.total + "문제</b><span>" + when + "</span></span>" +
         "<span class='s'>" + r.avg + "점</span></li>";
     }).join("");
   }
 
-  function loadCounts() {
-    counts = T.store.counts();
+  let loadError = "";
+  /* 주소에 ?set=번호 가 있으면 그 문제집을 고른 채로 연다 (문제집별 링크) */
+  const urlSet = Number(new URLSearchParams(location.search).get("set")) || 0;
+  if (urlSet) { settings.set = urlSet; saveSettings(); }
+
+  async function loadCounts() {
+    try {
+      sets = await T.store.sets();
+      loadError = "";
+      if (!currentSet() && sets.length) { settings.set = sets[0].id; saveSettings(); }
+    } catch (e) {
+      if (!sets) { $("cnt-dictation").textContent = $("cnt-qa").textContent = "불러오지 못함"; $("sets").innerHTML = ""; }
+      loadError = "문제를 불러오지 못했어요. " + e.message;
+    }
     renderHome();
   }
-  /* 다른 탭의 문제 관리 화면에서 바꾸면 바로 반영한다 */
-  window.addEventListener("storage", e => { if (e.key === T.KEY && S.phase === "idle") loadCounts(); });
+  /* 다른 창에서 문제를 바꾸고 돌아오면 숫자를 새로 맞춘다 */
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && S.phase === "idle" && !$("home").classList.contains("hidden")) loadCounts(); });
 
   document.querySelectorAll("[data-mode]").forEach(b => b.addEventListener("click", () => { settings.mode = b.dataset.mode; saveSettings(); renderHome(); }));
   document.querySelectorAll("[data-count]").forEach(b => b.addEventListener("click", () => { settings.count = b.dataset.count; saveSettings(); renderHome(); }));
-  $("startBtn").addEventListener("click", () => { tts.unlock(); begin({ mode: settings.mode, count: settings.count }); });
+  $("startBtn").addEventListener("click", () => { tts.unlock(); begin({ set: settings.set, mode: settings.mode, count: settings.count }); });
 
   /* ============================================================
      문제 풀기
@@ -639,20 +687,31 @@
      한 단계에서만 다음으로 넘어가게 해서 Enter 를 여러 번 눌러도
      두 번 채점하거나 두 문제를 건너뛰지 않는다
      ============================================================ */
-  const S = { mode: "dictation", items: [], i: 0, results: [], phase: "idle", seq: 0, timer: 0, fbAt: 0, last: null };
+  const S = { set: 0, setName: "", mode: "dictation", items: [], i: 0, results: [], phase: "idle", seq: 0, timer: 0, fbAt: 0, last: null };
   const input = $("answer");
 
   async function begin(req) {
     clearTimeout(S.timer);
     tts.stop();
-    S.seq++;
+    const seq = ++S.seq;
     S.phase = "loading";
     S.mode = req.mode;
+    S.set = req.set;
+    S.setName = (currentSet() || {}).name || "";
     S.last = req;
     show("play");
     $("stage").innerHTML = "<div class='loading'><div class='spinner'></div>문제를 준비하고 있어요</div>";
-    /* 문제를 고를 때 그 순간의 내용을 그대로 들고 간다 — 푸는 중에 다른 탭에서 고쳐도 흔들리지 않게 */
-    const picked = T.store.pick(req.mode, req.count, req.ids);
+    /* 시작할 때 서버에서 문제를 받아 그대로 들고 간다 — 푸는 중에 누가 문제를 고쳐도 흔들리지 않게 */
+    let picked;
+    try { picked = await T.store.pick(req.set, req.mode, req.count, req.ids); }
+    catch (e) {
+      if (seq !== S.seq) return;
+      $("stage").innerHTML = "<div class='loading'>" + esc("문제를 불러오지 못했어요. " + e.message) + "<br><br><button type='button' class='btn btn-soft' id='backHome'>처음 화면으로</button></div>";
+      $("backHome").onclick = goHome;
+      S.phase = "idle";
+      return;
+    }
+    if (seq !== S.seq) return;     /* 기다리는 사이 처음 화면으로 나갔다 */
     const data = { items: picked.map(x => ({ id: x.id, mode: x.mode, prompt: x.prompt, answers: x.answers, question: x.mode === "qa" ? x.prompt : "" })) };
     if (!data.items.length) {
       $("stage").innerHTML = "<div class='loading'>풀 수 있는 문제가 없어요.<br><br><button type='button' class='btn btn-soft' id='backHome'>처음 화면으로</button></div>";
@@ -918,7 +977,7 @@
     const partial = total - perfect - zero;
 
     const h = local.get("history", []);
-    h.unshift({ at: Date.now(), mode: S.mode, total, avg, perfect, partial, zero });
+    h.unshift({ at: Date.now(), set: S.setName, mode: S.mode, total, avg, perfect, partial, zero });
     local.set("history", h.slice(0, 30));
 
     const medal = avg === 100 ? icon("trophy") + "모두 100점" : avg >= 80 ? icon("star") + "아주 잘했어요" : icon("check") + "연습 완료";
@@ -927,7 +986,7 @@
       "<div class='medal'>" + medal + "</div>" +
       ring(avg, 168) +
       "<div class='say'>" + say + "</div>" +
-      "<div class='mode-name'>" + (S.mode === "qa" ? "질문에 답하기" : "받아쓰기") + " 평균 점수</div>" +
+      "<div class='mode-name'>" + (S.setName ? esc(S.setName) + " · " : "") + (S.mode === "qa" ? "질문에 답하기" : "받아쓰기") + " 평균 점수</div>" +
       "<div class='tiles'>" +
         "<div class='tile'><b>" + total + "</b><span>전체 문제</span></div>" +
         "<div class='tile t100'><b>" + perfect + "</b><span>100점</span></div>" +
@@ -960,10 +1019,10 @@
 
   $("retryWrong").addEventListener("click", () => {
     const ids = S.results.filter(r => r.score < 100).map(r => r.id);
-    if (ids.length) begin({ mode: S.mode, ids, count: "all" });
+    if (ids.length) begin({ set: S.set, mode: S.mode, ids, count: "all" });
   });
-  $("retryAll").addEventListener("click", () => begin({ mode: S.mode, ids: S.results.map(r => r.id), count: "all" }));
-  $("newRandom").addEventListener("click", () => begin({ mode: S.mode, count: settings.count }));
+  $("retryAll").addEventListener("click", () => begin({ set: S.set, mode: S.mode, ids: S.results.map(r => r.id), count: "all" }));
+  $("newRandom").addEventListener("click", () => begin({ set: S.set, mode: S.mode, count: settings.count }));
   $("toHome").addEventListener("click", goHome);
 
   /* 테스트에서 상태를 들여다볼 수 있게 */
