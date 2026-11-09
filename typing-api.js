@@ -98,7 +98,27 @@ const ONCE = [
       ["7 - 7 = ?", ["0"]],
     ],
   },
+  {
+    key: "set:words-v1",
+    name: "낱말 받아쓰기",
+    /* 과일·채소·탈것 이름 50개 (무작위 순서) */
+    dictation: [
+      "체리", "수박", "옥수수", "당근", "택시", "감", "가지", "배추", "유모차", "사과",
+      "브로콜리", "바나나", "망고", "견인차", "기차", "지하철", "레몬", "감자", "오이", "경찰차",
+      "구급차", "헬리콥터", "자두", "비행기", "청소차", "상추", "버스", "양파", "무", "딸기",
+      "자전거", "복숭아", "굴착기", "고구마", "토마토", "파인애플", "참외", "키위", "트랙터", "오렌지",
+      "파프리카", "귤", "고추", "오토바이", "버섯", "배달차", "소방차", "호박", "트럭", "멜론",
+    ],
+  },
 ];
+
+/* 문제집 하나에 들어갈 문제 — 질문(qa)과 받아쓰기(dictation)를 한 목록으로 */
+function seedItems(seed) {
+  return [
+    ...(seed.qa || []).map(([q, a]) => ({ mode: "qa", prompt: q, answers: a })),
+    ...(seed.dictation || []).map(t => ({ mode: "dictation", prompt: t, answers: [] })),
+  ];
+}
 
 async function seedOnce(p) {
   await p.query(`CREATE TABLE IF NOT EXISTS typing_meta (key TEXT PRIMARY KEY, done_at TIMESTAMPTZ NOT NULL DEFAULT now())`);
@@ -123,11 +143,11 @@ async function seedOnce(p) {
       await client.query("BEGIN");
       const found = (await client.query(`SELECT id FROM typing_sets WHERE lower(name) = lower($1)`, [seed.name])).rows[0];
       const set = found ? found.id : (await client.query(`INSERT INTO typing_sets (name) VALUES ($1) RETURNING id`, [seed.name])).rows[0].id;
-      const have = new Set((await client.query(`SELECT prompt FROM typing_items WHERE set_id = $1 AND mode = 'qa'`, [set])).rows.map(r => r.prompt));
+      const have = new Set((await client.query(`SELECT mode || ':' || prompt AS k FROM typing_items WHERE set_id = $1`, [set])).rows.map(r => r.k));
       let n = 0;
-      for (const [q, a] of seed.qa) {
-        if (have.has(q)) continue;
-        await client.query(`INSERT INTO typing_items (set_id, mode, prompt, answers) VALUES ($1, 'qa', $2, $3)`, [set, q, JSON.stringify(a)]);
+      for (const x of seedItems(seed)) {
+        if (have.has(x.mode + ":" + x.prompt)) continue;
+        await client.query(`INSERT INTO typing_items (set_id, mode, prompt, answers) VALUES ($1, $2, $3, $4)`, [set, x.mode, x.prompt, JSON.stringify(x.answers)]);
         n++;
       }
       await client.query(`INSERT INTO typing_meta (key) VALUES ($1) ON CONFLICT DO NOTHING`, [seed.key]);
@@ -149,7 +169,7 @@ function seedMemory() {
   for (const seed of ONCE) {
     const st = { id: ++memory.setSeq, name: seed.name, created_at: now };
     memory.sets.push(st);
-    for (const [q, a] of seed.qa) memory.items.push({ id: ++memory.seq, set_id: st.id, mode: "qa", prompt: q, answers: a, created_at: now, updated_at: now });
+    for (const x of seedItems(seed)) memory.items.push({ id: ++memory.seq, set_id: st.id, mode: x.mode, prompt: x.prompt, answers: x.answers, created_at: now, updated_at: now });
   }
 }
 
