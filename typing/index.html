@@ -57,7 +57,6 @@
   .step{ display:flex; align-items:center; gap:10px; font-size:1.02rem; font-weight:800; color:var(--ink); margin-bottom:14px; }
   .step .n{ width:26px; height:26px; border-radius:9px; display:grid; place-items:center; font-size:.82rem; font-weight:900; background:var(--blue-soft); color:var(--blue-d); }
   .step .side{ margin-left:auto; }
-  .sub-label{ font-size:.86rem; font-weight:800; color:var(--ink-soft); margin:20px 0 10px; }
   .note{ font-size:.86rem; color:var(--ink-soft); line-height:1.6; }
   .note b{ color:var(--ink-2); }
   .warn{ display:flex; gap:10px; align-items:flex-start; background:var(--yellow-soft); color:var(--yellow-d); border-radius:var(--r); padding:14px 16px; font-size:.93rem; font-weight:600; line-height:1.55; }
@@ -85,10 +84,6 @@
   .seg button{ border-radius:14px; min-height:48px; font-weight:800; color:var(--ink-soft); display:flex; align-items:center; justify-content:center; gap:8px; transition:background .15s, color .15s, box-shadow .15s; }
   .seg button:hover{ color:var(--ink-2); }
   .seg button[aria-pressed="true"]{ background:#fff; color:var(--blue-d); box-shadow:var(--shadow-sm); }
-  .speed{ display:inline-flex; gap:2px; align-items:flex-end; height:14px; }
-  .speed i{ width:4px; border-radius:2px; background:currentColor; opacity:.25; }
-  .speed i:nth-child(1){ height:6px; } .speed i:nth-child(2){ height:10px; } .speed i:nth-child(3){ height:14px; }
-  .speed.s1 i:nth-child(1), .speed.s2 i:nth-child(-n+2), .speed.s3 i{ opacity:1; }
 
   /* ---------- 처음 화면 ---------- */
   .hero{ text-align:center; padding:10px 0 22px; }
@@ -141,29 +136,6 @@
   .mode.qa[aria-pressed="true"] .tick{ background:var(--lav); border-color:var(--lav); }
   .mode.qa[aria-pressed="true"] .cnt{ background:var(--lav-soft); color:var(--lav-d); }
 
-  .preview{ white-space:nowrap; display:inline-flex; align-items:center; gap:6px; font-weight:800; font-size:.9rem; color:var(--blue-d); background:var(--blue-soft); padding:8px 14px; border-radius:999px; }
-  .preview svg{ width:14px; height:14px; fill:currentColor; stroke:none; }
-  .teacher{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .tcard{
-    display:flex; align-items:center; gap:12px; text-align:left; border:2px solid var(--line); border-radius:20px; padding:12px 14px; min-height:72px;
-    transition:border-color .15s, background .15s;
-  }
-  .tcard .av{ width:44px; height:44px; border-radius:50%; display:grid; place-items:center; flex:none; }
-  .tcard .av svg{ width:24px; height:24px; }
-  .tcard[data-teacher="f"] .av{ background:var(--coral-soft); color:var(--coral); }
-  .tcard[data-teacher="m"] .av{ background:var(--blue-soft); color:var(--blue); }
-  .tcard b{ display:block; font-size:1rem; font-weight:800; }
-  .tcard small{ display:block; font-size:.78rem; font-weight:600; color:var(--ink-soft); }
-  .tcard[aria-pressed="true"]{ border-color:var(--blue); background:#F5F8FE; }
-  .tcard:disabled{ opacity:.55; background:#FBF8F3; }
-  .tcard:disabled .av{ background:#F2ECE3; color:#BFB6A8; }
-  .selwrap{ position:relative; margin-top:12px; }
-  .selwrap svg{ position:absolute; right:14px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--ink-soft); }
-  select{
-    width:100%; font:inherit; font-size:.92rem; font-weight:600; padding:12px 40px 12px 14px; border-radius:14px; border:2px solid var(--line);
-    background:#fff; color:var(--ink-2); min-height:50px; appearance:none; -webkit-appearance:none;
-  }
-  select:disabled{ background:#FBF8F3; color:var(--ink-soft); }
 
   .start-wrap{ padding-top:4px; }
   .start{ width:100%; font-size:1.2rem; min-height:64px; border-radius:22px; }
@@ -333,13 +305,7 @@
     .mode.setup .tick{ position:static; margin-left:auto; order:3; }
     .mode .desc{ font-size:.8rem; word-break:keep-all; }
     .step{ font-size:.96rem; word-break:keep-all; }
-    .preview{ padding:7px 11px; font-size:.84rem; }
     .mode .tick{ top:12px; right:12px; width:22px; height:22px; }
-    .teacher{ gap:8px; }
-    .tcard{ flex-direction:column; text-align:center; padding:12px 8px; gap:6px; }
-    .tcard .av{ width:38px; height:38px; }
-    .tcard b{ font-size:.92rem; white-space:nowrap; }
-    .tcard small{ white-space:nowrap; }
     .stage{ min-height:210px; padding:24px 16px; }
     .listen-big{ width:100px; height:100px; }
     .listen-big svg{ width:42px; height:42px; }
@@ -379,17 +345,14 @@
   <symbol id="i-headphones" viewBox="0 0 24 24"><path d="M3 15v-3a9 9 0 0 1 18 0v3"/><path d="M3 15a2 2 0 0 1 2-2h1.5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2z"/><path d="M21 15a2 2 0 0 0-2-2h-1.5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1H19a2 2 0 0 0 2-2z"/></symbol>
   <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4a8 8 0 1 1 15.3-3.9z"/><path d="M9 11.5h.01M12.5 11.5h.01M16 11.5h.01" stroke-width="2.8"/></symbol>
   <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M11 5 6.5 9H3.5v6h3L11 19z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6"/><path d="M18.5 6a8.5 8.5 0 0 1 0 12"/></symbol>
-  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></symbol>
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
   <symbol id="i-redo" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/></symbol>
   <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
   <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M16 4h4v4"/><path d="M4 18c6 0 8-12 16-14"/><path d="M16 20h4v-4"/><path d="M4 6c3 0 5 2.5 6.5 5.5M13 15c1.6 2.5 3.8 4.5 7 5"/></symbol>
-  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol>
   <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="3"/><path d="M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M8 14.5h8"/></symbol>
   <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
-  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
   <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 14v3M8.5 20h7l-1-3h-5z"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
@@ -441,33 +404,6 @@
         <button type="button" data-count="10" aria-pressed="true">10문제</button>
         <button type="button" data-count="20" aria-pressed="false">20문제</button>
         <button type="button" data-count="all" aria-pressed="false">전체</button>
-      </div>
-    </div>
-
-    <div class="card" id="voiceCard">
-      <div class="step"><span class="n">3</span>누가 읽어 줄까요?
-        <button type="button" class="preview side" id="previewBtn"><svg class="i"><use href="#i-play"/></svg>미리 듣기</button>
-      </div>
-      <div class="teacher" role="group" aria-label="선생님 목소리">
-        <button type="button" class="tcard" data-teacher="f" aria-pressed="false">
-          <span class="av" aria-hidden="true"><svg class="i"><use href="#i-user"/></svg></span>
-          <span><b>여자 선생님</b><small id="fNote"></small></span>
-        </button>
-        <button type="button" class="tcard" data-teacher="m" aria-pressed="false">
-          <span class="av" aria-hidden="true"><svg class="i"><use href="#i-user"/></svg></span>
-          <span><b>남자 선생님</b><small id="mNote"></small></span>
-        </button>
-      </div>
-      <div class="selwrap">
-        <label class="sr" for="voiceSel">한국어 목소리 고르기</label>
-        <select id="voiceSel"></select>
-        <svg class="i" aria-hidden="true"><use href="#i-chevron"/></svg>
-      </div>
-      <div class="sub-label">읽기 빠르기</div>
-      <div class="seg" role="group" aria-label="읽기 빠르기" id="rates">
-        <button type="button" data-rate="slow" aria-pressed="false"><span class="speed s1" aria-hidden="true"><i></i><i></i><i></i></span>느리게</button>
-        <button type="button" data-rate="normal" aria-pressed="true"><span class="speed s2" aria-hidden="true"><i></i><i></i><i></i></span>보통</button>
-        <button type="button" data-rate="fast" aria-pressed="false"><span class="speed s3" aria-hidden="true"><i></i><i></i><i></i></span>빠르게</button>
       </div>
     </div>
 
@@ -541,14 +477,14 @@
 
   const $ = id => document.getElementById(id);
   const FEEDBACK_MS = 1800;
-  const RATES = { slow: 0.7, normal: 0.9, fast: 1.1 };
+  const RATE = 0.9;      /* 읽기 빠르기 — 저학년이 따라 쓰기 좋게 조금 느리게 */
 
   /* ---------- 이 기기에만 남기는 값 ---------- */
   const local = {
     get(k, d) { try { const v = localStorage.getItem("typing." + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
     set(k, v) { try { localStorage.setItem("typing." + k, JSON.stringify(v)); } catch (e) {} },
   };
-  const settings = Object.assign({ mode: "dictation", count: "10", teacher: "", voiceURI: "", rate: "normal" }, local.get("settings", {}));
+  const settings = Object.assign({ mode: "dictation", count: "10" }, local.get("settings", {}));
   const saveSettings = () => local.set("settings", settings);
 
   function esc(s) {
@@ -569,47 +505,22 @@
 
   /* ============================================================
      음성 — 브라우저에 들어 있는 한국어 음성만 쓴다 (Web Speech API)
-
-     Web Speech API 는 목소리의 성별을 알려 주지 않는다. 그래서 이름으로
-     확실히 알 수 있는 목소리만 남자/여자로 표시하고, 나머지는
-     '구분 정보 없음'으로 둔다. 음높이를 바꿔 남자 목소리처럼 만들지 않는다.
+     목소리는 따로 고르지 않는다. 기기에 있는 한국어 목소리 중
+     가장 자연스러운 것을 자동으로 쓰고, 빠르기는 아이에게 맞춘 한 가지로 둔다.
      ============================================================ */
-  const KNOWN = [
-    /* Windows · Edge */
-    [/\bheami\b/i, "f"], [/\bsunhi\b/i, "f"], [/\bjimin\b/i, "f"], [/\bseohyeon\b/i, "f"],
-    [/\bsoonbok\b/i, "f"], [/\byujin\b/i, "f"],
-    [/\binjoon\b/i, "m"], [/\bhyunsu/i, "m"], [/\bbongjin\b/i, "m"], [/\bgookmin\b/i, "m"],
-    /* Apple */
-    [/\byuna\b|유나/i, "f"], [/\bsora\b|소라/i, "f"], [/\bminsu\b|민수/i, "m"],
-    [/\b(flo|sandy|shelley|grandma)\b/i, "f"], [/\b(eddy|reed|rocko|grandpa)\b/i, "m"],
-    /* 이름에 성별이 적힌 경우 (여성을 먼저 본다 — 'female' 안에 'male' 이 들어 있다) */
-    [/female|여성|여자/i, "f"], [/\bmale\b|남성|남자/i, "m"],
-  ];
   const tts = {
     ok: "speechSynthesis" in window && "SpeechSynthesisUtterance" in window,
     voices: [],
     token: 0,
     current: null,
-    gender(v) {
-      const s = v.name + " " + v.voiceURI;
-      for (const [re, g] of KNOWN) if (re.test(s)) return g;
-      return "";
-    },
     load() {
       if (!this.ok) return;
       const all = speechSynthesis.getVoices() || [];
       this.voices = all.filter(v => /^ko([-_]|$)/i.test(v.lang || ""));
     },
-    /* 고를 목소리: 직접 고른 것 → 선생님 성별에 맞는 것 중 품질 좋은 것 → 아무 한국어 목소리 */
+    /* 자연스러운(Natural·Online) 목소리를 먼저, 인터넷이 끊겼으면 기기 안 목소리를 먼저 */
     pick() {
-      const vs = this.voices;
-      if (!vs.length) return null;
-      if (settings.voiceURI) {
-        const v = vs.find(v => v.voiceURI === settings.voiceURI);
-        if (v) return v;
-      }
-      const want = settings.teacher;
-      const pool = want ? vs.filter(v => this.gender(v) === want) : vs;
+      const pool = this.voices;
       if (!pool.length) return null;
       const online = navigator.onLine !== false;
       const rank = v => (/natural|online|neural|premium|enhanced/i.test(v.name) ? (online || v.localService ? 2 : -2) : 0)
@@ -632,7 +543,7 @@
         const u = new SpeechSynthesisUtterance(text);
         const v = (opts && opts.voice) || this.pick();
         if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "ko-KR";
-        u.rate = RATES[settings.rate] || 0.9;
+        u.rate = RATE;
         u.pitch = 1;
         u.onstart = () => { if (t === this.token) setSpeaking(true); };
         u.onend = u.onerror = () => { if (t === this.token) setSpeaking(false); };
@@ -659,79 +570,14 @@
     if (b) b.classList.toggle("speaking", on);
   }
 
-  function voiceLabel(v) {
-    const g = tts.gender(v);
-    const name = v.name.replace(/\s*-\s*Korean.*$/i, "").replace(/\s*\(Korean.*\)$/i, "");
-    return name + " · " + (g === "f" ? "여성" : g === "m" ? "남성" : "구분 정보 없음") + " · " + (v.localService ? "오프라인 가능" : "인터넷 필요");
-  }
-
-  function renderVoices() {
-    tts.load();
-    const vs = tts.voices;
-    const has = { f: vs.some(v => tts.gender(v) === "f"), m: vs.some(v => tts.gender(v) === "m") };
-
-    /* 저장해 둔 목소리가 이 기기에 없으면 잊는다 */
-    if (settings.voiceURI && !vs.find(v => v.voiceURI === settings.voiceURI)) settings.voiceURI = "";
-    if (settings.teacher && !has[settings.teacher]) settings.teacher = "";
-    if (!settings.teacher && !settings.voiceURI) settings.teacher = has.f ? "f" : has.m ? "m" : "";
-
-    const picked = tts.pick();
-    document.querySelectorAll("[data-teacher]").forEach(b => {
-      const g = b.dataset.teacher;
-      b.disabled = !has[g];
-      b.setAttribute("aria-pressed", String(!!picked && tts.gender(picked) === g));
-      $(g + "Note").textContent = has[g] ? (vs.filter(v => tts.gender(v) === g).length + "개 목소리") : "이 기기에 없어요";
-    });
-
-    const sel = $("voiceSel");
-    sel.innerHTML = "";
-    const auto = document.createElement("option");
-    auto.value = "";
-    auto.textContent = vs.length ? "자동 선택 (선생님 목소리에 맞춰)" : "한국어 목소리를 찾지 못했어요";
-    sel.appendChild(auto);
-    for (const v of vs) {
-      const o = document.createElement("option");
-      o.value = v.voiceURI;
-      o.textContent = voiceLabel(v);
-      sel.appendChild(o);
-    }
-    sel.value = settings.voiceURI || "";
-    sel.disabled = !vs.length;
-
-    saveSettings();
-  }
-
   if (tts.ok) {
-    renderVoices();
-    speechSynthesis.addEventListener ? speechSynthesis.addEventListener("voiceschanged", renderVoices)
-                                     : (speechSynthesis.onvoiceschanged = renderVoices);
+    tts.load();
+    speechSynthesis.addEventListener ? speechSynthesis.addEventListener("voiceschanged", () => tts.load())
+                                     : (speechSynthesis.onvoiceschanged = () => tts.load());
     /* 안드로이드 크롬은 목소리 목록이 늦게 오고, 알림을 안 주기도 한다 */
     let tries = 0;
-    const poll = setInterval(() => { tries++; if (tts.voices.length || tries > 10) clearInterval(poll); renderVoices(); }, 500);
-  } else renderVoices();
-
-  document.querySelectorAll("[data-teacher]").forEach(b => b.addEventListener("click", () => {
-    settings.teacher = b.dataset.teacher; settings.voiceURI = "";
-    renderVoices();
-    tts.unlock();
-    tts.speak(b.dataset.teacher === "m" ? "안녕하세요. 남자 선생님이에요." : "안녕하세요. 여자 선생님이에요.");
-  }));
-  $("voiceSel").addEventListener("change", e => {
-    settings.voiceURI = e.target.value;
-    const v = tts.voices.find(v => v.voiceURI === settings.voiceURI);
-    if (v) settings.teacher = tts.gender(v);
-    renderVoices();
-    tts.speak("안녕하세요. 같이 타자 연습해요.");
-  });
-  document.querySelectorAll("[data-rate]").forEach(b => {
-    b.setAttribute("aria-pressed", String(b.dataset.rate === settings.rate));
-    b.addEventListener("click", () => {
-      settings.rate = b.dataset.rate; saveSettings();
-      document.querySelectorAll("[data-rate]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
-      tts.speak("이 빠르기로 읽어 줄게요.");
-    });
-  });
-  $("previewBtn").addEventListener("click", () => { tts.unlock(); tts.speak("안녕하세요. 오늘은 날씨가 좋아요."); });
+    const poll = setInterval(() => { tries++; tts.load(); if (tts.voices.length || tries > 10) clearInterval(poll); }, 500);
+  }
 
   /* ============================================================
      처음 화면
