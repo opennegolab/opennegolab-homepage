@@ -99,16 +99,23 @@
   .status{ min-height:1.3em; margin:8px 2px 4px; font-weight:700; color:var(--mint-d); font-size:.88rem; }
 
   table{ width:100%; border-collapse:separate; border-spacing:0; }
-  th,td{ text-align:left; padding:12px 8px; border-top:1px solid var(--line); vertical-align:top; }
+  th,td{ text-align:left; padding:9px 8px; border-top:1px solid var(--line); vertical-align:top; }
   th{ font-size:.76rem; color:var(--ink-soft); font-weight:900; border-top:none; text-transform:uppercase; letter-spacing:.02em; padding-top:4px; }
   tbody tr{ transition:background .12s; }
   tbody tr:hover td{ background:#FCF9F4; }
   td:first-child{ border-radius:12px 0 0 12px; } td:last-child{ border-radius:0 12px 12px 0; }
-  td.num{ color:var(--ink-soft); width:52px; font-weight:700; font-size:.88rem; padding-top:14px; }
+  td.num{ color:var(--ink-soft); width:52px; font-weight:700; font-size:.86rem; padding-top:11px; }
   td.act{ width:136px; white-space:nowrap; text-align:right; }
   td.chk, th.chk{ width:34px; padding-top:14px; }
   td .p{ font-size:1rem; font-weight:700; }
-  td .ans{ display:inline-block; background:var(--lav-soft); color:var(--lav-d); border-radius:8px; padding:1px 9px; margin:6px 4px 0 0; font-size:.84rem; font-weight:700; }
+  td .ans{ display:inline-block; background:var(--lav-soft); color:var(--lav-d); border-radius:8px; padding:0 8px; margin:4px 4px 0 0; font-size:.82rem; font-weight:700; }
+  .pager{ display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; margin-top:16px; }
+  .pg{ min-width:38px; height:38px; padding:0 10px; border-radius:12px; font-weight:800; color:var(--ink-2); background:#fff; border:1.5px solid var(--line); transition:background .15s, color .15s, border-color .15s; }
+  .pg:hover:not(:disabled):not(.on){ background:var(--blue-soft); border-color:var(--blue-mid); color:var(--blue-d); }
+  .pg.on{ background:var(--blue); border-color:var(--blue); color:#fff; }
+  .pg:disabled{ opacity:.35; cursor:default; }
+  .pager .gap{ color:var(--ink-soft); padding:0 2px; }
+  .pg-info{ width:100%; text-align:center; font-size:.8rem; font-weight:700; color:var(--ink-soft); margin-top:4px; }
   .empty-row td{ text-align:center; padding:36px 8px; color:var(--ink-soft); font-weight:700; }
   code{ background:var(--blue-soft); color:var(--blue-d); border-radius:6px; padding:1px 6px; font-size:.84rem; font-family:inherit; font-weight:700; }
 
@@ -124,8 +131,12 @@
     .brand .logo{ width:40px; height:40px; border-radius:13px; }
     h1{ font-size:1.15rem; }
     td.num, th.num{ display:none; }
-    td.act{ width:auto; }
-    td.act .btn{ display:flex; width:100%; margin-bottom:6px; }
+    td.act{ width:auto; white-space:nowrap; padding-left:4px; }
+    td.act .btn.small{ padding:5px 8px; min-height:32px; font-size:.8rem; }
+    td .p{ font-size:.95rem; word-break:keep-all; overflow-wrap:anywhere; }
+    td.chk, th.chk{ width:28px; padding-left:2px; padding-right:2px; }
+    .pager{ gap:4px; }
+    .pg{ min-width:34px; height:36px; padding:0 8px; border-radius:10px; }
     header .row{ width:100%; flex-wrap:nowrap; }
     header .row .btn{ flex:1; min-height:40px; font-size:.86rem; padding:8px 10px; }
   }
@@ -197,7 +208,7 @@
     </div>
 
     <div class="card">
-      <div class="listbar">
+      <div class="listbar" id="listTop" style="scroll-margin-top:16px">
         <h2><svg class="i" aria-hidden="true"><use href="#i-list"/></svg>문제 목록 <span class="count" id="listCount">0</span></h2>
       </div>
       <div class="row">
@@ -207,10 +218,11 @@
       <p id="listMsg" class="status"></p>
       <div style="overflow-x:auto">
         <table>
-          <thead><tr><th class="chk"><input type="checkbox" id="checkAll" aria-label="모두 선택"></th><th class="num">번호</th><th id="thPrompt">문장</th><th></th></tr></thead>
+          <thead><tr><th class="chk"><input type="checkbox" id="checkAll" aria-label="이 페이지 모두 선택"></th><th class="num">번호</th><th id="thPrompt">문장</th><th></th></tr></thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
+      <nav class="pager hidden" id="pager" aria-label="문제 목록 페이지"></nav>
     </div>
 
   </section>
@@ -226,6 +238,8 @@
   let items = [];
   const selected = new Set();
   let editing = 0;
+  let page = 1;
+  const PER_PAGE = 10;
 
   /* 문제는 이 기기·이 브라우저에만 저장한다 (store.js). 서버로는 아무것도 보내지 않는다 */
   const T = window.TypingStore;
@@ -268,6 +282,7 @@
   function setMode(m) {
     mode = m;
     editing = 0;
+    page = 1;
     selected.clear();
     document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.mode === m)));
     const qa = m === "qa";
@@ -300,11 +315,18 @@
   /* ---------- 목록 ---------- */
   function render() {
     const q = $("search").value.trim().normalize("NFC").toLowerCase();
-    const shown = items.filter(x => !q || (x.prompt + " " + x.answers.join(" ")).toLowerCase().includes(q));
+    /* 새로 넣은 문제가 먼저 보이게 최신순으로. 번호는 넣은 순서 그대로 둔다 */
+    const no = new Map(items.map((x, k) => [x.id, k + 1]));
+    const shown = items.filter(x => !q || (x.prompt + " " + x.answers.join(" ")).toLowerCase().includes(q)).reverse();
     $("listCount").textContent = (q ? shown.length + " / " + items.length : items.length) + "개";
     $("n-" + mode).textContent = items.length;
+    const pages = Math.max(1, Math.ceil(shown.length / PER_PAGE));
+    page = Math.min(Math.max(1, page), pages);
+    const view = shown.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+    renderPager(pages, shown.length);
     const qa = mode === "qa";
-    $("tbody").innerHTML = shown.map((x, k) => {
+    $("tbody").innerHTML = view.map(x => {
+      const k = no.get(x.id) - 1;
       if (x.id === editing) {
         return "<tr data-id='" + x.id + "' class='editing'><td class='chk'></td><td class='num'>" + (k + 1) + "</td><td>" +
           "<input type='text' class='e-prompt' maxlength='200' value='" + esc(x.prompt) + "'>" +
@@ -318,11 +340,40 @@
     }).join("") || "<tr class='empty-row'><td colspan='4'>" + (q ? "찾는 문제가 없어요." : "아직 등록된 문제가 없어요. 위에서 첫 문제를 넣어 보세요.") + "</td></tr>";
     $("delSelected").disabled = !selected.size;
     $("delSelected").textContent = selected.size ? "선택 삭제 (" + selected.size + "개)" : "선택 삭제";
-    $("checkAll").checked = shown.length > 0 && shown.every(x => selected.has(x.id));
+    $("checkAll").checked = view.length > 0 && view.every(x => selected.has(x.id));
+    currentView = view;
     const ep = document.querySelector(".e-prompt");
     if (ep) ep.focus();
   }
-  $("search").addEventListener("input", render);
+
+  /* 페이지 번호 — 처음·끝과 지금 페이지 앞뒤만 보이고 나머지는 … 으로 */
+  let currentView = [];
+  function renderPager(pages, total) {
+    const el = $("pager");
+    if (pages <= 1) { el.innerHTML = ""; el.classList.add("hidden"); return; }
+    el.classList.remove("hidden");
+    const want = new Set([1, pages, page - 1, page, page + 1].filter(n => n >= 1 && n <= pages));
+    const nums = [...want].sort((a, b) => a - b);
+    let h = "<button class='pg' data-page='" + (page - 1) + "'" + (page === 1 ? " disabled" : "") + " aria-label='이전 페이지'>‹</button>";
+    let prev = 0;
+    for (const n of nums) {
+      if (n - prev > 1) h += "<span class='gap'>…</span>";
+      h += "<button class='pg" + (n === page ? " on" : "") + "' data-page='" + n + "'" + (n === page ? " aria-current='page'" : "") + ">" + n + "</button>";
+      prev = n;
+    }
+    h += "<button class='pg' data-page='" + (page + 1) + "'" + (page === pages ? " disabled" : "") + " aria-label='다음 페이지'>›</button>";
+    h += "<span class='pg-info'>" + ((page - 1) * PER_PAGE + 1) + "–" + Math.min(page * PER_PAGE, total) + " / " + total + "개</span>";
+    el.innerHTML = h;
+  }
+  $("search").addEventListener("input", () => { page = 1; render(); });
+  $("pager").addEventListener("click", e => {
+    const b = e.target.closest("[data-page]");
+    if (!b || b.disabled) return;
+    page = Number(b.dataset.page);
+    editing = 0;
+    render();
+    $("listTop").scrollIntoView({ block: "start", behavior: "smooth" });
+  });
 
   $("tbody").addEventListener("click", async e => {
     const btn = e.target.closest("[data-act]");
@@ -357,9 +408,9 @@
     if (e.key === "Enter" && e.target.classList.contains("e-prompt")) { e.preventDefault(); e.target.closest("tr").querySelector("[data-act=save]").click(); }
     if (e.key === "Escape") { editing = 0; render(); }
   });
+  /* 모두 선택은 지금 보이는 페이지의 문제만 */
   $("checkAll").addEventListener("change", e => {
-    const q = $("search").value.trim().normalize("NFC").toLowerCase();
-    for (const x of items) if (!q || (x.prompt + " " + x.answers.join(" ")).toLowerCase().includes(q)) e.target.checked ? selected.add(x.id) : selected.delete(x.id);
+    for (const x of currentView) e.target.checked ? selected.add(x.id) : selected.delete(x.id);
     render();
   });
   $("delSelected").addEventListener("click", async () => {
@@ -375,6 +426,7 @@
   /* ---------- 등록 ---------- */
   async function addItems(list, skipDuplicates) {
     const r = store.add(mode, list, skipDuplicates);
+    page = 1;
     load();
     return r;
   }
