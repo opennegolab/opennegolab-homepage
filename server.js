@@ -18,7 +18,9 @@ const ROOT = __dirname;
 /* 사이트 콘텐츠가 아닌 파일 — 외부에 내보내지 않는다.
    hit.js 는 방문자 브라우저가 받아 가야 하므로 여기 넣지 않는다 */
 const HIDDEN = new Set(["server.js", "inquiry.js", "stats.js", "stats.html", "typing-api.js",
-                        "package.json", "package-lock.json", "readme.md", ".gitignore"]);
+                        "package.json", "package-lock.json", "readme.md", ".gitignore",
+                        /* 내부 메모·도구 — DNS 기록, 이미지 변환 스크립트, 캡처 폴더 안내 */
+                        "dns-snapshot.txt", "_pngtool.js", "img/shots/readme.txt"]);
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
