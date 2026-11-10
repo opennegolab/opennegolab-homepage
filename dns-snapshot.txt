@@ -1,52 +1,68 @@
 ﻿opennegolab.com DNS 스냅샷
-뜬 날짜 : 2026-08-29
+뜬 날짜 : 2026-11-10 (이전 스냅샷 2026-08-29)
 등록기관 : 닷네임코리아 (Dotname Korea Corp.)  dotname.co.kr
-도메인 등록 2015-04-05 / 만료 2027-04-05 / 최근 변경 2026-06-14
+도메인 등록 2015-04-05 / 만료 2027-04-05   * 등록기관 정보는 2026-08-29 확인 값 (이번엔 다시 확인하지 못함)
 
 Cloudflare 계정을 못 찾아 DNS 를 다른 곳으로 옮겨야 할 때,
 아래 내용을 그대로 다시 만들면 사이트와 메일이 그대로 살아난다.
 ------------------------------------------------------------
 
-[opennegolab.com]
-  A      216.198.79.1
+[opennegolab.com]   <- www 없는 주소. www 로 넘겨 주기만 한다
+  A      Cloudflare 프록시 (주황 구름) — 밖에서는 104.21.29.151, 172.67.149.105 로 보인다
+  AAAA   Cloudflare 프록시 — 2606:4700:3031::6815:1d97, 2606:4700:3036::ac43:9569
+         * 프록시라서 원래 넣어 둔 값은 밖에서 보이지 않는다. Cloudflare 화면에서 확인할 것
+  넘겨주기  https://opennegolab.com/<경로>?<쿼리>  ->  301  ->  https://www.opennegolab.com/<경로>?<쿼리>
+         Cloudflare 가 직접 응답한다 (server: cloudflare). 경로와 쿼리를 그대로 붙여 준다
   MX     kr1-aspmx1.worksmobile.com  (우선순위 10)   <- 회사 메일(네이버웍스). 이게 빠지면 메일이 끊긴다
   MX     kr1-aspmx2.worksmobile.com  (우선순위 20)
-  NS     jasmine.ns.cloudflare.com
-  NS     miles.ns.cloudflare.com
+  NS     aron.ns.cloudflare.com
+  NS     ruben.ns.cloudflare.com
   TXT    cloudtype-space=@omh4564
   TXT    v=spf1 include:spf.worksmobile.com ~all
 
 [www.opennegolab.com]   <- 홈페이지
-  A      34.8.247.175
-  CNAME  mrc4ptdr6dd51744.sel3.cloudtype.app
+  CNAME  mrc4ptdr6dd51744.sel3.cloudtype.app   (DNS only, 회색 구름)
+         -> A 34.8.247.175
 
 [ai.opennegolab.com]   <- 협상 시뮬레이터
-  A      34.8.247.175
-  CNAME  mrc4ptdr6dd51744.sel3.cloudtype.app
+  CNAME  mrc4ptdr6dd51744.sel3.cloudtype.app   (DNS only, 회색 구름)
+         -> A 34.8.247.175
   * www 와 CNAME 목적지가 같다. 잘못된 게 아니다 — 클라우드타입이 접속한
     도메인 이름을 보고 홈페이지와 시뮬레이터로 갈라 보낸다. 확인함
 
+없는 것 (2026-11-10 조회 기준) : CAA, _dmarc, mail.opennegolab.com
+
 ------------------------------------------------------------
-중요 : 프록시는 꺼져 있다 (Cloudflare 회색 구름 / DNS only)
+중요 : www 와 ai 는 프록시가 꺼져 있다 (Cloudflare 회색 구름 / DNS only)
 
 Cloudflare 는 주소만 알려주고, 실제 접속은 클라우드타입으로 곧장 간다.
-www.opennegolab.com 과 클라우드타입 원본이 같은 IP(34.8.247.175)로 나오는
-것으로 확인했다.
+www.opennegolab.com 의 응답에 Cloudflare 표시(server: cloudflare, cf-ray)가
+없는 것으로 확인했다.
 
 새 Cloudflare 계정에 도메인을 추가하면 레코드가 주황 구름(Proxied)으로
-들어온다. 반드시 회색(DNS only)으로 바꿔야 지금과 같이 동작한다.
+들어온다. www 와 ai 는 반드시 회색(DNS only)으로 바꿔야 지금과 같이 동작한다.
+www 없는 주소(opennegolab.com)만 주황 구름이어야 한다 — 넘겨주기를
+Cloudflare 가 해 주기 때문이다.
 
 ------------------------------------------------------------
-참고 : www 없는 주소는 아직 예전 호스팅(Vercel)을 거친다
+2026-08-29 스냅샷과 달라진 것
 
-opennegolab.com 의 A 레코드 216.198.79.1 은 Vercel 주소다. 여기서 308 로
-www 로 넘겨 준다. 즉 www 없는 주소는 아직 Vercel 배포에 기대고 있다.
-Vercel 프로젝트를 지우면 www 없는 주소가 끊긴다 (www 는 멀쩡하다).
-언젠가 정리하는 게 낫지만 지금 당장 문제는 아니다.
+  1. 네임서버가 jasmine / miles.ns.cloudflare.com 에서
+     aron / ruben.ns.cloudflare.com 으로 바뀌었다.
+     Cloudflare 에서 도메인을 새로 등록했다는 뜻이다 (다른 계정일 수도 있다).
+     지금 쓰는 Cloudflare 계정이 어느 것인지 확인해 둘 것
+  2. www 없는 주소가 더 이상 Vercel(216.198.79.1)을 거치지 않는다.
+     Cloudflare 가 직접 www 로 넘겨 준다. 그래서 Vercel 프로젝트를 지워도
+     사이트는 끊기지 않는다
 
 ------------------------------------------------------------
 되찾는 방법 (Cloudflare 를 못 쓰게 됐을 때)
   1. 닷네임코리아(dotname.co.kr) 에 로그인한다 — 도메인 소유자 계정이다
   2. 네임서버를 새 DNS 로 바꾼다 (새 Cloudflare 계정이든 다른 곳이든)
   3. 위 레코드를 그대로 다시 넣는다
+  4. www 없는 주소의 넘겨주기를 다시 만든다
+     - Cloudflare 라면 : opennegolab.com 에 프록시(주황) A 레코드를 하나 두고,
+       Rules -> Redirect Rules 에서 https://www.opennegolab.com 으로 301,
+       경로와 쿼리 유지
+     - Cloudflare 가 아니라면 : 그 DNS 업체의 넘겨주기(포워딩) 기능을 쓴다
   * 네임서버를 바꾸면 퍼지는 데 최대 하루 걸린다. 그동안 사이트가 끊길 수 있다
