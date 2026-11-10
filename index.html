@@ -491,8 +491,9 @@ footer{background:var(--dark-2);color:var(--on-dark-3);padding:40px 0;font-size:
 .fgrid{text-align:center}
 .fgrid strong{display:block;margin-bottom:14px;color:#fff;font-size:15px;font-weight:800;letter-spacing:-.3px}
 .fgrid p + p{margin-top:6px}
-.fslogan{margin-top:18px;padding:14px 26px 0;border-top:1px solid var(--line-d);
-         display:inline-block;color:var(--on-dark-2);font-weight:600}
+/* 구분선은 짧게 그리면 바로 위 줄 글자(메일 주소)의 밑줄처럼 보인다 — 폭을 넓게 둔다 */
+.fslogan{margin:22px auto 0;padding:16px 0 0;border-top:1px solid var(--line-d);
+         max-width:640px;color:var(--on-dark-2);font-weight:600}
 /* 구분선 — 글자가 아니라 선으로 그려야 굵기와 간격이 일정하다 */
 .fgrid i{display:inline-block;width:1px;height:11px;margin:0 14px;vertical-align:-1px;
          background:var(--on-dark-3);opacity:.5;font-style:normal;text-indent:-9999px;overflow:hidden}
