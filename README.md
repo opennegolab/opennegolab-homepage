@@ -10,6 +10,7 @@ www.opennegolab.com 에 올라가는 정적 사이트입니다.
 | `grade1-learning.html` | 초등 1학년 공부방 (별도 페이지, `/grade1-learning.html`) |
 | `baeumteo-icon.png` `baeumteo-og.png` | 위 페이지가 쓰는 이미지 |
 | `privacy.html` | 개인정보처리방침 (`/privacy` 로 열립니다) |
+| `chatgpt-plugin/` | 무료 ChatGPT 플러그인 안내 4쪽 — 소개(`/chatgpt-plugin/`)·`support.html`·`privacy.html`·`terms.html`. 추적 코드 없음 |
 | `stats.html` `stats.js` | 방문 통계 화면과 집계 (`/stats`) |
 | `typing/index.html` `typing/admin.html` | 초등학생용 타자 연습 (`/typing`) 과 문제 설정 화면 (`/typing/admin`) |
 | `typing/store.js` | 타자 연습의 채점·출제(브라우저 쪽)와 문제 불러오기 |

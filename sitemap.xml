@@ -8,7 +8,19 @@
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
-  <!-- /privacy 는 일부러 뺐다. 그 페이지는 noindex 라 검색에 올리지 않는데,
+  <url>
+    <loc>https://www.opennegolab.com/chatgpt-plugin/</loc>
+    <lastmod>2026-11-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.opennegolab.com/chatgpt-plugin/support.html</loc>
+    <lastmod>2026-11-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <!-- /privacy 는 일부러 뺐다. (플러그인 개인정보 안내·이용약관도 같은 이유로 뺐다) 그 페이지는 noindex 라 검색에 올리지 않는데,
        사이트맵에 넣으면 "가져가라"와 "올리지 마라"를 같이 말하는 셈이 된다.
        검색엔진 보고서에 계속 제외 항목으로 잡혀 진짜 문제를 가린다.
        푸터·문의 폼 링크로는 그대로 열리고, noindex 에 follow 를 붙여 뒀으므로
