@@ -62,8 +62,8 @@ function haruShareMeta(urlPath, title, description) {
 <meta property="og:image:alt" content="하루랑. 하루와 함께 세상 배우기. 손을 흔드는 하루 캐릭터.">`;
 }
 
-const HARU_TYPING_META = `<title>타자 연습 | 하루랑</title>
-${haruShareMeta("/haru/typing", "타자 연습", "하루랑에서 한글 타자와 받아쓰기를 무료로 연습해요.")}
+const HARU_TYPING_META = `<title>한글 공부 | 하루랑</title>
+${haruShareMeta("/haru/typing", "한글 공부", "하루랑에서 받아쓰기와 질문에 답하기로 한글을 공부해요.")}
 <meta name="theme-color" content="#fff8e9">
 <link rel="icon" href="/haru/assets/favicon.png">
 <link rel="manifest" href="/haru/manifest.webmanifest">
@@ -82,7 +82,7 @@ function haruTypingHeader(shared) {
 }
 
 const HARU_TYPING_HEADING = `<header class="haru-heading">
-  <div><h1>타자 연습</h1><p>잘 듣고, 또박또박 써 봐요.</p></div>
+  <div><h1>한글 공부</h1><p>잘 듣고, 또박또박 써 봐요.</p></div>
   <img class="haru-pose" src="/haru/assets/haru-guide.webp" alt="">
 </header>`;
 

@@ -10,10 +10,10 @@ www.opennegolab.com 에 올라가는 정적 사이트입니다.
 | `privacy.html` | 개인정보처리방침 (`/privacy` 로 열립니다) |
 | `chatgpt-plugin/` | 무료 ChatGPT 플러그인 안내 4쪽 — 소개(`/chatgpt-plugin/`)·`support.html`·`privacy.html`·`terms.html`. 추적 코드 없음 |
 | `stats.html` `stats.js` | 방문 통계 화면과 집계 (`/stats`) |
-| `typing/index.html` `typing/admin.html` | 초등학생용 타자 연습 (`/typing`) 과 문제 설정 화면 (`/typing/admin`) |
-| `typing/store.js` | 타자 연습의 채점·출제(브라우저 쪽)와 문제 불러오기 |
-| `typing-api.js` | 타자 연습의 문제집·문제 저장 (`/api/typing/…`) |
-| `hit.js` | 방문 기록을 서버로 보내는 조각. 홈페이지 페이지들만 불러갑니다. 하루랑(`/haru`)·타자 연습(`/typing`)·초등 공부방은 서버(`stats.js`)에서도 통계에서 뺍니다 |
+| `typing/index.html` `typing/admin.html` | 초등학생용 한글 공부 (`/typing`) 과 문제 설정 화면 (`/typing/admin`) |
+| `typing/store.js` | 한글 공부의 채점·출제(브라우저 쪽)와 문제 불러오기 |
+| `typing-api.js` | 한글 공부의 문제집·문제 저장 (`/api/typing/…`) |
+| `hit.js` | 방문 기록을 서버로 보내는 조각. 홈페이지 페이지들만 불러갑니다. 하루랑(`/haru`)·한글 공부(`/typing`)·초등 공부방은 서버(`stats.js`)에서도 통계에서 뺍니다 |
 | `robots.txt` `sitemap.xml` | 검색엔진 안내. 내용을 크게 고치면 sitemap 의 lastmod 를 갱신합니다 |
 | `favicon.ico` `favicon-*.png` | 파비콘. 512 원본에서 만든 것들이며 ico 에는 16·32·48 이 들어 있습니다 |
 | `server.js` | 이 폴더를 그대로 내보내는 정적 서버 + 문의 접수 라우트 |
@@ -119,9 +119,9 @@ IP 주소는 저장하지 않습니다. 날짜·IP·브라우저를 한 덩어�
 시뮬레이터 주소를 나중에 `sim.opennegolab.com` 등으로 바꾸면
 `index.html` 의 `SIMULATOR` 섹션 주석에 적힌 두 곳만 고치면 됩니다.
 
-## 타자 연습 — `/haru/typing`
+## 한글 공부 — `/haru/typing`
 
-하루랑에서 받아쓰기와 질문에 답하기를 연습합니다. 기존 `/typing` 주소는 하루랑 타자 연습으로 연결됩니다.
+하루랑에서 받아쓰기와 질문에 답하기를 연습합니다. 기존 `/typing` 주소는 하루랑 한글 공부로 연결됩니다.
 설치·회원가입 없이 바로 씁니다.
 
 - 문제는 **문제집**('오선빈 1', '김계란 1' …)으로 나눠 **서버에 저장**합니다.
