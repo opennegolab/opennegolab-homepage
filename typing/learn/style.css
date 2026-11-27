@@ -120,3 +120,50 @@ html[data-haru] {
 .pay-cash-summary span { padding: .5rem; background: var(--haru-mint); border-radius: var(--haru-radius); }
 .receipt-price { font-weight: 750; margin-left: auto; }
 .pay-notes .photo-card img { object-fit: contain; background: #f4f1e8; }
+
+.kiosk-progress {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem;
+  list-style: none; padding: .4rem; margin: 0 0 1.25rem;
+  border: 1px solid var(--line); border-radius: 1rem; background: var(--paper);
+}
+.kiosk-progress li { padding: .6rem .2rem; text-align: center; color: var(--haru-muted); font-weight: 750; }
+.kiosk-progress li.completed { color: var(--green); }
+.kiosk-progress [aria-current] { border-radius: .65rem; color: white; background: var(--green); }
+.kiosk-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(270px, 32%); gap: 1rem; align-items: start; }
+.kiosk-products .items { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.kiosk-products .card-copy small { color: var(--green); font-size: 1rem; font-weight: 800; }
+.kiosk-categories { margin-top: 0; }
+.kiosk-basket, .kiosk-ticket {
+  padding: 1rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--paper);
+}
+.kiosk-basket { position: sticky; top: .75rem; }
+.kiosk-basket h2, .kiosk-ticket h2 { margin: 0 0 .75rem; font-size: 1.2rem; }
+.kiosk-lines, .kiosk-ticket-items { list-style: none; margin: 0; padding: 0; }
+.kiosk-empty { padding: 1rem 0; color: var(--haru-muted); }
+.kiosk-line {
+  display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: .5rem; align-items: center;
+  padding: .7rem 0; border-bottom: 1px solid var(--line);
+}
+.kiosk-line > img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: .45rem; }
+.kiosk-line-copy { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .25rem .5rem; }
+.kiosk-stepper { grid-column: 1 / -1; display: flex; align-items: center; gap: .55rem; }
+.kiosk-stepper button { width: var(--haru-touch); padding: 0; font-size: 1.3rem; }
+.kiosk-total { margin: 1rem 0 .65rem; font-weight: 850; font-size: 1.25rem; }
+.kiosk-checkout { width: 100%; }
+.kiosk-checkout:disabled { background: #e6ebe4; color: var(--haru-muted); border-color: var(--line); cursor: default; }
+.kiosk-ticket { max-width: 34rem; }
+.kiosk-order-number { margin: 0 0 .75rem; color: var(--green); font-weight: 850; font-size: 1.65rem; }
+.kiosk-ticket-items { border-block: 1px dashed var(--line); padding-block: .4rem; }
+.kiosk-ticket-items li { display: flex; justify-content: space-between; gap: .5rem; padding-block: .35rem; }
+@media (max-width: 720px) {
+  .kiosk-layout { grid-template-columns: minmax(0, 1fr); }
+  .kiosk-basket { position: static; }
+  .kiosk-products .items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.kiosk-mobile-basket { display: none; }
+@media (max-width: 720px) {
+  .kiosk-mobile-basket {
+    display: block; position: sticky; top: .4rem; z-index: 1; text-align: left;
+    background: var(--haru-mint); border-color: var(--green);
+  }
+}
