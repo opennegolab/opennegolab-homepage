@@ -3,16 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <script>
-/* 카카오톡에서 링크를 열면 카톡 안 화면에서는 소리가 나지 않는다.
-   열자마자 휴대폰 기본 브라우저(크롬 등)로 다시 연다. 같은 창에서는 한 번만 시도해,
-   안 되더라도 계속 되풀이하지 않는다 (그때는 화면의 '크롬으로 열기' 버튼을 쓴다) */
 setTimeout(function () { document.documentElement.classList.add("ready"); }, 700);
-(function () {
-  if (!/KAKAOTALK/.test(navigator.userAgent) || /[?&]inapp=1(&|$)/.test(location.search)) return;
-  try { if (sessionStorage.getItem("typing.ext")) return; sessionStorage.setItem("typing.ext", "1"); } catch (e) {}
-  location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href);
-})();
 </script>
+<script defer src="/haru/external-browser.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <!-- 기존 학습 메타 시작 -->
 <title>하루랑 한글 공부</title>
@@ -638,7 +631,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     warn.textContent = w;
     /* 소리를 낼 수 없는 곳 — 대개 카카오톡·네이버 같은 앱 안에서 링크를 연 경우다.
        그 자리에서 크롬으로 다시 열 수 있게 버튼을 준다 */
-    if (!tts.ok || IN_APP) {
+    if (!tts.ok || (IN_APP && !document.querySelector(".haru-browser-notice"))) {
       const p = document.createElement("div");
       p.textContent = IN_APP
         ? (/KAKAOTALK/i.test(navigator.userAgent)
