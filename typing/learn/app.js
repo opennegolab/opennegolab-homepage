@@ -1,4 +1,4 @@
-import { bankContexts, bankProblems, banks, places, shopProblems, shops, tripContexts, tripProblems, trips } from './content.js?v=4';
+import { bankContexts, bankProblems, banks, places, shopProblems, shops, tripContexts, tripProblems, trips } from './content.js?v=5';
 import { notes, values as noteValues, total, won } from '/haru/money/currency.js?v=1';
 
 const app = document.querySelector('#app');
@@ -680,7 +680,8 @@ function render() {
     if (area) {
       heading(area.title, area.prompt, undefined, 'guide');
       if (area.id === 'kiosk') {
-        group('grid places kiosk-menu', ...places.slice(0, 4).map(([key, name, desc, image]) =>
+        const stores = places.filter(([key]) => key === 'mart' || Object.hasOwn(shops, key));
+        group('grid places kiosk-menu', ...stores.map(([key, name, desc, image]) =>
           card(name, image, () => startPlace(key), desc)));
       } else {
         group('grid places', ...placeChoices(area.id).map(([key, activity]) =>
