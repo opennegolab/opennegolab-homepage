@@ -204,8 +204,8 @@ function handle(req, res) {
 
   const normalizedPath = path.posix.normalize(urlPath).replace(/\/$/, "").toLowerCase();
   if (normalizedPath === "/grade1-learning" || normalizedPath === "/grade1-learning.html") {
-    res.writeHead(301, { Location: "/haru" });
-    return res.end();
+    res.writeHead(410, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-cache" });
+    return res.end("이 페이지는 종료되었습니다.");
   }
   if (normalizedPath === "/typing" || normalizedPath === "/typing/index.html") {
     res.writeHead(302, { Location: "/haru/typing", "Cache-Control": "no-cache" });

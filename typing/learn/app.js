@@ -13,6 +13,7 @@ const area = {
 
 if (area) {
   document.documentElement.setAttribute('data-haru', '');
+  document.querySelector('.haru-return').hidden = false;
 }
 
 const welcome = '어디에 가 볼까요? 가 보고 싶은 곳의 사진을 눌러요.';
