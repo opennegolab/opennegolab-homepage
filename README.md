@@ -7,8 +7,6 @@ www.opennegolab.com 에 올라가는 정적 사이트입니다.
 | 파일 | 내용 |
 |---|---|
 | `index.html` | 홈페이지 전체 (HTML·CSS·JS·이미지가 한 파일에) |
-| `grade1-learning.html` | 초등 1학년 공부방 (별도 페이지, `/grade1-learning.html`) |
-| `baeumteo-icon.png` `baeumteo-og.png` | 위 페이지가 쓰는 이미지 |
 | `privacy.html` | 개인정보처리방침 (`/privacy` 로 열립니다) |
 | `chatgpt-plugin/` | 무료 ChatGPT 플러그인 안내 4쪽 — 소개(`/chatgpt-plugin/`)·`support.html`·`privacy.html`·`terms.html`. 추적 코드 없음 |
 | `stats.html` `stats.js` | 방문 통계 화면과 집계 (`/stats`) |

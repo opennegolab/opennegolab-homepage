@@ -74,7 +74,7 @@ typing/
   icon-32/64/180/192.png  전용 아이콘
 
 (홈페이지 쪽 — 타자연습과 별개)
-index.html privacy.html grade1-learning.html chatgpt-plugin/  홈페이지 화면
+index.html privacy.html haru/ chatgpt-plugin/  홈페이지 화면
 inquiry.js stats.js stats.html hit.js                        문의 메일·방문 통계
 ```
 

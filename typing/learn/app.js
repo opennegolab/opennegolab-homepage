@@ -4,7 +4,6 @@ import { speak } from './speech.js?v=1';
 const app = document.querySelector('#app');
 const back = document.querySelector('#back');
 const home = document.querySelector('#home');
-const room = document.querySelector('.room');
 const voiceStatus = document.querySelector('#voice-status');
 const area = {
   '/haru/kiosk': { id: 'kiosk', title: '키오스크', prompt: '어느 가게에서 주문해 볼까요?' },
@@ -327,7 +326,6 @@ function render() {
   app.classList.toggle('kiosk-session', area?.id === 'kiosk' && Boolean(shops[id]));
   back.hidden = trail.length === 0;
   home.hidden = view === 'home';
-  room.hidden = Boolean(area) || view !== 'home';
   if (view === 'home') {
     if (area) {
       heading(area.title, area.prompt, undefined, 'guide');
