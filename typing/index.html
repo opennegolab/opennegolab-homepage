@@ -763,7 +763,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     $("stage").innerHTML = qa
       ? "<span class='qtag qa'>" + icon("chat") + "질문에 답하기</span>" +
         "<div class='question'>" + esc(item.question) + "</div>" +
-        "<button type='button' class='listen listen-pill' id='listenBtn'>" + icon("speaker") + "질문 다시 듣기</button>"
+        "<button type='button' class='listen listen-pill' id='listenBtn'>" + icon("speaker") + "질문 듣기</button>"
       : "<span class='qtag'>" + icon("headphones") + "받아쓰기</span>" +
         "<button type='button' class='listen listen-big' id='listenBtn' aria-label='다시 듣기'>" + icon("speaker") + "</button>" +
         "<div class='listen-cap'>눌러서 다시 듣기</div><div class='hint'>잘 듣고 그대로 써 보세요</div>";
@@ -775,7 +775,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     S.phase = "answer";
     S.fbAt = 0;
 
-    tts.speak(item.prompt);
+    if (!qa) tts.speak(item.prompt);
   }
 
   function replay() {
