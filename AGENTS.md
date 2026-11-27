@@ -65,7 +65,7 @@ server.js            정적 파일 서버 + 라우트. 타자연습 관련:
                        /typing, /typing/admin → typing/index.html, typing/admin.html
                        /typing 은 /haru/typing 으로 이동
                        HIDDEN: 사이트에 내보내지 않을 파일 목록
-typing-api.js        타자연습 서버 — 문제집·문제 저장 API, 표 만들기(prepare), 한 번만 넣는 문제집(ONCE)
+typing-api.js        타자연습 서버 — 문제집·문제 저장 API, 표 만들기(prepare), 공개 기본 문제집
 typing/
   index.html         학습 화면 (한 파일, 약 1100줄): 처음 화면 → 문제 풀기 → 결과
   admin.html         문제 설정 화면: 문제집 만들기·이름 바꾸기·삭제, 문제 등록·수정·삭제·검색·페이지
@@ -118,14 +118,15 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
   - 여러 문제: 한 줄에 하나. 질문은 `질문 / 정답 / 다른 정답` (엑셀 탭 구분도 됨)
   - 허용 정답은 `/` 로 구분, 정답 칸에서 Enter 로 바로 등록
 - 목록: 최신순, 10개씩 페이지, 검색, 수정·삭제·선택 삭제(확인 창)
-- **보호자 로그인** — 계정별로 소유한 문제집과 맞춤 링크를 관리. 이전 데이터는 `operator` 로그인(`TYPING_ADMIN_PASSWORD`)에서 관리
+- **보호자 로그인** — 계정별로 소유한 문제집과 맞춤 링크를 관리. 소유자가 없는 이전 데이터는 앱에서 제외
 
 ### 6-3. 서버 `typing-api.js`
 
 - **표** (서버가 처음 DB 에 붙을 때 `prepare()` 가 만듦):
   - `typing_sets(id, name, created_at)` — 문제집, 이름 중복 불가(대소문자 무시)
   - `typing_items(id, set_id, mode, prompt, answers JSONB, created_at, updated_at)` — 문제. 문제집 삭제 시 함께 삭제
-  - `typing_meta(key, done_at)` — '한 번만 하는 일'을 했다는 기록
+  - `typing_guardians` — 보호자 계정 및 비밀번호 해시
+  - `typing_practice_links` — 보호자 맞춤 연습 링크
 - **API** (`/api/typing/…`, JSON)
 
   | 요청 | 하는 일 |
@@ -139,7 +140,7 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
 
 - 변경 요청 보호: 다른 사이트 Origin 거절, JSON 만 받음, IP 당 1분 60회 제한, 보호자 세션 필요
 - `DATABASE_URL` 이 없으면 **메모리 모드**(재시작하면 사라짐, 문제 설정 화면에 경고)
-- **기본 문제집** (`ONCE` 목록, 배포 후 처음 켜질 때 한 번만 넣고 `typing_meta` 에 기록 → 지워도 다시 안 생김):
+- **공개 기본 문제집** (코드에 정의된 읽기 전용 자료):
   `예시 문제집`, `한자리 산수`(질문 30), `낱말 받아쓰기`(받아쓰기 50)
 
 ## 7. 로컬 실행·확인
@@ -185,7 +186,7 @@ node --check server.js typing-api.js typing/store.js
 6. **서버는 폴더를 그대로 내보냅니다** — 새 내부 파일(메모·스크립트·서버 코드)은 `server.js` 의 `HIDDEN` 에
    **소문자 경로**로 추가해야 사이트에 노출되지 않습니다
 7. **운영 DB 에 실제 문제가 있습니다** — 표를 바꿀 때는 기존 데이터를 지우지 않게(`ADD COLUMN IF NOT EXISTS` 등) `prepare()` 에서 처리
-8. **기본 데이터 추가는 `ONCE` 에 새 `key` 로** — 이미 넣은 항목을 고쳐도 다시 안 들어갑니다. 바꿀 때는 별도 한 번짜리 처리(`fix:arith-symbols` 참고)
+8. **공개 기본 문제** — `typing-api.js`의 공개 기본 목록을 수정합니다. 보호자 문제집은 별도 저장소를 사용합니다.
 9. **캐시** — 서버가 `.js`·이미지를 하루 캐시합니다. `typing/store.js` 를 고치면 두 HTML 의 `store.js?v=N` 숫자를 올리세요
 10. **휴대폰** — 갤럭시(삼성 인터넷·크롬)가 주 사용 기기. 키보드가 입력칸을 가리지 않게(`body.kbd`), 버튼 누를 때 입력칸 포커스 유지,
     안드로이드 음성은 목소리 지정 금지, 카카오톡 안에서는 음성이 안 됨

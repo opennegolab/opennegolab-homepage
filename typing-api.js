@@ -10,7 +10,7 @@
 
    저장
      DATABASE_URL 이 있으면 PostgreSQL 의 typing_sets·typing_items 표에 둔다
-     (통계·시뮬레이터가 쓰는 그 DB). 표는 처음 붙을 때 만들고 예시 문제를 넣는다.
+     (통계·시뮬레이터가 쓰는 그 DB). 표는 처음 붙을 때 만든다.
      없으면 서버 메모리에만 담는다 — 재배포하면 사라지므로 문제 설정 화면에 경고를 띄운다.
      DATABASE_URL 이 있는데 연결이 안 되면 메모리로 떨어지지 않고 오류를 낸다.
      넣은 문제가 조용히 메모리에만 들어갔다가 사라지면 안 되기 때문이다.
@@ -59,12 +59,9 @@ const SAMPLES = {
   ],
 };
 
-/* 한 번만 넣는 문제집 — 배포 후 처음 켜질 때 넣고, typing_meta 에 넣었다고 적어 둔다.
-   그래서 나중에 지워도 다시 생기지 않는다. 문제는 기호로 쓰고('9 + 6 = ?'), 읽을 때만 말로 바꾼다. 같은 이름의 문제집이 이미 있으면 거기에 더하고,
-   이미 있는 문제는 건너뛴다 */
-const ONCE = [
+/* 공개 연습에 제공하는 기본 문제집입니다. */
+const DEFAULT_EXERCISES = [
   {
-    key: "set:arith-1digit-v1",
     name: "한자리 산수",
     qa: [
       ["1 + 8 = ?", ["9"]],
@@ -100,7 +97,6 @@ const ONCE = [
     ],
   },
   {
-    key: "set:words-v1",
     name: "낱말 받아쓰기",
     /* 과일·채소·탈것 이름 50개 (무작위 순서) */
     dictation: [
@@ -121,59 +117,6 @@ function seedItems(seed) {
   ];
 }
 
-async function seedOnce(p) {
-  await p.query(`CREATE TABLE IF NOT EXISTS typing_meta (key TEXT PRIMARY KEY, done_at TIMESTAMPTZ NOT NULL DEFAULT now())`);
-  /* '한자리 산수' 첫 배포 때는 '9 더하기 6은?' 처럼 말로 넣었다 — 기호('9 + 6 = ?')로 한 번 바꾼다 */
-  if (!(await p.query(`SELECT 1 FROM typing_meta WHERE key = 'fix:arith-symbols'`)).rows.length) {
-    const r = await p.query(`
-      UPDATE typing_items i SET
-        prompt = regexp_replace(regexp_replace(i.prompt, '^([0-9]) 더하기 ([0-9])(은|는)[?]$', '\\1 + \\2 = ?'),
-                                '^([0-9]) 빼기 ([0-9])(은|는)[?]$', '\\1 - \\2 = ?'),
-        updated_at = now()
-      FROM typing_sets s
-      WHERE s.id = i.set_id AND s.name = '한자리 산수' AND s.owner IS NULL AND i.mode = 'qa'
-        AND i.prompt ~ '^[0-9] (더하기|빼기) [0-9](은|는)[?]$'`);
-    await p.query(`INSERT INTO typing_meta (key) VALUES ('fix:arith-symbols') ON CONFLICT DO NOTHING`);
-    if (r.rowCount) console.log("타자 연습: '한자리 산수' " + r.rowCount + "문제를 기호 표기로 바꿨다");
-  }
-  for (const seed of ONCE) {
-    const done = (await p.query(`SELECT 1 FROM typing_meta WHERE key = $1`, [seed.key])).rows.length;
-    if (done) continue;
-    const client = await p.connect();
-    try {
-      await client.query("BEGIN");
-      const found = (await client.query(`SELECT id FROM typing_sets WHERE owner IS NULL AND lower(name) = lower($1)`, [seed.name])).rows[0];
-      const set = found ? found.id : (await client.query(`INSERT INTO typing_sets (name) VALUES ($1) RETURNING id`, [seed.name])).rows[0].id;
-      const have = new Set((await client.query(`SELECT mode || ':' || prompt AS k FROM typing_items WHERE set_id = $1`, [set])).rows.map(r => r.k));
-      let n = 0;
-      for (const x of seedItems(seed)) {
-        if (have.has(x.mode + ":" + x.prompt)) continue;
-        await client.query(`INSERT INTO typing_items (set_id, mode, prompt, answers) VALUES ($1, $2, $3, $4)`, [set, x.mode, x.prompt, JSON.stringify(x.answers)]);
-        n++;
-      }
-      await client.query(`INSERT INTO typing_meta (key) VALUES ($1) ON CONFLICT DO NOTHING`, [seed.key]);
-      await client.query("COMMIT");
-      console.log(`타자 연습: '${seed.name}' 문제집에 ${n}문제를 넣었다`);
-    } catch (e) {
-      try { await client.query("ROLLBACK"); } catch {}
-      console.error("타자 연습: 문제집 넣기 실패 —", e && e.message);
-    } finally { client.release(); }
-  }
-}
-
-function seedMemory() {
-  const now = new Date().toISOString();
-  const set = { id: ++memory.setSeq, name: SAMPLE_SET, created_at: now };
-  memory.sets.push(set);
-  for (const t of SAMPLES.dictation) memory.items.push({ id: ++memory.seq, set_id: set.id, mode: "dictation", prompt: t, answers: [], created_at: now, updated_at: now });
-  for (const [q, a] of SAMPLES.qa) memory.items.push({ id: ++memory.seq, set_id: set.id, mode: "qa", prompt: q, answers: a, created_at: now, updated_at: now });
-  for (const seed of ONCE) {
-    const st = { id: ++memory.setSeq, name: seed.name, created_at: now };
-    memory.sets.push(st);
-    for (const x of seedItems(seed)) memory.items.push({ id: ++memory.seq, set_id: st.id, mode: x.mode, prompt: x.prompt, answers: x.answers, created_at: now, updated_at: now });
-  }
-}
-
 function makePool(useSsl) {
   const { Pool } = require("pg");
   const p = new Pool({
@@ -190,7 +133,6 @@ function makePool(useSsl) {
    typing_sets  — 문제집 ('오선빈 1', '김계란 1' …)
    typing_items — 문제. 어느 문제집에 속하는지 set_id 로 안다. 문제집을 지우면 문제도 같이 지워진다 */
 async function prepare(p) {
-  const fresh = !(await p.query(`SELECT to_regclass('typing_items') AS t`)).rows[0].t;
   await p.query(`
     CREATE TABLE IF NOT EXISTS typing_sets (
       id         BIGSERIAL PRIMARY KEY,
@@ -224,28 +166,6 @@ async function prepare(p) {
     count TEXT NOT NULL,
     active BOOLEAN NOT NULL DEFAULT TRUE
   )`);
-
-  if (fresh) {
-    /* 표를 처음 만든 때만 예시 문제집을 넣는다. 지운 뒤 다시 생기면 안 된다 */
-    const set = (await p.query(`INSERT INTO typing_sets (name) VALUES ($1) RETURNING id`, [SAMPLE_SET])).rows[0].id;
-    for (const t of SAMPLES.dictation) {
-      await p.query(`INSERT INTO typing_items (set_id, mode, prompt) VALUES ($1, 'dictation', $2)`, [set, t]);
-    }
-    for (const [q, a] of SAMPLES.qa) {
-      await p.query(`INSERT INTO typing_items (set_id, mode, prompt, answers) VALUES ($1, 'qa', $2, $3)`, [set, q, JSON.stringify(a)]);
-    }
-    console.log("타자 연습: 문제 표를 만들고 예시 문제집을 넣었다");
-  } else {
-    /* 문제집이 없던 때 넣은 문제는 '기본 문제집'으로 옮긴다 */
-    const orphan = (await p.query(`SELECT count(*)::int AS n FROM typing_items WHERE set_id IS NULL`)).rows[0].n;
-    if (orphan) {
-      const found = (await p.query(`SELECT id FROM typing_sets WHERE lower(name) = lower($1)`, ["기본 문제집"])).rows[0];
-      const set = found ? found.id : (await p.query(`INSERT INTO typing_sets (name) VALUES ($1) RETURNING id`, ["기본 문제집"])).rows[0].id;
-      await p.query(`UPDATE typing_items SET set_id = $1 WHERE set_id IS NULL`, [set]);
-      console.log("타자 연습: 문제집 없이 있던 문제 " + orphan + "개를 '기본 문제집'으로 옮겼다");
-    }
-  }
-  await seedOnce(p);
 }
 
 async function connect() {
@@ -552,11 +472,11 @@ const practiceLinks = new Map();
 async function practiceRows(token, owner) {
   if (!usingDb()) {
     return [...practiceLinks.values()].filter(link =>
-      (!token || link.token === token) && memory.sets.some(set => set.id === Number(link.set_id) && (owner === undefined || (set.owner ?? null) === owner)));
+      (!token || link.token === token) && memory.sets.some(set => set.id === Number(link.set_id) && set.owner && (owner === undefined || (set.owner ?? null) === owner)));
   }
   const p = await db();
   return (await p.query(`SELECT l.* FROM typing_practice_links l JOIN typing_sets s ON s.id = l.set_id
-    WHERE ($1::text IS NULL OR l.token = $1) AND ($2::boolean OR s.owner IS NOT DISTINCT FROM $3::text)
+    WHERE s.owner IS NOT NULL AND ($1::text IS NULL OR l.token = $1) AND ($2::boolean OR s.owner IS NOT DISTINCT FROM $3::text)
     ORDER BY l.label, l.token`, [token || null, owner === undefined, owner ?? null])).rows;
 }
 
@@ -642,13 +562,11 @@ async function route(req, res, urlPath) {
       throw new BadRequest("아이디는 영문, 숫자, 밑줄 4~24자, 비밀번호는 12~128자로 입력해 주세요.");
     }
     if (sub === "/register") {
-      if (username === "operator" || !await registerGuardian(username, password)) {
+      if (!await registerGuardian(username, password)) {
         return send(res, 409, { ok: false, message: "사용할 수 없는 아이디입니다." });
       }
     } else {
-      const valid = username === "operator"
-        ? auth.operatorPassword(password)
-        : await auth.checkPassword(password, await guardianHash(username));
+      const valid = await auth.checkPassword(password, await guardianHash(username));
       if (!valid) return send(res, 401, { ok: false, message: "아이디와 비밀번호를 확인해 주세요." });
     }
     return send(res, 200, { ok: true }, { "Set-Cookie": auth.signIn(req, username) });
@@ -657,9 +575,8 @@ async function route(req, res, urlPath) {
     return send(res, 200, { ok: true }, { "Set-Cookie": auth.signOut(req) });
   }
   const linkId = /^\/practice-links\/([a-f0-9]{48})$/.exec(sub);
-  const username = auth.user(req);
-  if (!username) return send(res, 401, { ok: false, message: "보호자 로그인이 필요해요." });
-  const owner = username === "operator" ? null : username;
+  const owner = auth.user(req);
+  if (!owner) return send(res, 401, { ok: false, message: "보호자 로그인이 필요해요." });
   if (sub === "/practice-links" && method === "GET") {
     return send(res, 200, { ok: true, links: await practiceRows(undefined, owner) });
   }
@@ -766,15 +683,13 @@ async function route(req, res, urlPath) {
 /* 서버가 뜰 때 DB 를 미리 붙여 둔다 (첫 사람이 기다리지 않게) */
 function warmUp() {
   if (usingDb()) db().catch(() => {});
-  else { seedMemory(); console.log("타자 연습: DATABASE_URL 이 없어 메모리에 예시 문제를 담았다"); }
 }
 
 /* 하루랑 공개 문제는 코드에 포함된 기본 문제만 읽습니다.
    운영 문제집, 메모리 저장소, 데이터베이스 어느 쪽에도 접근하지 않습니다. */
 const publicSeeds = [
   { name: SAMPLE_SET, ...SAMPLES },
-  ONCE.find(seed => seed.key === "set:arith-1digit-v1"),
-  ONCE.find(seed => seed.key === "set:words-v1"),
+  ...DEFAULT_EXERCISES,
 ];
 const publicSets = publicSeeds.map((seed, index) => {
   const id = index + 1;

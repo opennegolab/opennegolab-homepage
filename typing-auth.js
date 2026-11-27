@@ -1,11 +1,9 @@
 const { promisify } = require("node:util");
-const { createHash, randomBytes, timingSafeEqual, scrypt } = require("node:crypto");
+const { randomBytes, timingSafeEqual, scrypt } = require("node:crypto");
 
 const lifetime = 8 * 60 * 60;
 const sessions = new Map();
 const cookieName = "typing_guardian";
-const password = process.env.TYPING_ADMIN_PASSWORD || "";
-const digest = value => createHash("sha256").update(value).digest();
 
 function token(req) {
   return (req.headers.cookie || "").match(/(?:^|;\s*)typing_guardian=([a-f0-9]{64})(?:;|$)/)?.[1];
@@ -33,10 +31,6 @@ async function checkPassword(input, hash) {
   return Boolean(hash) && match;
 }
 
-function operatorPassword(input) {
-  return password.length >= 12 && timingSafeEqual(digest(input), digest(password));
-}
-
 function cookie(req, value, age) {
   const local = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(req.headers.host || "");
   return `${cookieName}=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${age}${local ? "" : "; Secure"}`;
@@ -56,4 +50,4 @@ function signOut(req) {
   return cookie(req, "", 0);
 }
 
-module.exports = { authorized, user, signIn, signOut, hashPassword, checkPassword, operatorPassword };
+module.exports = { authorized, user, signIn, signOut, hashPassword, checkPassword };
