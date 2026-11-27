@@ -1,4 +1,4 @@
-import { showSpeechHelp, speak } from '/typing/learn/speech.js?v=2';
+import { showSpeechHelp, speak, stopSpeech } from '/typing/learn/speech.js?v=2';
 
 import { notes, values, won, total } from './currency.js?v=1';
 
@@ -89,7 +89,11 @@ function draw(focus = false) {
   else showWallet();
   if (focus) {
     app.querySelector('h1').focus();
-    announce(narration);
+    if (page === 'compare' || page === 'build') announce(narration);
+    else {
+      stopSpeech();
+      voiceStatus.hidden = true;
+    }
   }
 }
 
@@ -99,9 +103,9 @@ function messageLine() {
   return line;
 }
 
-function respond(line, message) {
+function respond(line, message, spoken = message) {
   line.textContent = message;
-  announce(message);
+  announce(spoken);
 }
 
 function noteCard(value, action, prefix = '') {
@@ -116,7 +120,7 @@ function showNotes() {
   const grid = element('div', '', 'grid money-menu');
   const status = messageLine();
   for (const value of values) {
-    grid.append(noteCard(value, () => respond(status, won(value) + ' 지폐 한 장이에요. ' + notes[value].spoken + '.')));
+    grid.append(noteCard(value, () => respond(status, won(value) + ' 지폐 한 장이에요. ' + notes[value].spoken + '.', notes[value].spoken + '.')));
   }
   app.append(grid, status);
 }
@@ -139,12 +143,12 @@ function showComparison() {
   function check(choice) {
     if (choice === correct) {
       respond(status, correct === 2 ? '맞아요. 지폐 장수가 달라도 둘 다 ' + won(sums[0]) + '이에요.'
-        : '맞아요. ' + won(sums[choice]) + '이 ' + won(sums[1 - choice]) + '보다 ' + (larger ? '커요.' : '작아요.'));
+        : '맞아요. ' + won(sums[choice]) + '이 ' + won(sums[1 - choice]) + '보다 ' + (larger ? '커요.' : '작아요.'), correct === 2 ? '두 금액이 같아요.' : '맞아요.');
       for (const control of choices.querySelectorAll('button')) control.disabled = true;
       advance.hidden = false;
       advance.focus();
     } else {
-      respond(status, '두 쪽에 적힌 금액을 다시 비교해 보세요. 지폐 장수만으로 금액을 알 수 없어요.');
+      respond(status, '두 쪽에 적힌 금액을 다시 비교해 보세요. 지폐 장수만으로 금액을 알 수 없어요.', '금액을 다시 비교해 보세요.');
     }
   }
   for (const [side, notesToShow] of [left, right].entries()) {
@@ -172,12 +176,13 @@ function showWallet() {
   const check = button('금액 확인', () => {
     const sum = total(wallet);
     if (sum === target) {
-      respond(status, '맞아요. ' + won(target) + '을 만들었어요!');
+      respond(status, '맞아요. ' + won(target) + '을 만들었어요!', '맞아요.');
       for (const control of [...choices.querySelectorAll('button'), ...selected.querySelectorAll('button'), check]) control.disabled = true;
       advance.hidden = false;
       advance.focus();
     } else {
-      respond(status, '지금은 ' + won(sum) + '이에요. ' + (sum < target ? '지폐를 더 담아 볼까요?' : '지폐를 빼 볼까요?'));
+      const hint = sum < target ? '지폐를 더 담아 볼까요?' : '지폐를 빼 볼까요?';
+      respond(status, '지금은 ' + won(sum) + '이에요. ' + hint, hint);
     }
   }, 'primary');
   function update() {

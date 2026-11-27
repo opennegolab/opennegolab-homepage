@@ -1,5 +1,5 @@
 import { bankContexts, bankProblems, banks, places, shopProblems, shops, tripContexts, tripProblems, trips } from './content.js?v=3';
-import { showSpeechHelp, speak } from './speech.js?v=2';
+import { showSpeechHelp, speak, stopSpeech } from './speech.js?v=2';
 import { notes, values as noteValues, total, won } from '/haru/money/currency.js?v=1';
 
 const app = document.querySelector('#app');
@@ -22,19 +22,25 @@ let state = { view: 'home' };
 let trail = [];
 let narration;
 
+const quietViews = new Set(['home', 'places', 'entrance', 'items', 'cart']);
+
 function say(text) {
-  narration = text;
   voiceStatus.hidden = true;
   speak(text, () => showSpeechHelp(voiceStatus));
 }
 
-function show(next, remember = true, confirmation = "") {
+function show(next, remember = true) {
   if (remember) trail.push(state);
   state = next;
-  const text = render();
+  narration = render();
   app.querySelector('h1').focus({ preventScroll: true });
   window.scrollTo(0, 0);
-  say(confirmation + text);
+  if (quietViews.has(state.view)) {
+    stopSpeech();
+    voiceStatus.hidden = true;
+  } else {
+    say(narration);
+  }
 }
 
 function previous() {
@@ -161,7 +167,7 @@ function problemScreen() {
   group('controls', button('문제 풀기', () => {
     show({ ...state, view: state.activity ? 'action' : 'entrance' });
   }, true));
-  return state.goal + ' 준비되면 문제 풀기를 눌러요.';
+  return state.goal;
 }
 
 function showProblemGoal() {
@@ -171,10 +177,10 @@ function showProblemGoal() {
   app.append(card);
 }
 
-function feedback(message) {
+function feedback(message, spoken = message) {
   const status = app.querySelector('.problem-feedback');
   status.textContent = message;
-  say(message);
+  say(spoken);
 }
 
 function feedbackLine() {
@@ -188,8 +194,8 @@ function submitCart() {
   const extra = cart.find(line => !target.some(goal => goal.item === line.item));
   const missing = target.find(goal => !cart.some(line => line.item === goal.item));
   const different = cart.find(line => target.some(goal => goal.item === line.item && goal.count !== line.count));
-  if (extra) return feedback('문제에 없는 물건이 담겼어요. ' + extra.item.name + ' 옆의 빼기를 눌러 보세요.');
-  if (missing) return feedback('아직 담지 않은 물건이 있어요. 문제와 고른 목록을 비교해 보세요.');
+  if (extra) return feedback('문제에 없는 물건이 담겼어요. ' + extra.item.name + ' 옆의 빼기를 눌러 보세요.', '문제에 없는 물건을 빼 보세요.');
+  if (missing) return feedback('아직 담지 않은 물건이 있어요. 문제와 고른 목록을 비교해 보세요.', '빠진 물건을 담아 보세요.');
   if (different) return feedback(different.item.name + '의 수량을 문제와 비교해 보세요.');
   changeShop('pay-method');
 }
@@ -243,7 +249,7 @@ function paymentScreen(shop) {
     group('grid actions',
       card('현금으로 결제', 'bank-6', () => changeShop('cash', { cash: [] })),
       card('카드로 결제', 'bank-7', () => changeShop('card')));
-    return prompt;
+    return won(due) + '이에요. 결제 방법을 골라요.';
   }
   if (view === 'card') {
     const prompt = '낼 금액은 ' + won(due) + '이에요. 연습용 카드를 단말기에 대 보세요.';
@@ -251,7 +257,7 @@ function paymentScreen(shop) {
     group('single action', card('카드 대기', 'taxi-6', () => {
       changeShop('receive', { payment: { method: '카드', tendered: due, change: 0 } });
     }));
-    return prompt;
+    return '카드를 단말기에 대 보세요.';
   }
   if (view === 'change') {
     const prompt = won(payment.tendered) + '을 냈어요. 거스름돈 ' + won(payment.change) + '을 받아요.';
@@ -265,7 +271,7 @@ function paymentScreen(shop) {
     }
     app.append(returned);
     group('single action', card('거스름돈 받기', 'bank-6', () => changeShop('receive')));
-    return prompt;
+    return '거스름돈 ' + won(payment.change) + '을 받아요.';
   }
 
   const prompt = '낼 금액은 ' + won(due) + '이에요. 낼 지폐를 골라 보세요.';
@@ -288,7 +294,7 @@ function paymentScreen(shop) {
   group('controls', button('현금 내기', () => {
     const tendered = total(state.cash);
     if (tendered < due) {
-      feedback(won(due - tendered) + '이 더 필요해요. 지폐를 더 담아 보세요.');
+      feedback(won(due - tendered) + '이 더 필요해요. 지폐를 더 담아 보세요.', won(due - tendered) + '이 더 필요해요.');
       return;
     }
     const change = tendered - due;
@@ -313,7 +319,7 @@ function paymentScreen(shop) {
     if (focusValue && !state.cash.includes(focusValue)) choices.querySelector('button').focus();
   }
   updateCash();
-  return prompt;
+  return won(due) + '을 내 보세요.';
 }
 
 function receipt(cart, editable) {
@@ -354,7 +360,7 @@ function shopScreen(shop) {
     const label = menu ? '메뉴판 보기' : '진열대 보기';
     heading(shop.name, prompt);
     group('single', card(label, shop.image, () => changeShop('items')));
-    return prompt + ' 사진을 눌러 ' + (menu ? '메뉴판을 봐요.' : '진열대를 봐요.');
+    return menu ? '메뉴판을 봐요.' : '진열대를 봐요.';
   }
   if (view === 'items') {
     heading(shop.name, shop.prompt);
@@ -371,7 +377,7 @@ function shopScreen(shop) {
       changeShop('quantity', { item: product, count: oldCount ?? 1 });
     }, won(product.price))));
     if (cart.length) group('controls', button(shop.container + ' 보기', () => changeShop('cart', { notice: '' })));
-    return shop.groups.length > 1 ? shop.groups[category][0] + '. ' + shop.prompt : shop.prompt;
+    return shop.prompt;
   }
   if (view === 'quantity') {
     const prompt = '몇 ' + item.unit + (menu ? ' 주문할까요?' : ' 살까요?');
@@ -384,15 +390,14 @@ function shopScreen(shop) {
       return choice;
     });
     group('quantities', ...numbers);
-    const last = item.name.charCodeAt(item.name.length - 1) - 0xAC00;
-    return item.name + (last % 28 ? '을' : '를') + ' 골랐어요. ' + prompt;
+    return prompt;
   }
   if (view === 'confirm') {
     const label = wording(item, count);
     heading(label, label + ' 주세요.', shop.name);
     group('quantity-photo', repeated(item, count));
     group('controls', card(shop.add, shop.containerImage, saveQuantity));
-    return label + ' 골랐어요. ' + label + ' 주세요. ' + shop.add + ' 사진을 눌러요.';
+    return label + ' 담아 보세요.';
   }
   if (view === 'cart') {
     const prompt = cart.length ? shop.confirm : '아직 고른 것이 없어요.';
@@ -401,9 +406,7 @@ function shopScreen(shop) {
     feedbackLine();
     const actions = [button(shop.more, () => changeShop('items', { notice: '' })), button(shop.submit, submitCart, true)];
     group('controls', ...actions);
-    return (notice ? notice + ' ' : '') + prompt + (cart.length
-      ? ' 더 고르거나 ' + (menu ? '주문할 수 있어요.' : '구매할 수 있어요.')
-      : ' 더 고르기를 눌러요.');
+    return prompt;
   }
   if (['pay-method', 'cash', 'card', 'change'].includes(view)) return paymentScreen(shop);
   if (view === 'receive') {
@@ -412,7 +415,7 @@ function shopScreen(shop) {
     heading('결제했어요', text, shop.name);
     receipt(cart, false);
     group('controls', button(shop.receive, () => changeShop('shop-done'), true));
-    return text + ' 이제 ' + (menu ? '주문한 메뉴를' : '산 물건을') + ' 받아요.';
+    return menu ? '주문한 메뉴를 받아요.' : '산 물건을 받아요.';
   }
   heading('문제를 해결했어요', shop.done, shop.name, 'cheer');
   receipt(cart, false);
@@ -423,7 +426,7 @@ function shopScreen(shop) {
   } : reset;
   const next = (state.problemIndex + 1) % shopProblems[id].length;
   finishActions(() => restartShop(id, state.problemIndex), other, () => restartShop(id, next));
-  return '문제에 맞게 골랐어요. ' + shop.done + ' ' + cart.map(line => wording(line.item, line.count) + ' 받았어요.').join(' ');
+  return '문제를 해결했어요.';
 }
 
 function activityScreen() {
@@ -473,18 +476,18 @@ function activityScreen() {
   const ordered = options.slice(offset).concat(options.slice(0, offset));
   const choices = ordered.map(option => card(option.label, option.image, () => {
     if (option.next === undefined) {
-      feedback(option.hint || '아직 그 순서가 아니에요. ' + scene.prompt);
+      feedback(option.hint || '아직 그 순서가 아니에요. ' + scene.prompt, scene.prompt);
       return;
     }
     if (step === 'choice' && option.values.deposit !== state.target.deposit) {
-      feedback('문제에서 돈을 넣으라고 했나요, 꺼내라고 했나요? 다시 골라 보세요.');
+      feedback('문제에서 돈을 넣으라고 했나요, 꺼내라고 했나요? 다시 골라 보세요.', '입금인지 출금인지 다시 확인해요.');
       return;
     }
     if (step === 'amount' && option.values.amount !== state.target.amount) {
-      feedback('문제에 나온 금액을 다시 확인하고 골라 보세요.');
+      feedback('문제에 나온 금액을 다시 확인하고 골라 보세요.', '문제의 금액을 다시 봐요.');
       return;
     }
-    show({ ...state, step: option.next, values: { ...values, ...option.values } }, true, scene.prompt + ' ');
+    show({ ...state, step: option.next, values: { ...values, ...option.values } });
   }));
   group('grid actions', ...choices);
   feedbackLine();
