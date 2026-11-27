@@ -1,5 +1,6 @@
 import { showSpeechHelp, speak, stopSpeech } from '/typing/learn/speech.js?v=2';
 
+import { randomQuestion } from '/haru/questions.js?v=1';
 import { notes, values, won, total } from './currency.js?v=1';
 
 const comparisons = [
@@ -20,7 +21,7 @@ const app = document.querySelector('#money-app');
 const back = document.querySelector('#money-back');
 const voiceStatus = document.querySelector('#voice-status');
 let page = 'home';
-let index = 0;
+let question;
 let wallet = [];
 
 function element(tag, text = '', className = '') {
@@ -64,7 +65,7 @@ function heading(title, prompt) {
 
 function open(next) {
   page = next;
-  index = 0;
+  question = next === 'compare' ? randomQuestion(comparisons) : next === 'build' ? randomQuestion(targets) : undefined;
   draw(true);
 }
 
@@ -89,6 +90,7 @@ function draw(focus = false) {
     stopSpeech();
     voiceStatus.hidden = true;
     app.querySelector('h1').focus();
+    if (question !== undefined) announce(app.querySelector('.prompt').textContent);
   }
 }
 
@@ -118,20 +120,20 @@ function showNotes() {
   app.append(grid, status);
 }
 
-function next(limit) {
-  index = (index + 1) % limit;
+function next(questions) {
+  question = randomQuestion(questions, question);
   draw(true);
 }
 
 function showComparison() {
-  const { left, right, larger } = comparisons[index];
+  const { left, right, larger } = question;
   const sums = [total(left), total(right)];
   const correct = sums[0] === sums[1] ? 2 : Number(larger ? sums[1] > sums[0] : sums[1] < sums[0]);
-  const question = larger ? '어느 쪽의 금액이 더 큰가요?' : '어느 쪽의 금액이 더 작은가요?';
-  heading(sections.compare[0], question);
+  const prompt = larger ? '어느 쪽의 금액이 더 큰가요?' : '어느 쪽의 금액이 더 작은가요?';
+  heading(sections.compare[0], prompt);
   const status = messageLine();
   const choices = element('div', '', 'grid money-compare');
-  const advance = button('다음 문제', () => next(comparisons.length), 'primary');
+  const advance = button('다음 문제', () => next(comparisons), 'primary');
   advance.hidden = true;
   function check(choice) {
     if (choice === correct) {
@@ -152,19 +154,20 @@ function showComparison() {
     choices.append(option);
   }
   choices.append(button('두 금액이 같아요', () => check(2)));
-  app.append(choices, status, advance);
+  app.append(choices, button('문제 다시 듣기', () => announce(prompt)), status, advance);
 }
 
 function showWallet() {
   wallet = [];
-  const target = targets[index];
-  heading(sections.build[0], won(target) + '을 만들어 보세요.');
+  const target = question;
+  const prompt = won(target) + '을 만들어 보세요.';
+  heading(sections.build[0], prompt);
   const choices = element('div', '', 'grid money-menu');
   const selected = element('div', '', 'money-wallet');
   const sumLabel = element('p', '', 'money-total');
   sumLabel.setAttribute('aria-live', 'polite');
   const status = messageLine();
-  const advance = button('다음 문제', () => next(targets.length), 'primary');
+  const advance = button('다음 문제', () => next(targets), 'primary');
   advance.hidden = true;
   const check = button('금액 확인', () => {
     const sum = total(wallet);
@@ -203,7 +206,7 @@ function showWallet() {
     }, '담기 · '));
   }
   const controls = element('div', '', 'controls');
-  controls.append(check, advance);
+  controls.append(check, button('문제 다시 듣기', () => announce(prompt)), advance);
   app.append(choices, sumLabel, selected, status, controls);
   update();
 }

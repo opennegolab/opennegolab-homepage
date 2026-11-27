@@ -113,7 +113,6 @@ export const shopProblems = {
   food: [{ items: [['돈가스', 1]] }, { items: [['김밥', 2], ['우동', 1]] }]
 };
 
-export const atmProblems = [
-  { deposit: false, amount: 10000 },
-  { deposit: true, amount: 5000 }
-];
+export const atmProblems = [1000, 5000, 10000].flatMap(amount => [
+  { deposit: false, amount }, { deposit: true, amount }
+]);
