@@ -775,7 +775,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     S.phase = "answer";
     S.fbAt = 0;
 
-    if (!qa) tts.speak(item.prompt);
+    tts.speak(item.prompt);
   }
 
   function replay() {

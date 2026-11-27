@@ -224,8 +224,7 @@ function handle(req, res) {
       "X-Content-Type-Options": "nosniff" });
     return res.end(html);
   }
-  const learningTitles = { "/haru/kiosk": "키오스크", "/haru/burger": "햄버거 가게",
-    "/haru/bank": "은행 이용", "/haru/transport": "교통수단" };
+  const learningTitles = { "/haru/kiosk": "키오스크", "/haru/burger": "햄버거 가게" };
   if (Object.hasOwn(learningTitles, haruPath)) {
     const template = fs.readFileSync(path.join(ROOT, "typing", "learn", "index.html"), "utf8");
     const title = learningTitles[haruPath];
@@ -276,7 +275,7 @@ function handle(req, res) {
        privacy.html 이 나가므로 주소에 .html 을 붙이지 않아도 된다.
      - 그래도 없으면 홈페이지로 — 링크가 어긋나도 방문자는 홈을 본다. */
   if (!fs.existsSync(file)) {
-    if (path.extname(file)) {
+    if (path.extname(file) || ["/haru/bank", "/haru/transport"].includes(normalizedPath)) {
       res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
       return res.end("404 Not Found");
     }
