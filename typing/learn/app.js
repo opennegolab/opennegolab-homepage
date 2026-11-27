@@ -1,4 +1,4 @@
-import { bankContexts, bankProblems, banks, places, shopProblems, shops } from './content.js?v=8';
+import { atm, atmProblems, places, shopProblems, shops } from './content.js?v=9';
 import { notes, values as noteValues, total, won } from '/haru/money/currency.js?v=1';
 
 const app = document.querySelector('#app');
@@ -6,8 +6,7 @@ const back = document.querySelector('#back');
 const home = document.querySelector('#home');
 const area = {
   '/haru/kiosk': { id: 'kiosk', title: '키오스크', prompt: '가게에서 주문하거나 ATM을 이용해 보세요.' },
-  '/haru/burger': { id: 'burger', title: '햄버거 가게', prompt: '버거와 샌드위치, 사이드, 음료를 주문해 보세요.' },
-  '/haru/bank': { id: 'bank', title: '은행 이용', prompt: '은행 창구에서 거래하는 순서를 연습해 보세요.' }
+  '/haru/burger': { id: 'burger', title: '햄버거 가게', prompt: '버거와 샌드위치, 사이드, 음료를 주문해 보세요.' }
 }[window.location.pathname.replace(/\/$/, '')];
 const usesOrderScreen = area?.id === 'kiosk' || area?.id === 'burger';
 
@@ -103,11 +102,6 @@ function startPlace(id) {
   else show({ view: 'places', id });
 }
 
-function placeChoices(id) {
-  if (id === 'mart') return [['fruit', shops.fruit], ['vegetable', shops.vegetable]];
-  return [['counter', banks.counter]];
-}
-
 function resetActivity(parent) {
   const start = { view: 'home' };
   const hasParentMenu = parent && area?.id !== parent;
@@ -130,15 +124,14 @@ function openShop(id, problemIndex = 0) {
   show({ view: 'problem', id, problemIndex, goal, target, category: 0, cart: [] });
 }
 
-function openActivity(id, place, activity, problemIndex = 0) {
-  const target = bankProblems[id][problemIndex];
-  const goal = activity.name + '에서 ' + won(target.amount) + '을 ' +
-    (target.deposit ? '입금해 보세요.' : '출금해 보세요.');
-  show({ view: 'problem', id, place, activity, problemIndex, goal, target, step: activity.start, values: {} });
+function openAtm(problemIndex = 0) {
+  const target = atmProblems[problemIndex];
+  const goal = 'ATM에서 ' + won(target.amount) + '을 ' + (target.deposit ? '입금해 보세요.' : '출금해 보세요.');
+  show({ view: 'problem', id: 'atm', problemIndex, goal, target, step: atm.start, values: {} });
 }
 
 function problemScreen() {
-  const activity = state.activity || shops[state.id];
+  const activity = state.id === 'atm' ? atm : shops[state.id];
   heading(activity.name + ' 문제', state.goal, undefined, 'guide');
   if (shops[state.id]) {
     group('goal-items', ...state.target.map(({ item, count }) => {
@@ -148,7 +141,7 @@ function problemScreen() {
     }));
   }
   group('controls', button('문제 풀기', () => {
-    const view = state.activity ? 'action' : usesOrderScreen ? 'kiosk-order' : 'entrance';
+    const view = state.id === 'atm' ? 'action' : usesOrderScreen ? 'kiosk-order' : 'entrance';
     show({ ...state, view });
   }, true));
 }
@@ -548,7 +541,7 @@ function shopScreen(shop) {
 function atmScreen(step, scene, values, choose) {
   const cardAction = step === 'card' || step === 'returnCard';
   const cashAction = step === 'takeCash' || (step === 'transaction' && values.deposit);
-  heading('ATM', undefined, '가상 은행 연습');
+  heading('ATM', undefined, 'ATM 사용 연습');
   const machine = node('section', 'atm-machine');
   machine.setAttribute('aria-label', '연습용 ATM');
   const panel = node('div', 'atm-display');
@@ -598,34 +591,22 @@ function atmScreen(step, scene, values, choose) {
   app.append(machine);
 }
 
-function activityScreen() {
-  const { activity, step, place, id, values } = state;
-  const steps = activity.steps;
-  const nextStep = steps[step];
+function atmActivityScreen() {
+  const { step, values, problemIndex } = state;
+  const nextStep = atm.steps[step];
   if (!nextStep) {
-    heading('문제를 해결했어요', activity.done, activity.name, 'cheer');
-    group('scene', photo(activity.image));
-    const replay = problemIndex => {
-      resetActivity(place);
-      openActivity(id, place, activity, problemIndex);
+    heading('문제를 해결했어요', atm.done, atm.name, 'cheer');
+    group('scene', photo(atm.image));
+    const replay = index => {
+      resetActivity();
+      openAtm(index);
     };
-    const other = () => {
-      if (area?.id === place) reset();
-      else {
-        trail = [];
-        show({ view: 'places', id: place });
-      }
-    };
-    const nextProblem = bankProblems[id] ? () => replay((state.problemIndex + 1) % bankProblems[id].length) : undefined;
-    finishActions(() => replay(state.problemIndex), other, nextProblem);
+    finishActions(() => replay(problemIndex), reset, () => replay((problemIndex + 1) % atmProblems.length));
     return;
   }
+
   const scene = typeof nextStep === 'function' ? nextStep(values) : nextStep;
-  function choose(option) {
-    if (option.next === undefined) {
-      feedback(option.hint || '아직 그 순서가 아니에요. ' + scene.prompt);
-      return;
-    }
+  atmScreen(step, scene, values, option => {
     if (step === 'choice' && option.values.deposit !== state.target.deposit) {
       feedback('문제에서 돈을 넣으라고 했나요, 꺼내라고 했나요? 다시 골라 보세요.');
       return;
@@ -635,37 +616,7 @@ function activityScreen() {
       return;
     }
     show({ ...state, step: option.next, values: { ...values, ...option.values } });
-  }
-
-  if (id === 'atm') {
-    atmScreen(step, scene, values, choose);
-    return;
-  }
-
-  const [bankContext, distractor] = bankContexts[step] || [];
-  const situation = step === 'result' ? scene.prompt : bankContext;
-  const prompt = situation + ' 다음에 무엇을 할까요?';
-  heading(activity.name, prompt, '가상 은행 연습');
-  if (scene.image) {
-    const picture = photo(scene.image);
-    picture.alt = scene.alt || '';
-    group('scene', picture);
-  }
-
-  const options = [...scene.options];
-  if (options.length === 1) {
-    const alternativeStep = steps[distractor];
-    if (alternativeStep) {
-      const alternative = alternativeStep.options[0];
-      options.push({ label: alternative.label, image: alternative.image });
-    }
-  }
-  // 정답 카드의 위치가 매번 같지 않도록 합니다.
-  const offset = (step.length + state.problemIndex) % options.length;
-  const ordered = options.slice(offset).concat(options.slice(0, offset));
-  const choices = ordered.map(option => card(option.label, option.image, () => choose(option)));
-  group('grid actions', ...choices);
-  feedbackLine();
+  });
 }
 
 function render() {
@@ -683,10 +634,7 @@ function render() {
         const stores = places.filter(([key]) => key === 'mart' || Object.hasOwn(shops, key));
         group('grid places kiosk-menu',
           ...stores.map(([key, name, desc, image]) => card(name, image, () => startPlace(key), desc)),
-          card('ATM', banks.atm.image, () => openActivity('atm', 'kiosk', banks.atm), '카드로 입금하고 출금하기'));
-      } else {
-        group('grid places', ...placeChoices(area.id).map(([key, activity]) =>
-          card(activity.name, activity.image, () => openActivity(key, area.id, activity))));
+          card('ATM', atm.image, () => openAtm(), '카드로 입금하고 출금하기'));
       }
       return;
     }
@@ -696,14 +644,9 @@ function render() {
     return;
   }
   if (view === 'places') {
-    const [, name] = places.find(([key]) => key === id);
-    const prompt = id === 'mart' ? '어느 가게에 갈까요?' : '은행 창구를 이용해 보세요.';
-    heading(name, prompt);
-    group('grid places', ...placeChoices(id).map(([key, activity]) =>
-      card(activity.name, activity.image, () => {
-        if (id === 'mart') openShop(key);
-        else openActivity(key, id, activity);
-      })));
+    heading('마트', '어느 가게에 갈까요?');
+    group('grid places', ...['fruit', 'vegetable'].map(key =>
+      card(shops[key].name, shops[key].image, () => openShop(key))));
     return;
   }
   if (view === 'problem') {
@@ -711,7 +654,7 @@ function render() {
     return;
   }
   showProblemGoal();
-  if (view === 'action') activityScreen();
+  if (view === 'action') atmActivityScreen();
   else shopScreen(shops[id]);
 }
 

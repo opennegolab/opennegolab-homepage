@@ -2,8 +2,7 @@ export const places = [
   ['mart', '마트', '과일과 채소 사기', 'places-1'],
   ['stationery', '문구점', '학용품 사기', 'places-2'],
   ['cafe', '카페', '음료와 디저트 주문하기', 'places-3'],
-  ['food', '음식점', '먹고 싶은 음식 주문하기', 'places-4'],
-  ['bank', '은행', '은행 창구 이용하기', 'places-5']
+  ['food', '음식점', '먹고 싶은 음식 주문하기', 'places-4']
 ];
 
 // 금액은 결제 체험에 사용하는 가상의 판매가입니다.
@@ -71,45 +70,33 @@ export const shops = {
     })() }
 };
 
-const action = (label, image, next, values) => ({ label, image, next, values });
+const action = (label, next, values) => ({ label, next, values });
 const step = (prompt, ...options) => ({ prompt, options });
+const amountLabel = amount => amount.toLocaleString('ko-KR') + '원';
 
-function bankActivity(atm) {
-  const steps = {
-    ticket: step('번호표 기계에서 내 번호를 뽑아요.', action('번호표 뽑기', 'bank-2', 'wait')),
-    wait: step('내 번호는 12번이에요. 의자에 앉아 차례를 기다려요.', action('차례 기다리기', 'bank-3', 'call')),
-    call: { ...step('12번 손님, 창구로 오세요.', action('창구로 가기', 'bank-1', 'passbook')), image: 'bank-4', alt: '호출 번호 12번' },
-    passbook: step('창구 직원에게 통장을 건네요.', action('통장 건네기', 'bank-5', 'choice')),
-    card: { ...step('ATM에 연습용 카드를 넣어요.', action('카드 넣기', 'bank-9', 'choice')), image: 'bank-7', alt: '연습용 카드' },
+export const atm = {
+  name: 'ATM',
+  image: 'bank-8',
+  start: 'card',
+  done: 'ATM 이용을 마쳤어요.',
+  steps: {
+    card: step('카드를 넣어 주세요.', action('카드 넣기', 'choice')),
     choice: step('돈을 넣을까요, 꺼낼까요?',
-      action('입금하기', 'bank-10', 'amount', { deposit: true }),
-      action('출금하기', 'bank-11', 'amount', { deposit: false })),
-    amount: step('연습할 금액을 골라요.', ...[1000, 5000, 10000].map((amount, index) =>
-      action(amount.toLocaleString('ko-KR') + '원', 'details-' + (index + 4), 'transaction', { amount }))),
-    transaction: ({ deposit, amount }) => {
-      const sum = amount.toLocaleString('ko-KR') + '원';
-      const text = deposit ? '입금해 주세요.' : '출금해 주세요.';
-      return step(sum + ' ' + text, action(deposit ? '돈 넣기' : '출금 요청하기',
-        deposit ? 'bank-10' : atm ? 'bank-8' : 'bank-1', atm ? 'confirm' : 'result'));
-    },
+      action('입금하기', 'amount', { deposit: true }),
+      action('출금하기', 'amount', { deposit: false })),
+    amount: step('연습할 금액을 골라요.', ...[1000, 5000, 10000].map(amount =>
+      action(amountLabel(amount), 'transaction', { amount }))),
+    transaction: ({ deposit, amount }) => step(amountLabel(amount) + (deposit ? ' 입금해 주세요.' : ' 출금해 주세요.'),
+      action(deposit ? '돈 넣기' : '출금 요청하기', 'confirm')),
     confirm: ({ deposit, amount }) => step(
-      (deposit ? '입금 금액 ' : '출금 금액 ') + amount.toLocaleString('ko-KR') + '원',
-      action('거래 확인', 'bank-8', 'result')),
-    result: ({ deposit, amount }) => step(amount.toLocaleString('ko-KR') + '원 ' + (deposit ? '입금했어요.' : '출금했어요.'),
-      atm || deposit
-        ? action('결과 확인', 'bank-6', atm ? 'returnCard' : 'returnBook')
-        : action('현금 받기', 'details-3', 'returnBook')),
-    returnCard: ({ deposit }) => step('카드를 챙겨요.', action('카드 받기', 'bank-12', deposit ? 'leave' : 'takeCash')),
-    takeCash: step('현금 수령구가 열렸어요.', action('현금 받기', 'bank-11', 'leave')),
-    returnBook: step('통장을 다시 받아요.', action('통장 받기', 'bank-5', 'leave')),
-    leave: step(atm ? '받은 물건을 챙기고 나와요.' : '직원에게 감사 인사를 하고 나와요.',
-      action(atm ? 'ATM에서 나오기' : '감사합니다', atm ? 'bank-8' : 'bank-1', 'done'))
-  };
-  return { name: atm ? 'ATM' : '은행 창구', image: atm ? 'bank-8' : 'bank-1',
-    start: atm ? 'card' : 'ticket', steps, done: '은행 이용을 마쳤어요.' };
-}
-
-export const banks = { counter: bankActivity(false), atm: bankActivity(true) };
+      (deposit ? '입금 금액 ' : '출금 금액 ') + amountLabel(amount), action('거래 확인', 'result')),
+    result: ({ deposit, amount }) => step(amountLabel(amount) + (deposit ? ' 입금했어요.' : ' 출금했어요.'),
+      action('결과 확인', 'returnCard')),
+    returnCard: ({ deposit }) => step('카드를 챙겨요.', action('카드 받기', deposit ? 'leave' : 'takeCash')),
+    takeCash: step('현금 수령구가 열렸어요.', action('현금 받기', 'leave')),
+    leave: step('받은 물건을 챙기고 나와요.', action('ATM에서 나오기', 'done'))
+  }
+};
 
 // 문제는 기존 품목과 활동을 참조합니다. 품목 이름과 수량이 모두 맞아야 주문할 수 있습니다.
 export const shopProblems = {
@@ -126,22 +113,7 @@ export const shopProblems = {
   food: [{ items: [['돈가스', 1]] }, { items: [['김밥', 2], ['우동', 1]] }]
 };
 
-export const bankProblems = {
-  counter: [{ deposit: true, amount: 5000 }, { deposit: false, amount: 1000 }],
-  atm: [{ deposit: false, amount: 10000 }, { deposit: true, amount: 5000 }]
-};
-
-export const bankContexts = {
-  ticket: ['은행에 도착했어요. 창구에 다른 손님들이 있어요.', 'call'],
-  wait: ['내 번호는 12번이에요. 아직 12번을 부르지 않았어요.', 'call'],
-  call: ['12번 손님을 불렀어요.', 'wait'],
-  passbook: ['창구 직원이 인사를 해요. 통장이 손에 있어요.', 'returnBook'],
-  card: ['ATM 앞에 도착했어요. 연습용 카드를 가지고 있어요.', 'returnCard'],
-  choice: ['거래 종류를 고르는 화면이에요. 문제를 다시 확인해 보세요.'],
-  amount: ['금액을 고르는 화면이에요. 얼마인지 기억하나요?'],
-  transaction: ['종류와 금액을 골랐어요. 이제 거래를 진행할 차례예요.', 'leave'],
-  result: ['거래가 끝났다는 안내가 나왔어요.', 'leave'],
-  returnCard: ['거래를 마쳤어요. ATM에 넣어 둔 것이 있어요.', 'leave'],
-  returnBook: ['거래를 마쳤어요. 창구에 건넨 것이 있어요.', 'leave'],
-  leave: ['받을 물건을 다 챙겼어요.', 'choice']
-};
+export const atmProblems = [
+  { deposit: false, amount: 10000 },
+  { deposit: true, amount: 5000 }
+];
