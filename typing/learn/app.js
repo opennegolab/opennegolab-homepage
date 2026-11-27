@@ -1,4 +1,4 @@
-import { bankContexts, bankProblems, banks, places, shopProblems, shops, tripContexts, tripProblems, trips } from './content.js?v=6';
+import { bankContexts, bankProblems, banks, places, shopProblems, shops, tripContexts, tripProblems, trips } from './content.js?v=7';
 import { notes, values as noteValues, total, won } from '/haru/money/currency.js?v=1';
 
 const app = document.querySelector('#app');
@@ -6,7 +6,7 @@ const back = document.querySelector('#back');
 const home = document.querySelector('#home');
 const area = {
   '/haru/kiosk': { id: 'kiosk', title: '키오스크', prompt: '가게를 골라 구매나 주문 문제를 풀어 보세요.' },
-  '/haru/burger': { id: 'burger', title: '햄버거 가게', prompt: '버거, 사이드, 음료를 골라 주문해 보세요.' },
+  '/haru/burger': { id: 'burger', title: '햄버거 가게', prompt: '버거와 샌드위치, 사이드, 음료를 주문해 보세요.' },
   '/haru/bank': { id: 'bank', title: '은행 이용', prompt: '창구 또는 ATM을 골라 은행 문제를 풀어 보세요.' },
   '/haru/transport': { id: 'transport', title: '교통수단', prompt: '탈것을 골라 순서 문제를 풀어 보세요.' }
 }[window.location.pathname.replace(/\/$/, '')];
