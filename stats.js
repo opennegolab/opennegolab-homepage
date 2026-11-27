@@ -204,6 +204,7 @@ function tooMany(ip) {
 async function record(req, body) {
   const ua = req.headers["user-agent"] || "";
   if (BOT.test(ua)) return;                       /* 검색엔진 수집기는 방문자가 아니다 */
+  if (isMine(req)) return;                        /* 운영자 본인 기기는 세지 않는다 */
   const kind = String(body.kind || "");
   if (!KINDS.has(kind)) return;
   if (NOT_HOMEPAGE.test(String(body.path || ""))) return;
@@ -373,6 +374,36 @@ function authorized(req) {
   return configured() && validTicket(readCookie(req, COOKIE));
 }
 
+/* ---------- 운영자 본인 기기 빼기 ----------
+   통계 화면에 로그인한 기기에는 "내 기기" 표시(쿠키)를 남기고, 그 기기에서 온 방문은
+   기록하지 않는다. IP 로 거르지 않는 이유 — IP 는 저장하지 않기로 했고, 휴대폰은
+   IP 가 자주 바뀐다. 로그아웃해도 표시는 남는다 (로그아웃했다고 다시 세면 안 된다).
+   통계 화면의 버튼으로 끄고 켤 수 있다 */
+const ME = "onl_me";
+const ME_DAYS = 730;
+
+function isMine(req) {
+  const v = readCookie(req, ME);
+  if (v === "0") return false;                    /* 일부러 꺼 둔 기기 */
+  return v === "1" || authorized(req);
+}
+
+function meCookie(req, on) {
+  const https = (req.headers["x-forwarded-proto"] || "").split(",")[0].trim() === "https";
+  return ME + "=" + (on ? "1" : "0") + "; Path=/; Max-Age=" + ME_DAYS * 86400 +
+    "; HttpOnly; SameSite=Lax" + (https ? "; Secure" : "");
+}
+
+/* 꺼 두면 로그인해 있어도 센다 — 내 방문으로 기록이 잘 되는지 시험할 때 쓴다 */
+function setMine(req, on) { return meCookie(req, on); }
+
+/* 통계 화면을 열 때: 지금 이 기기를 빼고 있는지, 그리고 표시가 아직 없으면 새로 붙일 쿠키.
+   이 기능 전에 로그인해 둔 기기도 다음에 화면을 열면 "내 기기"가 된다 */
+function mineState(req) {
+  const v = readCookie(req, ME);
+  return { mine: v !== "0", cookie: v === "1" || v === "0" ? null : meCookie(req, true) };
+}
+
 /* 클라우드타입은 앞단에서 HTTPS 를 받아 뒤로는 평문으로 넘긴다.
    그래서 실제 접속이 https 였는지는 이 헤더로 판단한다 */
 function cookieHeader(req, value, maxAge) {
@@ -401,9 +432,12 @@ function login(req, password) {
   if (!same(String(password || ""), process.env.STATS_PASSWORD)) {
     return { ok: false, message: "비밀번호가 맞지 않습니다." };
   }
-  return { ok: true, cookie: cookieHeader(req, newTicket(), DAYS * 86400) };
+  /* 로그인하면 이 기기를 "내 기기"로 표시한다. 일부러 꺼 둔 기기는 그대로 둔다 */
+  const cookies = [cookieHeader(req, newTicket(), DAYS * 86400)];
+  if (readCookie(req, ME) !== "0") cookies.push(meCookie(req, true));
+  return { ok: true, cookie: cookies };
 }
 
 function logout(req) { return cookieHeader(req, "", 0); }
 
-module.exports = { record, summary, prune, configured, authorized, login, logout };
+module.exports = { record, summary, prune, configured, authorized, login, logout, setMine, mineState };
