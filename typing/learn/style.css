@@ -10,7 +10,7 @@
 * { box-sizing: border-box; }
 body { margin: 0; }
 button, a { -webkit-tap-highlight-color: transparent; }
-button, .room {
+button {
   min-height: 48px;
   padding: .65rem 1rem;
   border: 1px solid var(--line);
@@ -22,8 +22,7 @@ button, .room {
   cursor: pointer;
   touch-action: manipulation;
 }
-a.room { display: inline-flex; align-items: center; text-decoration: none; }
-button:hover, .room:hover { border-color: var(--green); }
+button:hover { border-color: var(--green); }
 button:active { background: #dcece1; }
 button:focus-visible, a:focus-visible { outline: 3px solid #1d654f; outline-offset: 3px; }
 [hidden] { display: none !important; }
@@ -73,7 +72,7 @@ h1:focus { outline: none; }
 }
 @media (max-width: 370px) {
   .top-inner { padding-inline: .45rem; }
-  .top-inner button, .room { padding-inline: .45rem; font-size: .92rem; }
+  .top-inner button { padding-inline: .45rem; font-size: .92rem; }
   .items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 html[data-haru] {

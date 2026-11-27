@@ -193,7 +193,7 @@ function handle(req, res) {
     const title = { "/haru/kiosk": "키오스크", "/haru/bank": "은행 이용", "/haru/transport": "교통수단" }[haruPath];
     const html = template.replace('<meta name="robots" content="noindex,nofollow">',
       haruShareMeta(haruPath, title, `하루와 함께 ${title} 학습을 해요.`))
-      .replace("<title>생활학습 | 초등 공부방</title>", `<title>${title} | 하루랑</title>`);
+      .replace("<title>생활학습 | 하루랑</title>", `<title>${title} | 하루랑</title>`);
     res.writeHead(200, { "Content-Type": TYPES[".html"], "Cache-Control": "no-cache",
       "X-Content-Type-Options": "nosniff" });
     return res.end(html);
@@ -202,12 +202,16 @@ function handle(req, res) {
   /* 타자 연습 — 문제 저장은 typing-api.js 가 맡는다 (누가 접속하든 같은 문제) */
   if (urlPath.startsWith("/api/typing/")) { typing.handle(req, res, urlPath); return; }
 
-  const typingPath = path.posix.normalize(urlPath).replace(/\/$/, "").toLowerCase();
-  if (typingPath === "/typing" || typingPath === "/typing/index.html") {
+  const normalizedPath = path.posix.normalize(urlPath).replace(/\/$/, "").toLowerCase();
+  if (normalizedPath === "/grade1-learning" || normalizedPath === "/grade1-learning.html") {
+    res.writeHead(301, { Location: "/haru" });
+    return res.end();
+  }
+  if (normalizedPath === "/typing" || normalizedPath === "/typing/index.html") {
     res.writeHead(302, { Location: "/haru/typing", "Cache-Control": "no-cache" });
     return res.end();
   }
-  if (typingPath === "/typing/admin" || typingPath === "/typing/admin.html") {
+  if (normalizedPath === "/typing/admin" || normalizedPath === "/typing/admin.html") {
     res.writeHead(200, {
       "Content-Type": TYPES[".html"],
       "Cache-Control": "no-store",
