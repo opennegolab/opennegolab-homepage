@@ -203,10 +203,6 @@ function handle(req, res) {
   if (urlPath.startsWith("/api/typing/")) { typing.handle(req, res, urlPath); return; }
 
   const normalizedPath = path.posix.normalize(urlPath).replace(/\/$/, "").toLowerCase();
-  if (normalizedPath === "/grade1-learning" || normalizedPath === "/grade1-learning.html") {
-    res.writeHead(410, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-cache" });
-    return res.end("이 페이지는 종료되었습니다.");
-  }
   if (normalizedPath === "/typing" || normalizedPath === "/typing/index.html") {
     res.writeHead(302, { Location: "/haru/typing", "Cache-Control": "no-cache" });
     return res.end();
@@ -238,7 +234,7 @@ function handle(req, res) {
        privacy.html 이 나가므로 주소에 .html 을 붙이지 않아도 된다.
      - 그래도 없으면 홈페이지로 — 링크가 어긋나도 방문자는 홈을 본다. */
   if (!fs.existsSync(file)) {
-    if (path.extname(file)) {
+    if (path.extname(file) || normalizedPath === "/grade1-learning" || normalizedPath === "/grade1-learning.html") {
       res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
       return res.end("404 Not Found");
     }
