@@ -7,8 +7,19 @@ export const places = [
   ['transport', '교통수단', '버스, 지하철 등 타 보기', 'places-6']
 ];
 
+// 금액은 결제 체험에 사용하는 가상의 판매가입니다.
+const prices = {
+  fruit: [2000, 1000, 1000, 4000, 10000, 1000, 3000, 3000, 2000, 1000],
+  vegetable: [1000, 1000, 1000, 1000, 3000, 2000, 1000, 2000, 2000, 3000],
+  stationery: [1000, 1000, 2000, 1000, 3000, 2000, 1000, 3000, 5000, 2000],
+  cafe: [4000, 4000, 4000, 3000, 3000, 4000, 5000, 3000, 5000, 2000, 4000],
+  food: [6000, 9000, 9000, 7000, 8000, 8000, 12000, 15000, 4000, 3000, 6000, 5000, 8000, 10000, 5000, 9000]
+};
+
 function items(image, entries) {
-  return entries.map(([name, unit = '개'], i) => ({ name, unit, image: image + '-' + (i + 1) }));
+  return entries.map(([name, unit = '개'], i) => ({
+    name, unit, image: image + '-' + (i + 1), price: prices[image][i]
+  }));
 }
 const list = names => names.split(' ').map(name => [name]);
 

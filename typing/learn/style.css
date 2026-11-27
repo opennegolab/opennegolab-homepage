@@ -114,3 +114,9 @@ html[data-haru] {
   display: grid; gap: .5rem; padding: .75rem;
   border: 1px solid var(--line); border-radius: .85rem; background: var(--paper);
 }
+
+.pay-total { font-size: 1.22rem; font-weight: 800; }
+.pay-cash-summary { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; }
+.pay-cash-summary span { padding: .5rem; background: var(--haru-mint); border-radius: var(--haru-radius); }
+.receipt-price { font-weight: 750; margin-left: auto; }
+.pay-notes .photo-card img { object-fit: contain; background: #f4f1e8; }

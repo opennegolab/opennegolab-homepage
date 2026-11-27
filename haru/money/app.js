@@ -1,11 +1,7 @@
 import { speak } from '/typing/learn/speech.js?v=1';
 
-const notes = {
-  1000: { image: 'details-4', spoken: '천 원' },
-  5000: { image: 'details-5', spoken: '오천 원' },
-  10000: { image: 'details-6', spoken: '만 원' }
-};
-const values = Object.keys(notes).map(Number);
+import { notes, values, won, total } from './currency.js?v=1';
+
 const comparisons = [
   { left: [1000], right: [5000], larger: true },
   { left: [10000], right: [5000], larger: false },
@@ -14,9 +10,6 @@ const comparisons = [
   { left: [5000], right: [1000, 1000, 1000, 1000, 1000], larger: true }
 ];
 const targets = [2000, 5000, 6000, 10000, 15000];
-const formatted = new Intl.NumberFormat('ko-KR');
-const won = value => formatted.format(value) + '원';
-const total = group => group.reduce((sum, value) => sum + value, 0);
 const sections = {
   learn: ['지폐 알아보기', '사진을 눌러 얼마인지 들어 보세요.', 1000],
   compare: ['금액 비교하기', '어느 쪽이 더 큰지, 더 작은지 골라 보세요.', 10000],

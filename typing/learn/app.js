@@ -1,5 +1,6 @@
-import { bankContexts, bankProblems, banks, places, shopProblems, shops, tripContexts, tripProblems, trips } from './content.js?v=2';
+import { bankContexts, bankProblems, banks, places, shopProblems, shops, tripContexts, tripProblems, trips } from './content.js?v=3';
 import { speak } from './speech.js?v=1';
+import { notes, values as noteValues, total, won } from '/haru/money/currency.js?v=1';
 
 const app = document.querySelector('#app');
 const back = document.querySelector('#back');
@@ -193,7 +194,7 @@ function submitCart() {
   if (extra) return feedback('문제에 없는 물건이 담겼어요. ' + extra.item.name + ' 옆의 빼기를 눌러 보세요.');
   if (missing) return feedback('아직 담지 않은 물건이 있어요. 문제와 고른 목록을 비교해 보세요.');
   if (different) return feedback(different.item.name + '의 수량을 문제와 비교해 보세요.');
-  changeShop('receive');
+  changeShop('pay-method');
 }
 
 function changeShop(view, patch = {}, remember = true) {
@@ -231,11 +232,98 @@ function saveQuantity() {
   changeShop('cart', { cart: updated, notice: wording(item, count) + ' 담았어요.' }, false);
 }
 
+function orderTotal(cart) {
+  return cart.reduce((sum, { item, count }) => sum + item.price * count, 0);
+}
+
+function paymentScreen(shop) {
+  const { view, cart, payment } = state;
+  const due = orderTotal(cart);
+  if (view === 'pay-method') {
+    const prompt = '낼 금액은 ' + won(due) + '이에요. 어떻게 결제할까요?';
+    heading('결제 방법 고르기', prompt, shop.name);
+    receipt(cart, false);
+    group('grid actions',
+      card('현금으로 결제', 'bank-6', () => changeShop('cash', { cash: [] })),
+      card('카드로 결제', 'bank-7', () => changeShop('card')));
+    return prompt;
+  }
+  if (view === 'card') {
+    const prompt = '낼 금액은 ' + won(due) + '이에요. 연습용 카드를 단말기에 대 보세요.';
+    heading('카드로 결제', prompt, shop.name);
+    group('single action', card('카드 대기', 'taxi-6', () => {
+      changeShop('receive', { payment: { method: '카드', tendered: due, change: 0 } });
+    }));
+    return prompt;
+  }
+  if (view === 'change') {
+    const prompt = won(payment.tendered) + '을 냈어요. 거스름돈 ' + won(payment.change) + '을 받아요.';
+    heading('거스름돈 받기', prompt, shop.name);
+    let remaining = payment.change;
+    const returned = node('div', 'pay-cash-summary');
+    for (const value of [...noteValues].reverse()) {
+      const count = Math.floor(remaining / value);
+      if (count) returned.append(node('span', '', won(value) + ' 지폐 ' + count + '장'));
+      remaining %= value;
+    }
+    app.append(returned);
+    group('single action', card('거스름돈 받기', 'bank-6', () => changeShop('receive')));
+    return prompt;
+  }
+
+  const prompt = '낼 금액은 ' + won(due) + '이에요. 낼 지폐를 골라 보세요.';
+  heading('현금으로 결제', prompt, shop.name);
+  const paidLabel = node('p', 'pay-total');
+  paidLabel.setAttribute('aria-live', 'polite');
+  const selected = node('div', 'pay-cash-summary');
+  const choices = group('grid actions pay-notes', ...noteValues.map(value =>
+    card(won(value) + ' 담기', notes[value].image, () => {
+      if (state.cash.length >= 20) {
+        feedback('담긴 지폐를 빼고 다시 골라 보세요.');
+        return;
+      }
+      state = { ...state, cash: [...state.cash, value] };
+      app.querySelector('.problem-feedback').textContent = '';
+      updateCash();
+    })));
+  app.append(paidLabel, selected);
+  feedbackLine();
+  group('controls', button('현금 내기', () => {
+    const tendered = total(state.cash);
+    if (tendered < due) {
+      feedback(won(due - tendered) + '이 더 필요해요. 지폐를 더 담아 보세요.');
+      return;
+    }
+    const change = tendered - due;
+    changeShop(change ? 'change' : 'receive', { payment: { method: '현금', tendered, change } });
+  }, true));
+
+  function updateCash(focusValue) {
+    paidLabel.textContent = '담은 금액 ' + won(total(state.cash));
+    selected.replaceChildren();
+    for (const value of noteValues) {
+      const count = state.cash.filter(note => note === value).length;
+      if (!count) continue;
+      const remove = button(won(value) + ' ' + count + '장 · 한 장 빼기', () => {
+        const position = state.cash.indexOf(value);
+        state = { ...state, cash: state.cash.filter((_, index) => index !== position) };
+        app.querySelector('.problem-feedback').textContent = '';
+        updateCash(value);
+      });
+      selected.append(remove);
+      if (value === focusValue) remove.focus();
+    }
+    if (focusValue && !state.cash.includes(focusValue)) choices.querySelector('button').focus();
+  }
+  updateCash();
+  return prompt;
+}
+
 function receipt(cart, editable) {
   const rows = cart.map(({ item, count }) => {
     const row = node('li', 'receipt-row');
     const label = wording(item, count);
-    row.append(repeated(item, count), button(label + ' · 듣기', () => say(label)));
+    row.append(repeated(item, count), button(label + ' · 듣기', () => say(label)), node('span', 'receipt-price', won(item.price * count)));
     if (editable) {
       const edit = button('수량 바꾸기', () => changeShop('quantity', { item, count }));
       edit.setAttribute('aria-label', item.name + ' 수량 바꾸기');
@@ -252,6 +340,7 @@ function receipt(cart, editable) {
   const list = node('ul', 'receipt');
   list.append(...rows);
   app.append(list);
+  if (cart.length) app.append(node('p', 'pay-total', '합계 ' + won(orderTotal(cart))));
 }
 
 function finishActions(repeat, other = reset, nextProblem) {
@@ -283,7 +372,7 @@ function shopScreen(shop) {
     group('grid items', ...shop.groups[category][1].map(product => card(product.name, product.image, () => {
       const oldCount = cart.find(line => line.item === product)?.count;
       changeShop('quantity', { item: product, count: oldCount ?? 1 });
-    })));
+    }, won(product.price))));
     if (cart.length) group('controls', button(shop.container + ' 보기', () => changeShop('cart', { notice: '' })));
     return shop.groups.length > 1 ? shop.groups[category][0] + '. ' + shop.prompt : shop.prompt;
   }
@@ -319,9 +408,11 @@ function shopScreen(shop) {
       ? ' 더 고르거나 ' + (menu ? '주문할 수 있어요.' : '구매할 수 있어요.')
       : ' 더 고르기를 눌러요.');
   }
+  if (['pay-method', 'cash', 'card', 'change'].includes(view)) return paymentScreen(shop);
   if (view === 'receive') {
-    const text = cart.map(line => wording(line.item, line.count) + ' 주세요.').join(' ');
-    heading(menu ? '주문했어요' : '구매했어요', text, shop.name);
+    const { payment } = state;
+    const text = (payment.method === '카드' ? '카드로 ' : '현금으로 ') + won(orderTotal(cart)) + '을 결제했어요.';
+    heading('결제했어요', text, shop.name);
     receipt(cart, false);
     group('controls', button(shop.receive, () => changeShop('shop-done'), true));
     return text + ' 이제 ' + (menu ? '주문한 메뉴를' : '산 물건을') + ' 받아요.';
