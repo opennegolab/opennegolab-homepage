@@ -62,19 +62,11 @@ function haruShareMeta(urlPath, title, description) {
 <meta property="og:image:alt" content="하루랑. 하루와 함께 세상 배우기. 손을 흔드는 하루 캐릭터.">`;
 }
 
-const HARU_ICON_HINTS = {
-  Link: '</haru/assets/favicon.png?v=2>; rel=icon; type="image/png", </haru/assets/logo.png>; rel=preload; as=image',
-};
-
 const HARU_TYPING_META = `<title>한글 공부 | 하루랑</title>
 ${haruShareMeta("/haru/typing", "한글 공부", "하루랑에서 받아쓰기와 질문에 답하기로 한글을 공부해요.")}
 <meta name="theme-color" content="#fff8e9">
-<meta name="application-name" content="하루랑">
-<meta name="apple-mobile-web-app-title" content="하루랑">
-<link rel="icon" type="image/png" sizes="48x48" href="/haru/assets/favicon.png?v=2">
-<link rel="icon" type="image/png" sizes="192x192" href="/haru/assets/icon-192.png?v=2">
-<link rel="apple-touch-icon" sizes="192x192" href="/haru/assets/icon-192.png?v=2">
-<link rel="manifest" href="/haru/manifest.webmanifest?v=2">
+<link rel="icon" href="/haru/assets/favicon.png">
+<link rel="manifest" href="/haru/manifest.webmanifest">
 <link rel="stylesheet" href="/haru/brand.css?v=3">
 <link rel="stylesheet" href="/haru/typing.css?v=1">`;
 
@@ -229,7 +221,7 @@ function handle(req, res) {
       .replace(/<!-- 타자 제목 시작 -->[\s\S]*?<!-- 타자 제목 끝 -->/, HARU_TYPING_HEADING)
       .replace(/@import url\('https:\/\/cdn\.jsdelivr\.net[^']*'\);/, "");
     res.writeHead(200, { "Content-Type": TYPES[".html"], "Cache-Control": "no-cache",
-      "X-Content-Type-Options": "nosniff", ...HARU_ICON_HINTS });
+      "X-Content-Type-Options": "nosniff" });
     return res.end(html);
   }
   if (["/haru/kiosk", "/haru/bank", "/haru/transport"].includes(haruPath)) {
@@ -239,7 +231,7 @@ function handle(req, res) {
       haruShareMeta(haruPath, title, `하루와 함께 ${title} 학습을 해요.`))
       .replace("<title>생활학습 | 하루랑</title>", `<title>${title} | 하루랑</title>`);
     res.writeHead(200, { "Content-Type": TYPES[".html"], "Cache-Control": "no-cache",
-      "X-Content-Type-Options": "nosniff", ...HARU_ICON_HINTS });
+      "X-Content-Type-Options": "nosniff" });
     return res.end(html);
   }
 
@@ -296,8 +288,6 @@ function handle(req, res) {
     /* HTML은 매번 새로 받고(수정이 바로 보이게), 이미지 등은 하루 캐시 */
     "Cache-Control": ext === ".html" ? "no-cache" : "public, max-age=86400",
     "X-Content-Type-Options": "nosniff",
-    ...(["/haru", "/haru/index.html", "/haru/money", "/haru/money/index.html", "/typing/learn", "/typing/learn/index.html"]
-      .includes(normalizedPath) ? HARU_ICON_HINTS : {}),
   });
   fs.createReadStream(file).pipe(res);
 }
