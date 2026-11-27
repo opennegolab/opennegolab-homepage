@@ -12,16 +12,19 @@ main { max-width:28rem; margin:3rem auto; }
 form { display:grid; gap:.75rem; margin-bottom:1rem; }
 input, button { font:inherit; padding:.75rem; }
 </style>
-<script defer src="/typing/login.js?v=1"></script>
+<script defer src="/typing/login.js?v=2"></script>
 </head>
 <body><main>
-<h1>보호자 로그인</h1>
+<h1 id="loginTitle">보호자 로그인</h1>
 <form id="guardianLogin">
-<label for="password">보호자 비밀번호</label>
-<input type="password" id="password" autocomplete="current-password" required>
-<button type="submit">로그인</button>
+<label for="username">아이디</label>
+<input id="username" autocomplete="username" required minlength="4" maxlength="24" pattern="[a-zA-Z0-9_]{4,24}" autocapitalize="none" spellcheck="false">
+<label for="password">비밀번호</label>
+<input type="password" id="password" autocomplete="current-password" required minlength="12" maxlength="128">
+<button type="submit" id="loginSubmit">로그인</button>
 </form>
 <p id="loginStatus" role="status"></p>
+<p><button type="button" id="loginSwitch">보호자 계정 만들기</button></p>
 <a href="/haru/typing">타자 연습으로 돌아가기</a>
 </main></body>
 </html>

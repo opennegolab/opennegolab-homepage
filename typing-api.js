@@ -131,7 +131,7 @@ async function seedOnce(p) {
                                 '^([0-9]) 빼기 ([0-9])(은|는)[?]$', '\\1 - \\2 = ?'),
         updated_at = now()
       FROM typing_sets s
-      WHERE s.id = i.set_id AND s.name = '한자리 산수' AND i.mode = 'qa'
+      WHERE s.id = i.set_id AND s.name = '한자리 산수' AND s.owner IS NULL AND i.mode = 'qa'
         AND i.prompt ~ '^[0-9] (더하기|빼기) [0-9](은|는)[?]$'`);
     await p.query(`INSERT INTO typing_meta (key) VALUES ('fix:arith-symbols') ON CONFLICT DO NOTHING`);
     if (r.rowCount) console.log("타자 연습: '한자리 산수' " + r.rowCount + "문제를 기호 표기로 바꿨다");
@@ -142,7 +142,7 @@ async function seedOnce(p) {
     const client = await p.connect();
     try {
       await client.query("BEGIN");
-      const found = (await client.query(`SELECT id FROM typing_sets WHERE lower(name) = lower($1)`, [seed.name])).rows[0];
+      const found = (await client.query(`SELECT id FROM typing_sets WHERE owner IS NULL AND lower(name) = lower($1)`, [seed.name])).rows[0];
       const set = found ? found.id : (await client.query(`INSERT INTO typing_sets (name) VALUES ($1) RETURNING id`, [seed.name])).rows[0].id;
       const have = new Set((await client.query(`SELECT mode || ':' || prompt AS k FROM typing_items WHERE set_id = $1`, [set])).rows.map(r => r.k));
       let n = 0;
@@ -197,7 +197,12 @@ async function prepare(p) {
       name       TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )`);
-  await p.query(`CREATE UNIQUE INDEX IF NOT EXISTS typing_sets_name_idx ON typing_sets (lower(name))`);
+  await p.query(`CREATE TABLE IF NOT EXISTS typing_guardians (
+    username TEXT PRIMARY KEY, password_hash TEXT NOT NULL
+  )`);
+  await p.query(`ALTER TABLE typing_sets ADD COLUMN IF NOT EXISTS owner TEXT REFERENCES typing_guardians(username)`);
+  await p.query(`CREATE UNIQUE INDEX IF NOT EXISTS typing_sets_owner_name_idx ON typing_sets (coalesce(owner, ''), lower(name))`);
+  await p.query(`DROP INDEX IF EXISTS typing_sets_name_idx`);
   await p.query(`
     CREATE TABLE IF NOT EXISTS typing_items (
       id         BIGSERIAL PRIMARY KEY,
@@ -299,9 +304,9 @@ class Conflict extends Error {}
 
 const store = {
   /* ----- 문제집 ----- */
-  async sets() {
+  async sets(owner) {
     if (!usingDb()) {
-      return memory.sets.map(st => ({
+      return memory.sets.filter(st => (st.owner ?? null) === owner).map(st => ({
         id: st.id, name: st.name,
         counts: {
           dictation: memory.items.filter(x => x.set_id === st.id && x.mode === "dictation").length,
@@ -314,29 +319,30 @@ const store = {
              count(i.id) FILTER (WHERE i.mode = 'dictation')::int AS d,
              count(i.id) FILTER (WHERE i.mode = 'qa')::int AS q
         FROM typing_sets s LEFT JOIN typing_items i ON i.set_id = s.id
-       GROUP BY s.id ORDER BY s.id`);
+       WHERE s.owner IS NOT DISTINCT FROM $1::text
+       GROUP BY s.id ORDER BY s.id`, [owner]);
     return r.rows.map(x => ({ id: Number(x.id), name: x.name, counts: { dictation: x.d, qa: x.q } }));
   },
   async getSet(id) {
     if (!usingDb()) { const st = memory.sets.find(x => x.id === id); return st ? { ...st } : null; }
-    const r = await (await db()).query(`SELECT id, name FROM typing_sets WHERE id = $1`, [id]);
-    return r.rows[0] ? { id: Number(r.rows[0].id), name: r.rows[0].name } : null;
+    const r = await (await db()).query(`SELECT id, name, owner FROM typing_sets WHERE id = $1`, [id]);
+    return r.rows[0] ? { id: Number(r.rows[0].id), name: r.rows[0].name, owner: r.rows[0].owner } : null;
   },
-  async createSet(name) {
+  async createSet(name, owner) {
     if (!usingDb()) {
-      if (memory.sets.some(x => x.name.toLowerCase() === name.toLowerCase())) throw new Conflict();
-      const st = { id: ++memory.setSeq, name, created_at: new Date().toISOString() };
+      if (memory.sets.some(x => (x.owner ?? null) === owner && x.name.toLowerCase() === name.toLowerCase())) throw new Conflict();
+      const st = { id: ++memory.setSeq, name, owner, created_at: new Date().toISOString() };
       memory.sets.push(st);
       return { id: st.id, name };
     }
     try {
-      const r = await (await db()).query(`INSERT INTO typing_sets (name) VALUES ($1) RETURNING id, name`, [name]);
+      const r = await (await db()).query(`INSERT INTO typing_sets (name, owner) VALUES ($1, $2) RETURNING id, name`, [name, owner]);
       return { id: Number(r.rows[0].id), name: r.rows[0].name };
     } catch (e) { if (e && e.code === "23505") throw new Conflict(); throw e; }
   },
-  async renameSet(id, name) {
+  async renameSet(id, name, owner) {
     if (!usingDb()) {
-      if (memory.sets.some(x => x.id !== id && x.name.toLowerCase() === name.toLowerCase())) throw new Conflict();
+      if (memory.sets.some(x => x.id !== id && (x.owner ?? null) === owner && x.name.toLowerCase() === name.toLowerCase())) throw new Conflict();
       const st = memory.sets.find(x => x.id === id);
       if (!st) return null;
       st.name = name;
@@ -410,14 +416,16 @@ const store = {
        RETURNING id, set_id, mode, prompt, answers, created_at, updated_at`, [id, prompt, JSON.stringify(answers)]);
     return r.rows[0] ? rowOut(r.rows[0]) : null;
   },
-  async remove(ids) {
+  async remove(ids, owner) {
     if (!usingDb()) {
       const set = new Set(ids);
       const before = memory.items.length;
-      memory.items = memory.items.filter(x => !set.has(x.id));
+      const owned = new Set(memory.sets.filter(st => (st.owner ?? null) === owner).map(st => st.id));
+      memory.items = memory.items.filter(x => !set.has(x.id) || !owned.has(x.set_id));
       return before - memory.items.length;
     }
-    const r = await (await db()).query(`DELETE FROM typing_items WHERE id = ANY($1::bigint[])`, [ids]);
+    const r = await (await db()).query(`DELETE FROM typing_items i USING typing_sets s
+      WHERE i.id = ANY($1::bigint[]) AND i.set_id = s.id AND s.owner IS NOT DISTINCT FROM $2::text`, [ids, owner]);
     return r.rowCount;
   },
 };
@@ -541,17 +549,18 @@ async function handle(req, res, urlPath) {
 
 const practiceLinks = new Map();
 
-async function practiceRows(token) {
+async function practiceRows(token, owner) {
   if (!usingDb()) {
     return [...practiceLinks.values()].filter(link =>
-      (!token || link.token === token) && memory.sets.some(set => set.id === Number(link.set_id)));
+      (!token || link.token === token) && memory.sets.some(set => set.id === Number(link.set_id) && (owner === undefined || (set.owner ?? null) === owner)));
   }
   const p = await db();
-  return (await p.query(`SELECT * FROM typing_practice_links
-    WHERE ($1::text IS NULL OR token = $1) ORDER BY label, token`, [token || null])).rows;
+  return (await p.query(`SELECT l.* FROM typing_practice_links l JOIN typing_sets s ON s.id = l.set_id
+    WHERE ($1::text IS NULL OR l.token = $1) AND ($2::boolean OR s.owner IS NOT DISTINCT FROM $3::text)
+    ORDER BY l.label, l.token`, [token || null, owner === undefined, owner ?? null])).rows;
 }
 
-async function savePractice(token, body) {
+async function savePractice(token, body, owner) {
   const label = clean(body.label);
   const setId = toId(body.set_id);
   const mode = checkMode(body.mode);
@@ -559,7 +568,9 @@ async function savePractice(token, body) {
   if (!label || label.length > 40) throw new BadRequest("관리용 이름은 1~40자로 적어 주세요.");
   if (!/^(all|[1-9]|[1-9][0-9]|100)$/.test(count)) throw new BadRequest("문항 수는 1~100 또는 전체를 선택해 주세요.");
   if (typeof body.active !== "boolean") throw new BadRequest("링크 상태를 선택해 주세요.");
-  if (!await store.getSet(setId)) throw new BadRequest("문제집을 다시 선택해 주세요.");
+  const set = await store.getSet(setId);
+  if (!set || (set.owner ?? null) !== owner) throw new BadRequest("문제집을 다시 선택해 주세요.");
+  if (token && !(await practiceRows(token, owner)).length) return null;
   const link = { token: token || randomBytes(24).toString("hex"), label, set_id: setId, mode, count, active: body.active };
   if (!usingDb()) {
     if (token && !practiceLinks.has(token)) return null;
@@ -594,6 +605,26 @@ async function sharedPractice(req, res, token, resource, ip, url) {
   return send(res, 200, { ok: true, items });
 }
 
+const guardianAccounts = new Map();
+
+async function registerGuardian(username, password) {
+  const hash = await auth.hashPassword(password);
+  if (!usingDb()) {
+    if (guardianAccounts.has(username)) return false;
+    guardianAccounts.set(username, hash);
+    return true;
+  }
+  const result = await (await db()).query(`INSERT INTO typing_guardians (username,password_hash)
+    VALUES ($1,$2) ON CONFLICT DO NOTHING`, [username, hash]);
+  return result.rowCount === 1;
+}
+
+async function guardianHash(username) {
+  if (!usingDb()) return guardianAccounts.get(username);
+  const result = await (await db()).query("SELECT password_hash FROM typing_guardians WHERE username=$1", [username]);
+  return result.rows[0]?.password_hash;
+}
+
 async function route(req, res, urlPath) {
   const url = new URL(req.url, "http://x");
   const sub = urlPath.replace(/^\/api\/typing/, "").replace(/\/+$/, "") || "/";
@@ -601,34 +632,48 @@ async function route(req, res, urlPath) {
   const ip = clientIp(req);
   const shared = /^\/shared\/([a-f0-9]{48})\/(sets|items)$/.exec(sub);
   if (shared) return sharedPractice(req, res, shared[1], shared[2], ip, url);
-  if (sub === "/session" && method === "POST") {
+  if ((sub === "/session" || sub === "/register") && method === "POST") {
     if (!sameOrigin(req)) return send(res, 403, { ok: false, message: "허용되지 않은 요청입니다." });
-    if (limitLoginProxy(req.socket.remoteAddress || "") || limitLogin(ip)) return send(res, 429, { ok: false, message: "잠시 후 다시 로그인해 주세요." });
-    if (!auth.enabled) return send(res, 503, { ok: false, message: "운영자가 보호자 비밀번호를 설정해야 합니다." });
+    if (limitLoginProxy(req.socket.remoteAddress || "") || limitLogin(ip)) return send(res, 429, { ok: false, message: "잠시 후 다시 시도해 주세요." });
     const body = await readJson(req);
-    const cookie = auth.signIn(req, body?.password);
-    if (!cookie) return send(res, 401, { ok: false, message: "비밀번호를 확인해 주세요." });
-    return send(res, 200, { ok: true }, { "Set-Cookie": cookie });
+    const username = typeof body?.username === "string" ? body.username.trim().toLowerCase() : "";
+    const password = body?.password;
+    if (!/^[a-z0-9_]{4,24}$/.test(username) || typeof password !== "string" || password.length < 12 || password.length > 128) {
+      throw new BadRequest("아이디는 영문, 숫자, 밑줄 4~24자, 비밀번호는 12~128자로 입력해 주세요.");
+    }
+    if (sub === "/register") {
+      if (username === "operator" || !await registerGuardian(username, password)) {
+        return send(res, 409, { ok: false, message: "사용할 수 없는 아이디입니다." });
+      }
+    } else {
+      const valid = username === "operator"
+        ? auth.operatorPassword(password)
+        : await auth.checkPassword(password, await guardianHash(username));
+      if (!valid) return send(res, 401, { ok: false, message: "아이디와 비밀번호를 확인해 주세요." });
+    }
+    return send(res, 200, { ok: true }, { "Set-Cookie": auth.signIn(req, username) });
   }
   if (sub === "/session" && method === "DELETE" && sameOrigin(req)) {
     return send(res, 200, { ok: true }, { "Set-Cookie": auth.signOut(req) });
   }
   const linkId = /^\/practice-links\/([a-f0-9]{48})$/.exec(sub);
-  if (!auth.authorized(req)) return send(res, 401, { ok: false, message: "보호자 로그인이 필요해요." });
+  const username = auth.user(req);
+  if (!username) return send(res, 401, { ok: false, message: "보호자 로그인이 필요해요." });
+  const owner = username === "operator" ? null : username;
   if (sub === "/practice-links" && method === "GET") {
-    return send(res, 200, { ok: true, links: await practiceRows() });
+    return send(res, 200, { ok: true, links: await practiceRows(undefined, owner) });
   }
   if ((sub === "/practice-links" && method === "POST") || (linkId && method === "PUT")) {
     if (!sameOrigin(req)) return send(res, 403, { ok: false, message: "허용되지 않은 요청입니다." });
     if (limitWrite(ip)) return send(res, 429, { ok: false, message: "잠시 후 다시 저장해 주세요." });
-    const link = await savePractice(linkId?.[1], await readJson(req));
+    const link = await savePractice(linkId?.[1], await readJson(req), owner);
     if (!link) return send(res, 404, { ok: false, message: "연습 링크를 찾을 수 없어요." });
     return send(res, 200, { ok: true, link });
   }
 
   const mustSet = async v => {
     const st = await store.getSet(toId(v));
-    if (!st) throw new BadRequest("없는 문제집이에요. 다른 사람이 지웠을 수 있어요.");
+    if (!st || (st.owner ?? null) !== owner) throw new BadRequest("사용할 수 없는 문제집이에요.");
     return st;
   };
 
@@ -642,7 +687,7 @@ async function route(req, res, urlPath) {
       return send(res, 200, { ok: true, storage: usingDb() ? "db" : "memory", note });
     }
     /* 문제집 목록과 문제집마다의 문제 수 */
-    if (sub === "/sets") return send(res, 200, { ok: true, sets: await store.sets() });
+    if (sub === "/sets") return send(res, 200, { ok: true, sets: await store.sets(owner) });
     if (sub === "/items") {
       const st = await mustSet(url.searchParams.get("set"));
       const mode = checkMode(url.searchParams.get("mode"));
@@ -658,17 +703,19 @@ async function route(req, res, urlPath) {
 
   if (sub === "/sets" && method === "POST") {
     const body = await readJson(req);
-    return send(res, 200, { ok: true, set: await store.createSet(checkSetName(body.name)) });
+    return send(res, 200, { ok: true, set: await store.createSet(checkSetName(body.name), owner) });
   }
   const setOne = /^\/sets\/(\d+)$/.exec(sub);
   if (setOne && method === "PUT") {
     const body = await readJson(req);
-    const st = await store.renameSet(toId(setOne[1]), checkSetName(body.name));
+    const original = await mustSet(setOne[1]);
+    const st = await store.renameSet(original.id, checkSetName(body.name), owner);
     if (!st) return send(res, 404, { ok: false, message: "없는 문제집이에요." });
     return send(res, 200, { ok: true, set: st });
   }
   if (setOne && method === "DELETE") {
-    const n = await store.removeSet(toId(setOne[1]));
+    const original = await mustSet(setOne[1]);
+    const n = await store.removeSet(original.id);
     return send(res, n ? 200 : 404, { ok: !!n, removed: n });
   }
 
@@ -701,6 +748,7 @@ async function route(req, res, urlPath) {
     const item = await store.get(id);
     if (!item) return send(res, 404, { ok: false, message: "이미 지워진 문제예요." });
     const body = await readJson(req);
+    await mustSet(item.set_id);
     const x = checkItem(item.mode, body);
     return send(res, 200, { ok: true, item: await store.update(id, x.prompt, x.answers) });
   }
@@ -709,7 +757,7 @@ async function route(req, res, urlPath) {
     const body = await readJson(req);
     const ids = (Array.isArray(body.ids) ? body.ids : []).slice(0, 10000).map(toId);
     if (!ids.length) throw new BadRequest("지울 문제를 고르세요.");
-    return send(res, 200, { ok: true, removed: await store.remove(ids) });
+    return send(res, 200, { ok: true, removed: await store.remove(ids, owner) });
   }
 
   return send(res, 404, { ok: false, message: "없는 주소입니다." });
