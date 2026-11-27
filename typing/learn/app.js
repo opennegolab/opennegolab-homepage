@@ -1,4 +1,4 @@
-import { bankContexts, bankProblems, banks, places, shopProblems, shops, tripContexts, tripProblems, trips } from './content.js?v=3';
+import { bankContexts, bankProblems, banks, places, shopProblems, shops, tripContexts, tripProblems, trips } from './content.js?v=4';
 import { notes, values as noteValues, total, won } from '/haru/money/currency.js?v=1';
 
 const app = document.querySelector('#app');
@@ -257,7 +257,8 @@ function kioskOrder(shop) {
   summary.setAttribute('aria-live', 'polite');
   basket.append(title, rows, summary);
   feedbackLine(basket);
-  const checkout = button('결제하기', submitCart, 'primary kiosk-checkout');
+  const checkout = button('결제하기', submitCart, true);
+  checkout.classList.add('kiosk-checkout');
   basket.append(checkout);
 
   const categories = node('div', 'categories kiosk-categories');
@@ -273,7 +274,8 @@ function kioskOrder(shop) {
     menu.append(categories);
   }
   menu.append(products);
-  const jump = button('', () => title.focus(), 'kiosk-mobile-basket');
+  const jump = button('', () => title.focus());
+  jump.classList.add('kiosk-mobile-basket');
   group('kiosk-layout', jump, menu, basket);
 
   function adjust(item, delta, focusControl = false) {
@@ -544,6 +546,59 @@ function shopScreen(shop) {
   finishActions(() => restartShop(id, state.problemIndex), other, () => restartShop(id, next));
 }
 
+function atmScreen(step, scene, values, choose) {
+  const cardAction = step === 'card' || step === 'returnCard';
+  const cashAction = step === 'takeCash' || (step === 'transaction' && values.deposit);
+  heading('ATM', undefined, '가상 은행 연습');
+  const machine = node('section', 'atm-machine');
+  machine.setAttribute('aria-label', '연습용 ATM');
+  const panel = node('div', 'atm-display');
+  const caption = node('p', 'atm-caption', '거래 화면');
+  panel.append(caption);
+
+  if (cardAction || cashAction) {
+    const message = {
+      card: '카드를 넣어 주세요.',
+      returnCard: '카드를 가져가세요.',
+      transaction: '현금을 넣어 주세요.',
+      takeCash: '현금을 가져가세요.'
+    }[step];
+    panel.append(node('p', 'atm-screen-message', message));
+  } else {
+    panel.append(node('p', 'atm-screen-message', scene.prompt));
+    const buttons = node('div', 'atm-screen-buttons');
+    for (const option of scene.options) {
+      const control = button(option.label, () => choose(option));
+      control.classList.add('atm-screen-action');
+      buttons.append(control);
+    }
+    panel.append(buttons);
+  }
+  feedbackLine(panel);
+
+  function slot(title, image, active) {
+    const option = scene.options[0];
+    const control = button('', () => {
+      if (active) choose(option);
+      else feedback('지금은 이곳을 사용할 차례가 아니에요. 거래 화면을 확인해 보세요.');
+    });
+    control.classList.add('atm-slot');
+    const opening = node('span', 'atm-opening');
+    opening.setAttribute('aria-hidden', 'true');
+    control.append(node('strong', '', title), opening);
+    if (active) control.append(photo(image), node('span', 'atm-slot-action', option.label));
+    return control;
+  }
+
+  const slots = node('div', 'atm-slots');
+  slots.append(
+    slot('카드 투입구', step === 'returnCard' ? 'bank-12' : 'bank-7', cardAction),
+    slot('현금 투입·수령구', step === 'takeCash' ? 'bank-11' : 'bank-10', cashAction)
+  );
+  machine.append(panel, slots);
+  app.append(machine);
+}
+
 function activityScreen() {
   const { activity, step, place, id, values } = state;
   const steps = activity.steps;
@@ -567,6 +622,27 @@ function activityScreen() {
     return;
   }
   const scene = typeof nextStep === 'function' ? nextStep(values) : nextStep;
+  function choose(option) {
+    if (option.next === undefined) {
+      feedback(option.hint || '아직 그 순서가 아니에요. ' + scene.prompt);
+      return;
+    }
+    if (step === 'choice' && option.values.deposit !== state.target.deposit) {
+      feedback('문제에서 돈을 넣으라고 했나요, 꺼내라고 했나요? 다시 골라 보세요.');
+      return;
+    }
+    if (step === 'amount' && option.values.amount !== state.target.amount) {
+      feedback('문제에 나온 금액을 다시 확인하고 골라 보세요.');
+      return;
+    }
+    show({ ...state, step: option.next, values: { ...values, ...option.values } });
+  }
+
+  if (id === 'atm') {
+    atmScreen(step, scene, values, choose);
+    return;
+  }
+
   const trip = typeof step === 'number';
   const [bankContext, distractor] = bankContexts[step] || [];
   const situation = trip ? tripContexts[id][step] : step === 'result' ? scene.prompt : bankContext;
@@ -589,21 +665,7 @@ function activityScreen() {
   // 정답 카드의 위치가 매번 같지 않도록 합니다.
   const offset = (trip ? step : step.length + state.problemIndex) % options.length;
   const ordered = options.slice(offset).concat(options.slice(0, offset));
-  const choices = ordered.map(option => card(option.label, option.image, () => {
-    if (option.next === undefined) {
-      feedback(option.hint || '아직 그 순서가 아니에요. ' + scene.prompt);
-      return;
-    }
-    if (step === 'choice' && option.values.deposit !== state.target.deposit) {
-      feedback('문제에서 돈을 넣으라고 했나요, 꺼내라고 했나요? 다시 골라 보세요.');
-      return;
-    }
-    if (step === 'amount' && option.values.amount !== state.target.amount) {
-      feedback('문제에 나온 금액을 다시 확인하고 골라 보세요.');
-      return;
-    }
-    show({ ...state, step: option.next, values: { ...values, ...option.values } });
-  }));
+  const choices = ordered.map(option => card(option.label, option.image, () => choose(option)));
   group('grid actions', ...choices);
   feedbackLine();
 }

@@ -152,13 +152,17 @@ function bankActivity(atm) {
       const sum = amount.toLocaleString('ko-KR') + '원';
       const text = deposit ? '입금해 주세요.' : '출금해 주세요.';
       return step(sum + ' ' + text, action(deposit ? '돈 넣기' : '출금 요청하기',
-        deposit ? 'bank-10' : atm ? 'bank-8' : 'bank-1', 'result'));
+        deposit ? 'bank-10' : atm ? 'bank-8' : 'bank-1', atm ? 'confirm' : 'result'));
     },
+    confirm: ({ deposit, amount }) => step(
+      (deposit ? '입금 금액 ' : '출금 금액 ') + amount.toLocaleString('ko-KR') + '원',
+      action('거래 확인', 'bank-8', 'result')),
     result: ({ deposit, amount }) => step(amount.toLocaleString('ko-KR') + '원 ' + (deposit ? '입금했어요.' : '출금했어요.'),
-      deposit
+      atm || deposit
         ? action('결과 확인', 'bank-6', atm ? 'returnCard' : 'returnBook')
-        : action('현금 받기', atm ? 'bank-11' : 'details-3', atm ? 'returnCard' : 'returnBook')),
-    returnCard: step('카드를 챙겨요.', action('카드 받기', 'bank-12', 'leave')),
+        : action('현금 받기', 'details-3', 'returnBook')),
+    returnCard: ({ deposit }) => step('카드를 챙겨요.', action('카드 받기', 'bank-12', deposit ? 'leave' : 'takeCash')),
+    takeCash: step('현금 수령구가 열렸어요.', action('현금 받기', 'bank-11', 'leave')),
     returnBook: step('통장을 다시 받아요.', action('통장 받기', 'bank-5', 'leave')),
     leave: step(atm ? '받은 물건을 챙기고 나와요.' : '직원에게 감사 인사를 하고 나와요.',
       action(atm ? 'ATM에서 나오기' : '감사합니다', atm ? 'bank-8' : 'bank-1', 'done'))
