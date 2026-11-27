@@ -43,12 +43,26 @@ const TYPES = {
 
 const home = () => path.join(ROOT, "index.html");
 
+/* 공유 서비스가 스크립트 실행 없이 읽을 수 있도록 최초 HTML에 넣습니다. */
+function haruShareMeta(urlPath, title, description) {
+  const url = "https://www.opennegolab.com" + urlPath;
+  return `<meta name="description" content="${description}">
+<link rel="canonical" href="${url}">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:site_name" content="하루랑">
+<meta property="og:title" content="${title} | 하루랑">
+<meta property="og:description" content="${description}">
+<meta property="og:url" content="${url}">
+<meta property="og:image" content="https://www.opennegolab.com/haru/assets/share.png?v=1">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="하루랑. 하루와 함께 세상 배우기. 손을 흔드는 하루 캐릭터.">`;
+}
+
 const HARU_TYPING_META = `<title>타자 연습 | 하루랑</title>
-<meta name="description" content="하루랑에서 한글 타자와 받아쓰기를 무료로 연습해요.">
-<link rel="canonical" href="https://www.opennegolab.com/haru/typing">
-<meta property="og:title" content="타자 연습 | 하루랑">
-<meta property="og:description" content="하루와 함께 하는 무료 한글 타자 연습">
-<meta property="og:image" content="https://www.opennegolab.com/haru/assets/share.png">
+${haruShareMeta("/haru/typing", "타자 연습", "하루랑에서 한글 타자와 받아쓰기를 무료로 연습해요.")}
 <meta name="theme-color" content="#fff8e9">
 <link rel="icon" href="/haru/assets/favicon.png">
 <link rel="manifest" href="/haru/manifest.webmanifest">
@@ -193,11 +207,8 @@ function handle(req, res) {
   if (["/haru/kiosk", "/haru/bank", "/haru/transport"].includes(haruPath)) {
     const template = fs.readFileSync(path.join(ROOT, "typing", "learn", "index.html"), "utf8");
     const title = { "/haru/kiosk": "키오스크", "/haru/bank": "은행 이용", "/haru/transport": "교통수단" }[haruPath];
-    const html = template.replace('<meta name="robots" content="noindex,nofollow">', `
-      <meta name="description" content="하루와 함께 ${title} 학습을 해요.">
-      <link rel="canonical" href="https://www.opennegolab.com${haruPath}">
-      <meta property="og:title" content="${title} | 하루랑">
-      <meta property="og:image" content="https://www.opennegolab.com/haru/assets/share.png">`)
+    const html = template.replace('<meta name="robots" content="noindex,nofollow">',
+      haruShareMeta(haruPath, title, `하루와 함께 ${title} 학습을 해요.`))
       .replace("<title>생활학습 | 초등 공부방</title>", `<title>${title} | 하루랑</title>`);
     res.writeHead(200, { "Content-Type": TYPES[".html"], "Cache-Control": "no-cache",
       "X-Content-Type-Options": "nosniff" });
