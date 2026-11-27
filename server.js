@@ -54,7 +54,7 @@ function haruShareMeta(urlPath, title, description) {
 <meta property="og:title" content="${title} | 하루랑">
 <meta property="og:description" content="${description}">
 <meta property="og:url" content="${url}">
-<meta property="og:image" content="https://www.opennegolab.com/haru/assets/share.png?v=1">
+<meta property="og:image" content="https://www.opennegolab.com/haru/assets/share.png?v=2">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
