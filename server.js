@@ -62,15 +62,29 @@ function haruShareMeta(urlPath, title, description) {
 <meta property="og:image:alt" content="하루랑. 하루와 함께 세상 배우기. 손을 흔드는 하루 캐릭터.">`;
 }
 
-const HARU_TYPING_META = `<title>타자 연습 | 하루랑</title>
-${haruShareMeta("/haru/typing", "타자 연습", "하루랑에서 한글 타자와 받아쓰기를 무료로 연습해요.")}
+const HARU_TYPING_META = `<title>한글 공부 | 하루랑</title>
+${haruShareMeta("/haru/typing", "한글 공부", "하루랑에서 받아쓰기와 질문에 답하기로 한글을 공부해요.")}
 <meta name="theme-color" content="#fff8e9">
 <link rel="icon" href="/haru/assets/favicon.png">
 <link rel="manifest" href="/haru/manifest.webmanifest">
-<link rel="stylesheet" href="/haru/brand.css?v=1">`;
-const HARU_TYPING_NAV = `<nav aria-label="하루랑"><a class="haru-return" href="/haru">
-  <img src="/haru/assets/icon-192.png" alt="" width="32" height="32">하루랑 처음으로</a></nav>`;
+<link rel="stylesheet" href="/haru/brand.css?v=2">
+<link rel="stylesheet" href="/haru/typing.css?v=1">`;
 
+function haruTypingHeader(shared) {
+  return `<header class="haru-top">
+  <nav class="haru-top-inner" aria-label="하루랑">
+    <a class="haru-return" href="/haru" aria-label="하루랑 처음으로">
+      <img src="/haru/assets/logo.png" width="123" height="44" alt="하루랑">
+    </a>
+    ${shared ? "" : '<a class="haru-return haru-top-action haru-typing-settings" href="/typing/admin">보호자 문제 설정</a>'}
+  </nav>
+</header>`;
+}
+
+const HARU_TYPING_HEADING = `<header class="haru-heading">
+  <div><h1>한글 공부</h1><p>잘 듣고, 또박또박 써 봐요.</p></div>
+  <img class="haru-pose" src="/haru/assets/haru-guide.webp" alt="">
+</header>`;
 
 /* 요청 하나를 처리하다 예외가 나면 Node 는 프로세스를 끝낸다 — 방문자 한 명의
    이상한 요청 때문에 사이트 전체가 내려가면 안 된다. 그래서 전체를 감싼다 */
@@ -179,11 +193,9 @@ function handle(req, res) {
       .replace('<html lang="ko">', shared ? '<html lang="ko" data-haru data-shared>' : '<html lang="ko" data-haru>')
       .replace(/<!-- 기존 학습 메타 시작 -->[\s\S]*?<!-- 기존 학습 메타 끝 -->/, HARU_TYPING_META + (shared ? '<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">' : ""))
       .replace(/<!-- 기존 문제 설정 시작 -->[\s\S]*?<!-- 기존 문제 설정 끝 -->/, "")
-      .replace("<!-- 하루랑 타자 탐색 -->", HARU_TYPING_NAV + (shared ? "" :
-        '<p><a class="haru-return" href="/typing/admin">보호자 문제 설정</a></p>'))
-      .replace(/@import url\('https:\/\/cdn\.jsdelivr\.net[^']*'\);/, "")
-      .replace('aria-label="오선빈 타자연습"', 'aria-label="하루랑 타자 연습"')
-      .replace(">오선빈</span>", ">하루랑</span>");
+      .replace("<!-- 하루랑 타자 상단 -->", haruTypingHeader(shared))
+      .replace(/<!-- 타자 제목 시작 -->[\s\S]*?<!-- 타자 제목 끝 -->/, HARU_TYPING_HEADING)
+      .replace(/@import url\('https:\/\/cdn\.jsdelivr\.net[^']*'\);/, "");
     res.writeHead(200, { "Content-Type": TYPES[".html"], "Cache-Control": "no-cache",
       "X-Content-Type-Options": "nosniff" });
     return res.end(html);
