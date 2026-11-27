@@ -1,4 +1,4 @@
-import { speak } from '/typing/learn/speech.js?v=1';
+import { showSpeechHelp, speak } from '/typing/learn/speech.js?v=2';
 
 import { notes, values, won, total } from './currency.js?v=1';
 
@@ -47,10 +47,7 @@ function picture(value) {
 
 function announce(message) {
   voiceStatus.hidden = true;
-  speak(message, () => {
-    voiceStatus.textContent = '소리가 들리지 않으면 음량과 한국어 음성 설정을 확인해 주세요.';
-    voiceStatus.hidden = false;
-  });
+  speak(message, () => showSpeechHelp(voiceStatus));
 }
 
 function heading(title, prompt) {
