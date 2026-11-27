@@ -224,9 +224,11 @@ function handle(req, res) {
       "X-Content-Type-Options": "nosniff" });
     return res.end(html);
   }
-  if (["/haru/kiosk", "/haru/bank", "/haru/transport"].includes(haruPath)) {
+  const learningTitles = { "/haru/kiosk": "키오스크", "/haru/burger": "햄버거 가게",
+    "/haru/bank": "은행 이용", "/haru/transport": "교통수단" };
+  if (Object.hasOwn(learningTitles, haruPath)) {
     const template = fs.readFileSync(path.join(ROOT, "typing", "learn", "index.html"), "utf8");
-    const title = { "/haru/kiosk": "키오스크", "/haru/bank": "은행 이용", "/haru/transport": "교통수단" }[haruPath];
+    const title = learningTitles[haruPath];
     const html = template.replace('<meta name="robots" content="noindex,nofollow">',
       haruShareMeta(haruPath, title, `하루와 함께 ${title} 학습을 해요.`))
       .replace("<title>생활학습 | 하루랑</title>", `<title>${title} | 하루랑</title>`);

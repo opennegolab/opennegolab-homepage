@@ -1,40 +1,32 @@
-import { bankContexts, bankProblems, banks, places, shopProblems, shops, tripContexts, tripProblems, trips } from './content.js?v=3';
-import { showSpeechHelp, speak } from './speech.js?v=2';
+import { bankContexts, bankProblems, banks, places, shopProblems, shops, tripContexts, tripProblems, trips } from './content.js?v=7';
 import { notes, values as noteValues, total, won } from '/haru/money/currency.js?v=1';
 
 const app = document.querySelector('#app');
 const back = document.querySelector('#back');
 const home = document.querySelector('#home');
-const voiceStatus = document.querySelector('#voice-status');
 const area = {
   '/haru/kiosk': { id: 'kiosk', title: '키오스크', prompt: '가게를 골라 구매나 주문 문제를 풀어 보세요.' },
+  '/haru/burger': { id: 'burger', title: '햄버거 가게', prompt: '버거와 샌드위치, 사이드, 음료를 주문해 보세요.' },
   '/haru/bank': { id: 'bank', title: '은행 이용', prompt: '창구 또는 ATM을 골라 은행 문제를 풀어 보세요.' },
   '/haru/transport': { id: 'transport', title: '교통수단', prompt: '탈것을 골라 순서 문제를 풀어 보세요.' }
 }[window.location.pathname.replace(/\/$/, '')];
+const usesOrderScreen = area?.id === 'kiosk' || area?.id === 'burger';
 
 if (area) {
   document.documentElement.setAttribute('data-haru', '');
   document.querySelector('.haru-return').hidden = false;
 }
 
-const welcome = '어디에 가 볼까요? 가 보고 싶은 곳의 사진을 눌러요.';
 let state = { view: 'home' };
 let trail = [];
-let narration;
+let lastOrderNumber = 100;
 
-function say(text) {
-  narration = text;
-  voiceStatus.hidden = true;
-  speak(text, () => showSpeechHelp(voiceStatus));
-}
-
-function show(next, remember = true, confirmation = "") {
+function show(next, remember = true) {
   if (remember) trail.push(state);
   state = next;
-  const text = render();
+  render();
   app.querySelector('h1').focus({ preventScroll: true });
   window.scrollTo(0, 0);
-  say(confirmation + text);
 }
 
 function previous() {
@@ -159,28 +151,27 @@ function problemScreen() {
     }));
   }
   group('controls', button('문제 풀기', () => {
-    show({ ...state, view: state.activity ? 'action' : 'entrance' });
+    const view = state.activity ? 'action' : usesOrderScreen ? 'kiosk-order' : 'entrance';
+    show({ ...state, view });
   }, true));
-  return state.goal + ' 준비되면 문제 풀기를 눌러요.';
 }
 
 function showProblemGoal() {
   const card = node('aside', 'problem-goal');
   card.setAttribute('aria-label', '지금 푸는 문제');
-  card.append(node('p', '', state.goal), button('문제 다시 듣기', () => say(state.goal)));
+  card.append(node('p', '', state.goal));
   app.append(card);
 }
 
 function feedback(message) {
   const status = app.querySelector('.problem-feedback');
   status.textContent = message;
-  say(message);
 }
 
-function feedbackLine() {
+function feedbackLine(parent = app) {
   const status = node('p', 'problem-feedback');
   status.setAttribute('role', 'status');
-  app.append(status);
+  parent.append(status);
 }
 
 function submitCart() {
@@ -188,7 +179,10 @@ function submitCart() {
   const extra = cart.find(line => !target.some(goal => goal.item === line.item));
   const missing = target.find(goal => !cart.some(line => line.item === goal.item));
   const different = cart.find(line => target.some(goal => goal.item === line.item && goal.count !== line.count));
-  if (extra) return feedback('문제에 없는 물건이 담겼어요. ' + extra.item.name + ' 옆의 빼기를 눌러 보세요.');
+  if (extra) {
+    const action = usesOrderScreen ? '의 수량을 줄여 빼 보세요.' : ' 옆의 빼기를 눌러 보세요.';
+    return feedback('문제에 없는 물건이 담겼어요. ' + extra.item.name + action);
+  }
   if (missing) return feedback('아직 담지 않은 물건이 있어요. 문제와 고른 목록을 비교해 보세요.');
   if (different) return feedback(different.item.name + '의 수량을 문제와 비교해 보세요.');
   changeShop('pay-method');
@@ -233,6 +227,129 @@ function orderTotal(cart) {
   return cart.reduce((sum, { item, count }) => sum + item.price * count, 0);
 }
 
+function finishPayment(method, tendered, change = 0) {
+  changeShop(change ? 'change' : 'receive', {
+    payment: { method, tendered, change, orderNumber: ++lastOrderNumber }
+  });
+}
+
+function kioskProgress(view) {
+  const active = view === 'kiosk-order' ? 0 : ['receive', 'shop-done'].includes(view) ? 2 : 1;
+  const steps = node('ol', 'kiosk-progress');
+  ['상품 선택', '결제', '완료'].forEach((label, position) => {
+    const item = node('li', '', label);
+    if (position === active) item.setAttribute('aria-current', 'step');
+    else if (position < active) item.classList.add('completed');
+    steps.append(item);
+  });
+  app.append(steps);
+}
+
+function kioskOrder(shop) {
+  heading(shop.name, '상품을 누르면 주문 목록에 담겨요.');
+  const menu = node('section', 'kiosk-products');
+  menu.setAttribute('aria-label', '상품');
+  const basket = node('aside', 'kiosk-basket');
+  basket.setAttribute('aria-labelledby', 'kiosk-basket-title');
+  const title = node('h2', '', '주문 목록');
+  title.id = 'kiosk-basket-title';
+  title.tabIndex = -1;
+  const rows = node('ul', 'kiosk-lines');
+  const summary = node('p', 'kiosk-total');
+  summary.setAttribute('aria-live', 'polite');
+  basket.append(title, rows, summary);
+  feedbackLine(basket);
+  const checkout = button('결제하기', submitCart, true);
+  checkout.classList.add('kiosk-checkout');
+  basket.append(checkout);
+
+  const categories = node('div', 'categories kiosk-categories');
+  const products = node('div', 'grid items');
+  if (shop.groups.length > 1) {
+    shop.groups.forEach(([label], category) => {
+      const tab = button(label, () => {
+        state = { ...state, category };
+        drawProducts();
+      });
+      categories.append(tab);
+    });
+    menu.append(categories);
+  }
+  menu.append(products);
+  const jump = button('', () => title.focus());
+  jump.classList.add('kiosk-mobile-basket');
+  group('kiosk-layout', jump, menu, basket);
+
+  function adjust(item, delta, focusControl = false) {
+    const cart = [...state.cart];
+    const position = cart.findIndex(line => line.item === item);
+    const count = (cart[position]?.count || 0) + delta;
+    if (count > (item.maxQuantity ?? shop.maxQuantity ?? 5)) {
+      feedback('한 번에 최대 ' + (item.maxQuantity ?? shop.maxQuantity ?? 5) + item.unit + ' 담을 수 있어요.');
+      return;
+    }
+    if (position < 0) cart.push({ item, count });
+    else if (count === 0) cart.splice(position, 1);
+    else cart[position] = { item, count };
+    state = { ...state, cart };
+    feedback('');
+    drawBasket(focusControl ? { item, delta } : undefined);
+  }
+
+  function drawProducts() {
+    [...categories.children].forEach((tab, index) =>
+      tab.setAttribute('aria-pressed', String(index === state.category)));
+    products.replaceChildren(...shop.groups[state.category][1].map(item =>
+      card(item.name, item.image, () => adjust(item, 1), won(item.price))));
+  }
+
+  function drawBasket(focusControl) {
+    rows.replaceChildren();
+    if (!state.cart.length) rows.append(node('li', 'kiosk-empty', '담은 상품이 없어요.'));
+    let focused;
+    for (const { item, count } of state.cart) {
+      const row = node('li', 'kiosk-line');
+      const copy = node('div', 'kiosk-line-copy');
+      copy.append(node('strong', '', item.name), node('span', '', won(item.price * count)));
+      const controls = node('div', 'kiosk-stepper');
+      const decrease = button('−', () => adjust(item, -1, true));
+      const increase = button('+', () => adjust(item, 1, true));
+      decrease.setAttribute('aria-label', item.name + ' 수량 줄이기');
+      increase.setAttribute('aria-label', item.name + ' 수량 늘리기');
+      controls.append(decrease, node('span', '', count + ' ' + item.unit), increase);
+      row.append(photo(item.image), copy, controls);
+      rows.append(row);
+      if (focusControl?.item === item) focused = focusControl.delta < 0 ? decrease : increase;
+    }
+    summary.textContent = '합계 ' + won(orderTotal(state.cart));
+    jump.textContent = '주문 목록 · ' + won(orderTotal(state.cart));
+    checkout.disabled = !state.cart.length;
+    if (focusControl) (focused || rows.querySelector('button') || products.querySelector('button'))?.focus();
+  }
+
+  drawProducts();
+  drawBasket();
+}
+
+function kioskTicket(cart, payment) {
+  const ticket = node('section', 'kiosk-ticket');
+  ticket.setAttribute('aria-labelledby', 'kiosk-ticket-title');
+  const title = node('h2', '', '연습용 영수증');
+  title.id = 'kiosk-ticket-title';
+  const number = node('p', 'kiosk-order-number', '주문 번호 ' + payment.orderNumber);
+  const list = node('ul', 'kiosk-ticket-items');
+  for (const { item, count } of cart) {
+    const row = node('li');
+    row.append(node('span', '', wording(item, count)), node('strong', '', won(item.price * count)));
+    list.append(row);
+  }
+  ticket.append(title, number, list, node('p', 'kiosk-total', payment.method + ' 결제 ' + won(orderTotal(cart))));
+  if (payment.method === '현금') {
+    ticket.append(node('p', '', '받은 돈 ' + won(payment.tendered) + ' · 거스름돈 ' + won(payment.change)));
+  }
+  app.append(ticket);
+}
+
 function paymentScreen(shop) {
   const { view, cart, payment } = state;
   const due = orderTotal(cart);
@@ -243,15 +360,15 @@ function paymentScreen(shop) {
     group('grid actions',
       card('현금으로 결제', 'bank-6', () => changeShop('cash', { cash: [] })),
       card('카드로 결제', 'bank-7', () => changeShop('card')));
-    return prompt;
+    return;
   }
   if (view === 'card') {
     const prompt = '낼 금액은 ' + won(due) + '이에요. 연습용 카드를 단말기에 대 보세요.';
     heading('카드로 결제', prompt, shop.name);
     group('single action', card('카드 대기', 'taxi-6', () => {
-      changeShop('receive', { payment: { method: '카드', tendered: due, change: 0 } });
+      finishPayment('카드', due);
     }));
-    return prompt;
+    return;
   }
   if (view === 'change') {
     const prompt = won(payment.tendered) + '을 냈어요. 거스름돈 ' + won(payment.change) + '을 받아요.';
@@ -265,7 +382,7 @@ function paymentScreen(shop) {
     }
     app.append(returned);
     group('single action', card('거스름돈 받기', 'bank-6', () => changeShop('receive')));
-    return prompt;
+    return;
   }
 
   const prompt = '낼 금액은 ' + won(due) + '이에요. 낼 지폐를 골라 보세요.';
@@ -292,7 +409,7 @@ function paymentScreen(shop) {
       return;
     }
     const change = tendered - due;
-    changeShop(change ? 'change' : 'receive', { payment: { method: '현금', tendered, change } });
+    finishPayment('현금', tendered, change);
   }, true));
 
   function updateCash(focusValue) {
@@ -313,14 +430,13 @@ function paymentScreen(shop) {
     if (focusValue && !state.cash.includes(focusValue)) choices.querySelector('button').focus();
   }
   updateCash();
-  return prompt;
 }
 
 function receipt(cart, editable) {
   const rows = cart.map(({ item, count }) => {
     const row = node('li', 'receipt-row');
     const label = wording(item, count);
-    row.append(repeated(item, count), button(label + ' · 듣기', () => say(label)), node('span', 'receipt-price', won(item.price * count)));
+    row.append(repeated(item, count), node('span', 'receipt-label', label), node('span', 'receipt-price', won(item.price * count)));
     if (editable) {
       const edit = button('수량 바꾸기', () => changeShop('quantity', { item, count }));
       edit.setAttribute('aria-label', item.name + ' 수량 바꾸기');
@@ -348,13 +464,19 @@ function finishActions(repeat, other = reset, nextProblem) {
 
 function shopScreen(shop) {
   const { id, view, category, cart, item, count, notice } = state;
+  const kiosk = usesOrderScreen;
   const menu = shop.submit === '주문하기';
+  if (kiosk) kioskProgress(view);
+  if (view === 'kiosk-order') {
+    kioskOrder(shop);
+    return;
+  }
   if (view === 'entrance') {
     const prompt = shop.name + '에 왔어요.';
     const label = menu ? '메뉴판 보기' : '진열대 보기';
     heading(shop.name, prompt);
     group('single', card(label, shop.image, () => changeShop('items')));
-    return prompt + ' 사진을 눌러 ' + (menu ? '메뉴판을 봐요.' : '진열대를 봐요.');
+    return;
   }
   if (view === 'items') {
     heading(shop.name, shop.prompt);
@@ -371,7 +493,7 @@ function shopScreen(shop) {
       changeShop('quantity', { item: product, count: oldCount ?? 1 });
     }, won(product.price))));
     if (cart.length) group('controls', button(shop.container + ' 보기', () => changeShop('cart', { notice: '' })));
-    return shop.groups.length > 1 ? shop.groups[category][0] + '. ' + shop.prompt : shop.prompt;
+    return;
   }
   if (view === 'quantity') {
     const prompt = '몇 ' + item.unit + (menu ? ' 주문할까요?' : ' 살까요?');
@@ -384,15 +506,14 @@ function shopScreen(shop) {
       return choice;
     });
     group('quantities', ...numbers);
-    const last = item.name.charCodeAt(item.name.length - 1) - 0xAC00;
-    return item.name + (last % 28 ? '을' : '를') + ' 골랐어요. ' + prompt;
+    return;
   }
   if (view === 'confirm') {
     const label = wording(item, count);
     heading(label, label + ' 주세요.', shop.name);
     group('quantity-photo', repeated(item, count));
     group('controls', card(shop.add, shop.containerImage, saveQuantity));
-    return label + ' 골랐어요. ' + label + ' 주세요. ' + shop.add + ' 사진을 눌러요.';
+    return;
   }
   if (view === 'cart') {
     const prompt = cart.length ? shop.confirm : '아직 고른 것이 없어요.';
@@ -401,18 +522,20 @@ function shopScreen(shop) {
     feedbackLine();
     const actions = [button(shop.more, () => changeShop('items', { notice: '' })), button(shop.submit, submitCart, true)];
     group('controls', ...actions);
-    return (notice ? notice + ' ' : '') + prompt + (cart.length
-      ? ' 더 고르거나 ' + (menu ? '주문할 수 있어요.' : '구매할 수 있어요.')
-      : ' 더 고르기를 눌러요.');
+    return;
   }
-  if (['pay-method', 'cash', 'card', 'change'].includes(view)) return paymentScreen(shop);
+  if (['pay-method', 'cash', 'card', 'change'].includes(view)) {
+    paymentScreen(shop);
+    return;
+  }
   if (view === 'receive') {
     const { payment } = state;
     const text = (payment.method === '카드' ? '카드로 ' : '현금으로 ') + won(orderTotal(cart)) + '을 결제했어요.';
     heading('결제했어요', text, shop.name);
-    receipt(cart, false);
+    if (kiosk) kioskTicket(cart, payment);
+    else receipt(cart, false);
     group('controls', button(shop.receive, () => changeShop('shop-done'), true));
-    return text + ' 이제 ' + (menu ? '주문한 메뉴를' : '산 물건을') + ' 받아요.';
+    return;
   }
   heading('문제를 해결했어요', shop.done, shop.name, 'cheer');
   receipt(cart, false);
@@ -423,7 +546,59 @@ function shopScreen(shop) {
   } : reset;
   const next = (state.problemIndex + 1) % shopProblems[id].length;
   finishActions(() => restartShop(id, state.problemIndex), other, () => restartShop(id, next));
-  return '문제에 맞게 골랐어요. ' + shop.done + ' ' + cart.map(line => wording(line.item, line.count) + ' 받았어요.').join(' ');
+}
+
+function atmScreen(step, scene, values, choose) {
+  const cardAction = step === 'card' || step === 'returnCard';
+  const cashAction = step === 'takeCash' || (step === 'transaction' && values.deposit);
+  heading('ATM', undefined, '가상 은행 연습');
+  const machine = node('section', 'atm-machine');
+  machine.setAttribute('aria-label', '연습용 ATM');
+  const panel = node('div', 'atm-display');
+  const caption = node('p', 'atm-caption', '거래 화면');
+  panel.append(caption);
+
+  if (cardAction || cashAction) {
+    const message = {
+      card: '카드를 넣어 주세요.',
+      returnCard: '카드를 가져가세요.',
+      transaction: '현금을 넣어 주세요.',
+      takeCash: '현금을 가져가세요.'
+    }[step];
+    panel.append(node('p', 'atm-screen-message', message));
+  } else {
+    panel.append(node('p', 'atm-screen-message', scene.prompt));
+    const buttons = node('div', 'atm-screen-buttons');
+    for (const option of scene.options) {
+      const control = button(option.label, () => choose(option));
+      control.classList.add('atm-screen-action');
+      buttons.append(control);
+    }
+    panel.append(buttons);
+  }
+  feedbackLine(panel);
+
+  function slot(title, image, active) {
+    const option = scene.options[0];
+    const control = button('', () => {
+      if (active) choose(option);
+      else feedback('지금은 이곳을 사용할 차례가 아니에요. 거래 화면을 확인해 보세요.');
+    });
+    control.classList.add('atm-slot');
+    const opening = node('span', 'atm-opening');
+    opening.setAttribute('aria-hidden', 'true');
+    control.append(node('strong', '', title), opening);
+    if (active) control.append(photo(image), node('span', 'atm-slot-action', option.label));
+    return control;
+  }
+
+  const slots = node('div', 'atm-slots');
+  slots.append(
+    slot('카드 투입구', step === 'returnCard' ? 'bank-12' : 'bank-7', cardAction),
+    slot('현금 투입·수령구', step === 'takeCash' ? 'bank-11' : 'bank-10', cashAction)
+  );
+  machine.append(panel, slots);
+  app.append(machine);
 }
 
 function activityScreen() {
@@ -446,9 +621,30 @@ function activityScreen() {
     };
     const nextProblem = bankProblems[id] ? () => replay((state.problemIndex + 1) % bankProblems[id].length) : undefined;
     finishActions(() => replay(state.problemIndex), other, nextProblem);
-    return activity.done;
+    return;
   }
   const scene = typeof nextStep === 'function' ? nextStep(values) : nextStep;
+  function choose(option) {
+    if (option.next === undefined) {
+      feedback(option.hint || '아직 그 순서가 아니에요. ' + scene.prompt);
+      return;
+    }
+    if (step === 'choice' && option.values.deposit !== state.target.deposit) {
+      feedback('문제에서 돈을 넣으라고 했나요, 꺼내라고 했나요? 다시 골라 보세요.');
+      return;
+    }
+    if (step === 'amount' && option.values.amount !== state.target.amount) {
+      feedback('문제에 나온 금액을 다시 확인하고 골라 보세요.');
+      return;
+    }
+    show({ ...state, step: option.next, values: { ...values, ...option.values } });
+  }
+
+  if (id === 'atm') {
+    atmScreen(step, scene, values, choose);
+    return;
+  }
+
   const trip = typeof step === 'number';
   const [bankContext, distractor] = bankContexts[step] || [];
   const situation = trip ? tripContexts[id][step] : step === 'result' ? scene.prompt : bankContext;
@@ -471,48 +667,36 @@ function activityScreen() {
   // 정답 카드의 위치가 매번 같지 않도록 합니다.
   const offset = (trip ? step : step.length + state.problemIndex) % options.length;
   const ordered = options.slice(offset).concat(options.slice(0, offset));
-  const choices = ordered.map(option => card(option.label, option.image, () => {
-    if (option.next === undefined) {
-      feedback(option.hint || '아직 그 순서가 아니에요. ' + scene.prompt);
-      return;
-    }
-    if (step === 'choice' && option.values.deposit !== state.target.deposit) {
-      feedback('문제에서 돈을 넣으라고 했나요, 꺼내라고 했나요? 다시 골라 보세요.');
-      return;
-    }
-    if (step === 'amount' && option.values.amount !== state.target.amount) {
-      feedback('문제에 나온 금액을 다시 확인하고 골라 보세요.');
-      return;
-    }
-    show({ ...state, step: option.next, values: { ...values, ...option.values } }, true, scene.prompt + ' ');
-  }));
+  const choices = ordered.map(option => card(option.label, option.image, () => choose(option)));
   group('grid actions', ...choices);
   feedbackLine();
-  return prompt;
 }
 
 function render() {
   app.replaceChildren();
   const { id, view } = state;
-  app.classList.toggle('kiosk-session', area?.id === 'kiosk' && Boolean(shops[id]));
+  app.classList.toggle('kiosk-session', usesOrderScreen && Boolean(shops[id]));
   back.hidden = trail.length === 0;
   home.hidden = view === 'home';
   if (view === 'home') {
     if (area) {
       heading(area.title, area.prompt, undefined, 'guide');
-      if (area.id === 'kiosk') {
-        group('grid places kiosk-menu', ...places.slice(0, 4).map(([key, name, desc, image]) =>
+      if (area.id === 'burger') {
+        group('single', card('주문 연습 시작', shops.burger.image, () => openShop('burger')));
+      } else if (area.id === 'kiosk') {
+        const stores = places.filter(([key]) => key === 'mart' || Object.hasOwn(shops, key));
+        group('grid places kiosk-menu', ...stores.map(([key, name, desc, image]) =>
           card(name, image, () => startPlace(key), desc)));
       } else {
         group('grid places', ...placeChoices(area.id).map(([key, activity]) =>
           card(activity.name, activity.image, () => openActivity(key, area.id, activity))));
       }
-      return area.title + '. ' + area.prompt;
+      return;
     }
     heading('생활학습', '어디에 가 볼까요?');
     group('grid places', ...places.map(([key, name, desc, image]) =>
       card(name, image, () => startPlace(key), desc)));
-    return welcome;
+    return;
   }
   if (view === 'places') {
     const [, name] = places.find(([key]) => key === id);
@@ -523,14 +707,17 @@ function render() {
         if (id === 'mart') openShop(key);
         else openActivity(key, id, activity);
       })));
-    return name + '. ' + prompt;
+    return;
   }
-  if (view === 'problem') return problemScreen();
+  if (view === 'problem') {
+    problemScreen();
+    return;
+  }
   showProblemGoal();
-  return view === 'action' ? activityScreen() : shopScreen(shops[id]);
+  if (view === 'action') activityScreen();
+  else shopScreen(shops[id]);
 }
 
 back.addEventListener('click', previous);
 home.addEventListener('click', reset);
-document.querySelector('#listen').addEventListener('click', () => say(narration));
-narration = render();
+render();

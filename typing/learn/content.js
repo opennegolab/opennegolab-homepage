@@ -13,6 +13,7 @@ const prices = {
   vegetable: [1000, 1000, 1000, 1000, 3000, 2000, 1000, 2000, 2000, 3000],
   stationery: [1000, 1000, 2000, 1000, 3000, 2000, 1000, 3000, 5000, 2000],
   cafe: [4000, 4000, 4000, 3000, 3000, 4000, 5000, 3000, 5000, 2000, 4000],
+  burger: [4000, 5000, 6000, 5000, 2000, 3000, 2000, 2000, 3000],
   food: [6000, 9000, 9000, 7000, 8000, 8000, 12000, 15000, 4000, 3000, 6000, 5000, 8000, 10000, 5000, 9000]
 };
 
@@ -53,6 +54,14 @@ export const shops = {
       ['과일 스무디', '잔'], ['아이스크림', '스쿱'], ['케이크', '조각'], ['쿠키'], ['와플']
     ]);
     return [['음료', menu.slice(0, 7)], ['디저트', menu.slice(7)]];
+  })() },
+  burger: { name: '햄버거 가게', image: 'burger-2', ...order, groups: (() => {
+    const menu = items('burger', [
+      ['샌드위치'], ['치즈버거'], ['치킨버거'], ['불고기버거'],
+      ['감자튀김', '팩'], ['치킨 조각', '팩'],
+      ['콜라', '잔'], ['레몬소다', '잔'], ['오렌지주스', '잔']
+    ]);
+    return [['버거·샌드위치', [menu[2], menu[3], menu[1], menu[0]]], ['사이드', menu.slice(4, 6)], ['음료', menu.slice(6)]];
   })() },
   food: { name: '음식점', image: 'places-4', ...order, prompt: '무엇을 먹을까요?',
     receive: '음식 받기', done: '음식을 받았어요. 잘 먹겠습니다.', groups: (() => {
@@ -152,13 +161,17 @@ function bankActivity(atm) {
       const sum = amount.toLocaleString('ko-KR') + '원';
       const text = deposit ? '입금해 주세요.' : '출금해 주세요.';
       return step(sum + ' ' + text, action(deposit ? '돈 넣기' : '출금 요청하기',
-        deposit ? 'bank-10' : atm ? 'bank-8' : 'bank-1', 'result'));
+        deposit ? 'bank-10' : atm ? 'bank-8' : 'bank-1', atm ? 'confirm' : 'result'));
     },
+    confirm: ({ deposit, amount }) => step(
+      (deposit ? '입금 금액 ' : '출금 금액 ') + amount.toLocaleString('ko-KR') + '원',
+      action('거래 확인', 'bank-8', 'result')),
     result: ({ deposit, amount }) => step(amount.toLocaleString('ko-KR') + '원 ' + (deposit ? '입금했어요.' : '출금했어요.'),
-      deposit
+      atm || deposit
         ? action('결과 확인', 'bank-6', atm ? 'returnCard' : 'returnBook')
-        : action('현금 받기', atm ? 'bank-11' : 'details-3', atm ? 'returnCard' : 'returnBook')),
-    returnCard: step('카드를 챙겨요.', action('카드 받기', 'bank-12', 'leave')),
+        : action('현금 받기', 'details-3', 'returnBook')),
+    returnCard: ({ deposit }) => step('카드를 챙겨요.', action('카드 받기', 'bank-12', deposit ? 'leave' : 'takeCash')),
+    takeCash: step('현금 수령구가 열렸어요.', action('현금 받기', 'bank-11', 'leave')),
     returnBook: step('통장을 다시 받아요.', action('통장 받기', 'bank-5', 'leave')),
     leave: step(atm ? '받은 물건을 챙기고 나와요.' : '직원에게 감사 인사를 하고 나와요.',
       action(atm ? 'ATM에서 나오기' : '감사합니다', atm ? 'bank-8' : 'bank-1', 'done'))
@@ -175,6 +188,12 @@ export const shopProblems = {
   vegetable: [{ items: [['당근', 2]] }, { items: [['오이', 1], ['감자', 3]] }],
   stationery: [{ items: [['연필', 2]] }, { items: [['공책', 1], ['지우개', 2]] }],
   cafe: [{ items: [['딸기주스', 1]] }, { items: [['레모네이드', 2], ['쿠키', 1]] }],
+  burger: [
+    { items: [['치즈버거', 1], ['감자튀김', 1], ['콜라', 1]] },
+    { items: [['치킨버거', 1], ['치킨 조각', 1], ['레몬소다', 2]] },
+    { items: [['불고기버거', 2], ['오렌지주스', 1]] },
+    { items: [['샌드위치', 1], ['감자튀김', 2], ['오렌지주스', 1]] }
+  ],
   food: [{ items: [['돈가스', 1]] }, { items: [['김밥', 2], ['우동', 1]] }]
 };
 
@@ -191,7 +210,7 @@ export const tripProblems = {
   plane: '공항에서 비행기를 타고 목적지까지 가 보세요.'
 };
 
-// 먼저 상황을 말해 주고, 정답 행동을 고른 뒤 기존 안내를 들려줍니다.
+// 다음 행동을 고르기 전에 현재 상황을 보여 줍니다.
 export const tripContexts = {
   bus: ['길에 도착했어요.', '아직 버스가 오지 않았어요.', '버스가 멈추고 문이 열렸어요.',
     '버스 안에 들어왔어요.', '학교 앞 정류장이 가까워졌어요.', '학교 앞에 도착해 문이 열렸어요.'],
