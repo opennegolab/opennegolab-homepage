@@ -3,7 +3,6 @@ export const places = [
   ['stationery', '문구점', '학용품 사기', 'places-2'],
   ['cafe', '카페', '음료와 디저트 주문하기', 'places-3'],
   ['food', '음식점', '먹고 싶은 음식 주문하기', 'places-4'],
-  ['burger', '햄버거 가게', '버거, 사이드, 음료를 골라 주문하기', 'burger-2'],
   ['bank', '은행', '창구와 ATM 이용하기', 'places-5'],
   ['transport', '교통수단', '버스, 지하철 등 타 보기', 'places-6']
 ];
