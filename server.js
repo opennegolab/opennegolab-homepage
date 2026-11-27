@@ -147,6 +147,26 @@ function handle(req, res) {
     return;
   }
 
+  /* 이 기기 방문을 통계에서 뺄지 — 로그인한 사람만 바꿀 수 있다 */
+  if (urlPath === "/api/stats-me") {
+    if (req.method !== "POST") { res.writeHead(405).end(); return; }
+    if (!stats.authorized(req)) {
+      res.writeHead(401, { "Content-Type": "application/json; charset=utf-8" });
+      return res.end(JSON.stringify({ ok: false }));
+    }
+    let raw = "", size = 0;
+    req.on("data", c => { size += c.length; if (size > 512) { req.destroy(); return; } raw += c; });
+    req.on("end", () => {
+      let body; try { body = JSON.parse(raw || "{}"); } catch { body = {}; }
+      const on = body.on !== false;
+      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store",
+                           "Set-Cookie": stats.setMine(req, on) });
+      res.end(JSON.stringify({ ok: true, mine: on }));
+    });
+    req.on("error", () => {});
+    return;
+  }
+
   if (urlPath === "/api/stats-logout") {
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Set-Cookie": stats.logout(req) });
     return res.end(JSON.stringify({ ok: true }));
@@ -162,9 +182,13 @@ function handle(req, res) {
       res.writeHead(401, { "Content-Type": "application/json; charset=utf-8" });
       return res.end(JSON.stringify({ error: "로그인이 필요합니다." }));
     }
+    const me = stats.mineState(req);
     stats.summary()
       .then(d => {
-        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+        d.내기기제외 = me.mine;
+        const head = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
+        if (me.cookie) head["Set-Cookie"] = me.cookie;
+        res.writeHead(200, head);
         res.end(JSON.stringify(d));
       })
       .catch(e => {
