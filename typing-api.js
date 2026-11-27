@@ -197,7 +197,6 @@ async function prepare(p) {
       name       TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )`);
-  await p.query(`ALTER TABLE typing_sets ADD COLUMN IF NOT EXISTS legacy_public BOOLEAN NOT NULL DEFAULT TRUE`);
   await p.query(`CREATE UNIQUE INDEX IF NOT EXISTS typing_sets_name_idx ON typing_sets (lower(name))`);
   await p.query(`
     CREATE TABLE IF NOT EXISTS typing_items (
@@ -300,9 +299,9 @@ class Conflict extends Error {}
 
 const store = {
   /* ----- 문제집 ----- */
-  async sets(includePrivate) {
+  async sets() {
     if (!usingDb()) {
-      return memory.sets.filter(st => includePrivate || st.legacy_public !== false).map(st => ({
+      return memory.sets.map(st => ({
         id: st.id, name: st.name,
         counts: {
           dictation: memory.items.filter(x => x.set_id === st.id && x.mode === "dictation").length,
@@ -315,24 +314,23 @@ const store = {
              count(i.id) FILTER (WHERE i.mode = 'dictation')::int AS d,
              count(i.id) FILTER (WHERE i.mode = 'qa')::int AS q
         FROM typing_sets s LEFT JOIN typing_items i ON i.set_id = s.id
-       WHERE $1::boolean OR s.legacy_public
-       GROUP BY s.id ORDER BY s.id`, [includePrivate]);
+       GROUP BY s.id ORDER BY s.id`);
     return r.rows.map(x => ({ id: Number(x.id), name: x.name, counts: { dictation: x.d, qa: x.q } }));
   },
   async getSet(id) {
     if (!usingDb()) { const st = memory.sets.find(x => x.id === id); return st ? { ...st } : null; }
-    const r = await (await db()).query(`SELECT id, name, legacy_public FROM typing_sets WHERE id = $1`, [id]);
-    return r.rows[0] ? { id: Number(r.rows[0].id), name: r.rows[0].name, legacy_public: r.rows[0].legacy_public } : null;
+    const r = await (await db()).query(`SELECT id, name FROM typing_sets WHERE id = $1`, [id]);
+    return r.rows[0] ? { id: Number(r.rows[0].id), name: r.rows[0].name } : null;
   },
   async createSet(name) {
     if (!usingDb()) {
       if (memory.sets.some(x => x.name.toLowerCase() === name.toLowerCase())) throw new Conflict();
-      const st = { id: ++memory.setSeq, name, created_at: new Date().toISOString(), legacy_public: false };
+      const st = { id: ++memory.setSeq, name, created_at: new Date().toISOString() };
       memory.sets.push(st);
       return { id: st.id, name };
     }
     try {
-      const r = await (await db()).query(`INSERT INTO typing_sets (name, legacy_public) VALUES ($1, FALSE) RETURNING id, name`, [name]);
+      const r = await (await db()).query(`INSERT INTO typing_sets (name) VALUES ($1) RETURNING id, name`, [name]);
       return { id: Number(r.rows[0].id), name: r.rows[0].name };
     } catch (e) { if (e && e.code === "23505") throw new Conflict(); throw e; }
   },
@@ -616,9 +614,7 @@ async function route(req, res, urlPath) {
     return send(res, 200, { ok: true }, { "Set-Cookie": auth.signOut(req) });
   }
   const linkId = /^\/practice-links\/([a-f0-9]{48})$/.exec(sub);
-  if (method !== "GET" || sub === "/practice-links" || linkId) {
-    if (!auth.authorized(req)) return send(res, 401, { ok: false, message: "보호자 로그인이 필요해요." });
-  }
+  if (!auth.authorized(req)) return send(res, 401, { ok: false, message: "보호자 로그인이 필요해요." });
   if (sub === "/practice-links" && method === "GET") {
     return send(res, 200, { ok: true, links: await practiceRows() });
   }
@@ -646,12 +642,9 @@ async function route(req, res, urlPath) {
       return send(res, 200, { ok: true, storage: usingDb() ? "db" : "memory", note });
     }
     /* 문제집 목록과 문제집마다의 문제 수 */
-    if (sub === "/sets") return send(res, 200, { ok: true, sets: await store.sets(auth.authorized(req)) });
+    if (sub === "/sets") return send(res, 200, { ok: true, sets: await store.sets() });
     if (sub === "/items") {
       const st = await mustSet(url.searchParams.get("set"));
-      if (st.legacy_public === false && !auth.authorized(req)) {
-        return send(res, 404, { ok: false, message: "사용할 수 없는 문제집이에요." });
-      }
       const mode = checkMode(url.searchParams.get("mode"));
       const items = (await store.list(st.id, mode)).map(x => ({ id: x.id, mode: x.mode, prompt: x.prompt, answers: x.answers }));
       return send(res, 200, { ok: true, items });
