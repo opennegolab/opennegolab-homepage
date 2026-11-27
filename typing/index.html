@@ -502,7 +502,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   </section>
 </div>
 
-<script src="/typing/store.js?v=6"></script>
+<script src="/typing/store.js?v=7"></script>
 <script>
 (function () {
   "use strict";
@@ -512,13 +512,14 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   const RATE = 0.9;      /* 읽기 빠르기 — 저학년이 따라 쓰기 좋게 조금 느리게 */
 
   /* ---------- 이 기기에만 남기는 값 ---------- */
+  const shared = document.documentElement.hasAttribute("data-shared");
   const settingsPrefix = document.documentElement.hasAttribute("data-haru") ? "haru.typing." : "typing.";
   const local = {
     get(k, d) { try { const v = localStorage.getItem(settingsPrefix + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
     set(k, v) { try { localStorage.setItem(settingsPrefix + k, JSON.stringify(v)); } catch (e) {} },
   };
-  const settings = Object.assign({ mode: "dictation", count: "10", set: 0 }, local.get("settings", {}));
-  const saveSettings = () => local.set("settings", settings);
+  const settings = Object.assign({ mode: "dictation", count: "10", set: 0 }, shared ? {} : local.get("settings", {}));
+  const saveSettings = () => { if (!shared) local.set("settings", settings); };
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -689,7 +690,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   function renderSets() {
     const el = $("sets");
     if (!sets) return;
-    if (!sets.length) { el.innerHTML = "<span class='note'>아직 문제집이 없어요. '문제 설정'에서 만들어 주세요.</span>"; return; }
+    if (!sets.length) { el.textContent = shared ? "사용할 수 있는 연습이 없어요." : "아직 문제집이 없어요. 문제 설정에서 만들어 주세요."; return; }
     el.innerHTML = sets.map(x =>
       "<button type='button' class='set' data-set='" + x.id + "' aria-pressed='" + (x.id === settings.set) + "'>" + esc(x.name) +
       "<small>" + (x.counts.dictation + x.counts.qa) + "</small></button>").join("");
@@ -746,15 +747,25 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   let loadError = "";
   /* 주소에 ?set=번호 가 있으면 그 문제집을 고른 채로 연다 (문제집별 링크) */
   const urlSet = Number(new URLSearchParams(location.search).get("set")) || 0;
-  if (urlSet) { settings.set = urlSet; saveSettings(); }
+  if (urlSet && !shared) { settings.set = urlSet; saveSettings(); }
 
   async function loadCounts() {
     try {
       sets = await T.store.sets();
       loadError = "";
+      if (shared && sets.length) {
+        const [practice] = sets;
+        Object.assign(settings, { set: practice.id, mode: practice.mode, count: practice.count });
+        $("counts").replaceChildren(document.createTextNode(practice.count === "all" ? "전체 문제" : practice.count + "문제"));
+        document.querySelectorAll("[data-mode]").forEach(button => {
+          button.style.display = button.dataset.mode === settings.mode ? "" : "none";
+          button.disabled = true;
+        });
+      }
       if (!currentSet() && sets.length) { settings.set = sets[0].id; saveSettings(); }
     } catch (e) {
       if (!sets) { $("cnt-dictation").textContent = $("cnt-qa").textContent = "불러오지 못함"; $("sets").innerHTML = ""; }
+      if (shared) sets = [];
       loadError = "문제를 불러오지 못했어요. " + e.message;
     }
     renderHome();

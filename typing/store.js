@@ -93,7 +93,13 @@
     let r;
     const publicPractice = root.document?.documentElement.hasAttribute("data-haru");
     if (publicPractice && body !== undefined) throw new Error("공개 문제집은 읽기만 할 수 있어요.");
-    try { r = await fetch((publicPractice ? "/haru/practice-data" : "/api/typing") + path, opt); }
+    let endpoint = publicPractice ? "/haru/practice-data" : "/api/typing";
+    if (root.document?.documentElement.hasAttribute("data-shared")) {
+      const token = root.location.hash.slice(1);
+      if (!/^[a-f0-9]{48}$/.test(token)) throw new Error("연습 링크를 다시 확인해 주세요.");
+      endpoint = "/api/typing/shared/" + token;
+    }
+    try { r = await fetch(endpoint + path, opt); }
     catch (e) { throw new Error("인터넷 연결을 확인해 주세요."); }
     let data = {};
     try { data = await r.json(); } catch (e) {}

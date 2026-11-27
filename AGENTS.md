@@ -29,7 +29,7 @@
 |---|---|
 | https://www.opennegolab.com/typing | **오선빈 타자연습** — 학습 화면 (홈페이지 메뉴에는 없음, 전용 링크) |
 | https://www.opennegolab.com/typing?set=번호 | 특정 문제집이 골라진 채로 열리는 링크 (아이에게 보내는 용도) |
-| https://www.opennegolab.com/typing/admin | **문제 설정** — 문제집·문제 관리 (로그인 없음, 운영자 요청) |
+| https://www.opennegolab.com/typing/admin | **문제 설정** — 문제집·문제 관리 및 맞춤 연습 링크 (보호자 로그인) |
 | https://www.opennegolab.com/api/typing/… | 타자연습 서버 API (아래 6번) |
 | https://www.opennegolab.com | 열린협상연구소 홈페이지 (같은 서버) |
 
@@ -118,7 +118,7 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
   - 여러 문제: 한 줄에 하나. 질문은 `질문 / 정답 / 다른 정답` (엑셀 탭 구분도 됨)
   - 허용 정답은 `/` 로 구분, 정답 칸에서 Enter 로 바로 등록
 - 목록: 최신순, 10개씩 페이지, 검색, 수정·삭제·선택 삭제(확인 창)
-- **로그인 없음** — 링크를 아는 사람은 누구나 고칠 수 있음 (운영자 결정)
+- **보호자 로그인** — `TYPING_ADMIN_PASSWORD`를 설정한 운영 환경에서 문제 설정과 맞춤 링크를 관리
 
 ### 6-3. 서버 `typing-api.js`
 
@@ -137,7 +137,7 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
   | `POST /items` `{set, mode, items, skipDuplicates}` | 문제 등록 (하나라도 잘못되면 전부 취소) |
   | `PUT /items/:id` / `POST /delete {ids}` | 문제 수정·삭제 |
 
-- 변경 요청 보호: 다른 사이트 Origin 거절, JSON 만 받음, IP 당 1분 60회 제한 (로그인은 없음)
+- 변경 요청 보호: 다른 사이트 Origin 거절, JSON 만 받음, IP 당 1분 60회 제한, 보호자 세션 필요
 - `DATABASE_URL` 이 없으면 **메모리 모드**(재시작하면 사라짐, 문제 설정 화면에 경고)
 - **기본 문제집** (`ONCE` 목록, 배포 후 처음 켜질 때 한 번만 넣고 `typing_meta` 에 기록 → 지워도 다시 안 생김):
   `예시 문제집`, `한자리 산수`(질문 30), `낱말 받아쓰기`(받아쓰기 50)

@@ -11,13 +11,14 @@ const path = require("path");
 const inquiry = require("./inquiry");
 const stats = require("./stats");
 const typing = require("./typing-api");
+const typingAuth = require("./typing-auth");
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 
 /* 사이트 콘텐츠가 아닌 파일 — 외부에 내보내지 않는다.
    hit.js 는 방문자 브라우저가 받아 가야 하므로 여기 넣지 않는다 */
-const HIDDEN = new Set(["server.js", "inquiry.js", "stats.js", "stats.html", "typing-api.js",
+const HIDDEN = new Set(["server.js", "inquiry.js", "stats.js", "stats.html", "typing-api.js", "typing-auth.js",
                         "package.json", "package-lock.json", "readme.md", "agents.md", ".gitignore",
                         /* 내부 메모·도구 — DNS 기록, 이미지 변환 스크립트, 캡처 폴더 안내 */
                         "dns-snapshot.txt", "_pngtool.js", "img/shots/readme.txt"]);
@@ -190,13 +191,15 @@ function handle(req, res) {
     return typing.handlePublic(req, res, urlPath);
   }
   const haruPath = urlPath.replace(/\/$/, "");
-  if (haruPath === "/haru/typing") {
+  if (haruPath === "/haru/typing" || haruPath === "/haru/typing/shared") {
+    const shared = haruPath.endsWith("/shared");
     const template = fs.readFileSync(path.join(ROOT, "typing", "index.html"), "utf8");
     const html = template
-      .replace('<html lang="ko">', '<html lang="ko" data-haru>')
-      .replace(/<!-- 기존 학습 메타 시작 -->[\s\S]*?<!-- 기존 학습 메타 끝 -->/, HARU_TYPING_META)
+      .replace('<html lang="ko">', shared ? '<html lang="ko" data-haru data-shared>' : '<html lang="ko" data-haru>')
+      .replace(/<!-- 기존 학습 메타 시작 -->[\s\S]*?<!-- 기존 학습 메타 끝 -->/, HARU_TYPING_META + (shared ? '<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">' : ""))
       .replace(/<!-- 기존 문제 설정 시작 -->[\s\S]*?<!-- 기존 문제 설정 끝 -->/, "")
-      .replace("<!-- 하루랑 타자 탐색 -->", HARU_TYPING_NAV)
+      .replace("<!-- 하루랑 타자 탐색 -->", HARU_TYPING_NAV + (shared ? "" :
+        '<p><a class="haru-return" href="/typing/admin">보호자 문제 설정</a></p>'))
       .replace(/@import url\('https:\/\/cdn\.jsdelivr\.net[^']*'\);/, "")
       .replace('aria-label="오선빈 타자연습"', 'aria-label="하루랑 타자 연습"')
       .replace(">오선빈</span>", ">하루랑</span>");
@@ -220,8 +223,8 @@ function handle(req, res) {
 
   /* 타자 연습 화면과 문제 설정 화면. 메인 메뉴에는 없고 전용 링크로만 들어온다.
      채점은 방문자 브라우저 안에서 한다 (typing/store.js) */
-  if (urlPath === "/typing" || urlPath === "/typing/" || urlPath === "/typing/admin" || urlPath === "/typing/admin/") {
-    const admin = urlPath.startsWith("/typing/admin");
+  const admin = ["/typing/admin", "/typing/admin.html"].includes(path.posix.normalize(urlPath).replace(/\/$/, "").toLowerCase());
+  if (urlPath === "/typing" || urlPath === "/typing/" || admin) {
     /* 카카오톡 안에서 연 연습 화면은 소리가 나지 않아 크롬(기본 브라우저)으로 넘긴다.
        카톡 안에서 아이콘·화면이 잠깐 보였다 넘어가지 않게, 아무것도 그리지 않는 빈 화면만 보낸다.
        (미리보기를 만드는 카카오 수집기 'kakaotalk-scrap' 에는 원래 화면을 그대로 보낸다) */
@@ -238,7 +241,7 @@ function handle(req, res) {
       "Referrer-Policy": "same-origin",
       ...(admin ? { "X-Frame-Options": "DENY" } : {}),
     });
-    return fs.createReadStream(path.join(ROOT, "typing", admin ? "admin.html" : "index.html")).pipe(res);
+    return fs.createReadStream(path.join(ROOT, "typing", admin ? (typingAuth.authorized(req) ? "admin.html" : "login.html") : "index.html")).pipe(res);
   }
 
   let file = path.join(ROOT, urlPath);
