@@ -172,6 +172,13 @@
     header .row .btn{ flex:1; min-height:40px; font-size:.86rem; padding:8px 10px; }
   }
 </style>
+<style>
+#practiceForm {display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));}
+#practiceForm label {display:grid; gap:.25rem;}
+#practiceForm label:has(input[type=checkbox]) {display:flex;align-items:center}
+#practiceForm select {padding:.5rem; font:inherit}
+#practiceUrl {max-width:100%;width:34em;}
+</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -194,10 +201,11 @@
     <header>
       <div class="brand">
         <span class="logo" aria-hidden="true"><svg class="i"><use href="#i-gear"/></svg></span>
-        <div><h1>문제 설정</h1></div>
+        <div><h1>내 문제 설정</h1></div>
       </div>
       <div class="row">
-        <a class="btn white" href="/typing"><svg class="i" aria-hidden="true"><use href="#i-back"/></svg>연습하러 가기</a>
+        <button class="btn white" type="button" id="guardianLogout">로그아웃</button>
+        <a class="btn white" href="/haru/typing"><svg class="i" aria-hidden="true"><use href="#i-back"/></svg>연습하러 가기</a>
       </div>
     </header>
     <p class="warn hidden" id="storageWarn"></p>
@@ -219,6 +227,23 @@
       </div>
       <p id="setMsg" class="note" style="margin-top:8px"></p>
     </div>
+
+    <section class="card" aria-labelledby="practiceTitle">
+      <h2 id="practiceTitle">맞춤 연습 링크</h2>
+      <p class="note">링크를 받은 사람은 로그인 없이 연습할 수 있어요. 이름은 보호자 화면에서만 보입니다.</p>
+      <form id="practiceForm">
+        <label>저장한 링크 <select id="practiceSaved"><option value="">새 링크</option></select></label>
+        <label>관리용 이름 <input id="practiceLabel" required maxlength="40" placeholder="예: A용"></label>
+        <label>문제집 <select id="practiceSet" required></select></label>
+        <label>연습 방식 <select id="practiceMode"><option value="dictation">받아쓰기</option><option value="qa">질문에 답하기</option></select></label>
+        <label>문항 수 <input id="practiceCount" type="number" min="1" max="100" value="10" required></label>
+        <label><input type="checkbox" id="practiceAll"> 전체 문제</label>
+        <label><input type="checkbox" id="practiceActive" checked> 링크 사용</label>
+        <button class="btn primary" type="submit">링크 설정 저장</button>
+      </form>
+      <p><input id="practiceUrl" readonly aria-label="공유 링크" hidden><button class="btn white" id="practiceCopy" hidden type="button">링크 복사</button></p>
+      <p id="practiceStatus" class="note" role="status"></p>
+    </section>
 
     <div id="setBody">
     <div class="tabs" role="tablist">
@@ -280,7 +305,8 @@
   </section>
 </div>
 
-<script src="/typing/store.js?v=5"></script>
+<script src="/typing/store.js?v=7"></script>
+<script src="/typing/practice-admin.js?v=1" defer></script>
 <script>
 (function () {
   "use strict";

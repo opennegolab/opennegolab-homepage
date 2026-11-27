@@ -11,13 +11,14 @@ const path = require("path");
 const inquiry = require("./inquiry");
 const stats = require("./stats");
 const typing = require("./typing-api");
+const typingAuth = require("./typing-auth");
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 
 /* 사이트 콘텐츠가 아닌 파일 — 외부에 내보내지 않는다.
    hit.js 는 방문자 브라우저가 받아 가야 하므로 여기 넣지 않는다 */
-const HIDDEN = new Set(["server.js", "inquiry.js", "stats.js", "stats.html", "typing-api.js",
+const HIDDEN = new Set(["server.js", "inquiry.js", "stats.js", "stats.html", "typing-api.js", "typing-auth.js",
                         "package.json", "package-lock.json", "readme.md", "agents.md", ".gitignore",
                         /* 내부 메모·도구 — DNS 기록, 이미지 변환 스크립트, 캡처 폴더 안내 */
                         "dns-snapshot.txt", "_pngtool.js", "img/shots/readme.txt"]);
@@ -27,6 +28,7 @@ const TYPES = {
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
   ".svg": "image/svg+xml",
   ".png": "image/png",
   ".jpg": "image/jpeg",
@@ -42,24 +44,33 @@ const TYPES = {
 
 const home = () => path.join(ROOT, "index.html");
 
-/* 카카오톡에서 /typing 을 열었을 때 보내는 빈 화면 — 바로 기본 브라우저로 넘긴다.
-   같은 창에서는 한 번만 넘기고, 넘어가지 못하면 1.5초 뒤 원래 화면(?inapp=1)을 연다 */
-const KAKAO_HOP = `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>오선빈 타자연습</title><link rel="icon" href="data:,">
-<meta property="og:title" content="오선빈 타자연습">
-<meta property="og:image" content="https://www.opennegolab.com/typing/og.png?v=1">
-<style>html,body{margin:0;height:100%;background:#FBF7F1}</style>
-<script>
-(function () {
-  var full = location.href + (location.search ? "&" : "?") + "inapp=1";
-  var tried = false;
-  try { tried = !!sessionStorage.getItem("typing.ext"); sessionStorage.setItem("typing.ext", "1"); } catch (e) {}
-  if (tried) { location.replace(full); return; }
-  location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href);
-  setTimeout(function () { location.replace(full); }, 1500);
-})();
-</script></head><body></body></html>`;
+/* 공유 서비스가 스크립트 실행 없이 읽을 수 있도록 최초 HTML에 넣습니다. */
+function haruShareMeta(urlPath, title, description) {
+  const url = "https://www.opennegolab.com" + urlPath;
+  return `<meta name="description" content="${description}">
+<link rel="canonical" href="${url}">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:site_name" content="하루랑">
+<meta property="og:title" content="${title} | 하루랑">
+<meta property="og:description" content="${description}">
+<meta property="og:url" content="${url}">
+<meta property="og:image" content="https://www.opennegolab.com/haru/assets/share.png?v=2">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="하루랑. 하루와 함께 세상 배우기. 손을 흔드는 하루 캐릭터.">`;
+}
+
+const HARU_TYPING_META = `<title>타자 연습 | 하루랑</title>
+${haruShareMeta("/haru/typing", "타자 연습", "하루랑에서 한글 타자와 받아쓰기를 무료로 연습해요.")}
+<meta name="theme-color" content="#fff8e9">
+<link rel="icon" href="/haru/assets/favicon.png">
+<link rel="manifest" href="/haru/manifest.webmanifest">
+<link rel="stylesheet" href="/haru/brand.css?v=1">`;
+const HARU_TYPING_NAV = `<nav aria-label="하루랑"><a class="haru-return" href="/haru">
+  <img src="/haru/assets/icon-192.png" alt="" width="32" height="32">하루랑 처음으로</a></nav>`;
+
 
 /* 요청 하나를 처리하다 예외가 나면 Node 는 프로세스를 끝낸다 — 방문자 한 명의
    이상한 요청 때문에 사이트 전체가 내려가면 안 된다. 그래서 전체를 감싼다 */
@@ -157,30 +168,55 @@ function handle(req, res) {
     return fs.createReadStream(path.join(ROOT, "stats.html")).pipe(res);
   }
 
+  if (urlPath === "/haru/practice-data" || urlPath.startsWith("/haru/practice-data/")) {
+    return typing.handlePublic(req, res, urlPath);
+  }
+  const haruPath = urlPath.replace(/\/$/, "");
+  if (haruPath === "/haru/typing" || haruPath === "/haru/typing/shared") {
+    const shared = haruPath.endsWith("/shared");
+    const template = fs.readFileSync(path.join(ROOT, "typing", "index.html"), "utf8");
+    const html = template
+      .replace('<html lang="ko">', shared ? '<html lang="ko" data-haru data-shared>' : '<html lang="ko" data-haru>')
+      .replace(/<!-- 기존 학습 메타 시작 -->[\s\S]*?<!-- 기존 학습 메타 끝 -->/, HARU_TYPING_META + (shared ? '<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">' : ""))
+      .replace(/<!-- 기존 문제 설정 시작 -->[\s\S]*?<!-- 기존 문제 설정 끝 -->/, "")
+      .replace("<!-- 하루랑 타자 탐색 -->", HARU_TYPING_NAV + (shared ? "" :
+        '<p><a class="haru-return" href="/typing/admin">보호자 문제 설정</a></p>'))
+      .replace(/@import url\('https:\/\/cdn\.jsdelivr\.net[^']*'\);/, "")
+      .replace('aria-label="오선빈 타자연습"', 'aria-label="하루랑 타자 연습"')
+      .replace(">오선빈</span>", ">하루랑</span>");
+    res.writeHead(200, { "Content-Type": TYPES[".html"], "Cache-Control": "no-cache",
+      "X-Content-Type-Options": "nosniff" });
+    return res.end(html);
+  }
+  if (["/haru/kiosk", "/haru/bank", "/haru/transport"].includes(haruPath)) {
+    const template = fs.readFileSync(path.join(ROOT, "typing", "learn", "index.html"), "utf8");
+    const title = { "/haru/kiosk": "키오스크", "/haru/bank": "은행 이용", "/haru/transport": "교통수단" }[haruPath];
+    const html = template.replace('<meta name="robots" content="noindex,nofollow">',
+      haruShareMeta(haruPath, title, `하루와 함께 ${title} 학습을 해요.`))
+      .replace("<title>생활학습 | 초등 공부방</title>", `<title>${title} | 하루랑</title>`);
+    res.writeHead(200, { "Content-Type": TYPES[".html"], "Cache-Control": "no-cache",
+      "X-Content-Type-Options": "nosniff" });
+    return res.end(html);
+  }
+
   /* 타자 연습 — 문제 저장은 typing-api.js 가 맡는다 (누가 접속하든 같은 문제) */
   if (urlPath.startsWith("/api/typing/")) { typing.handle(req, res, urlPath); return; }
 
-  /* 타자 연습 화면과 문제 설정 화면. 메인 메뉴에는 없고 전용 링크로만 들어온다.
-     채점은 방문자 브라우저 안에서 한다 (typing/store.js) */
-  if (urlPath === "/typing" || urlPath === "/typing/" || urlPath === "/typing/admin" || urlPath === "/typing/admin/") {
-    const admin = urlPath.startsWith("/typing/admin");
-    /* 카카오톡 안에서 연 연습 화면은 소리가 나지 않아 크롬(기본 브라우저)으로 넘긴다.
-       카톡 안에서 아이콘·화면이 잠깐 보였다 넘어가지 않게, 아무것도 그리지 않는 빈 화면만 보낸다.
-       (미리보기를 만드는 카카오 수집기 'kakaotalk-scrap' 에는 원래 화면을 그대로 보낸다) */
-    const ua = req.headers["user-agent"] || "";
-    if (!admin && /KAKAOTALK/.test(ua) && !/kakaotalk-scrap/i.test(ua) && !/[?&]inapp=1(&|$)/.test(req.url)) {
-      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow" });
-      return res.end(KAKAO_HOP);
-    }
+  const typingPath = path.posix.normalize(urlPath).replace(/\/$/, "").toLowerCase();
+  if (typingPath === "/typing" || typingPath === "/typing/index.html") {
+    res.writeHead(302, { Location: "/haru/typing", "Cache-Control": "no-cache" });
+    return res.end();
+  }
+  if (typingPath === "/typing/admin" || typingPath === "/typing/admin.html") {
     res.writeHead(200, {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": admin ? "no-store" : "no-cache",
+      "Content-Type": TYPES[".html"],
+      "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",
       "X-Robots-Tag": "noindex, nofollow",
       "Referrer-Policy": "same-origin",
-      ...(admin ? { "X-Frame-Options": "DENY" } : {}),
+      "X-Frame-Options": "DENY",
     });
-    return fs.createReadStream(path.join(ROOT, "typing", admin ? "admin.html" : "index.html")).pipe(res);
+    return fs.createReadStream(path.join(ROOT, "typing", typingAuth.authorized(req) ? "admin.html" : "login.html")).pipe(res);
   }
 
   let file = path.join(ROOT, urlPath);

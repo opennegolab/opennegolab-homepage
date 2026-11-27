@@ -14,6 +14,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<!-- 기존 학습 메타 시작 -->
 <title>오선빈 타자연습</title>
 <meta name="description" content="듣고 쓰는 받아쓰기, 질문에 답하기로 한글 타자를 연습해요.">
 <!-- 전용 링크로만 들어오는 학습 화면이라 검색에는 올리지 않는다 -->
@@ -38,6 +39,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
 <link rel="icon" type="image/png" sizes="64x64" href="/typing/icon-64.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/typing/icon-192.png">
 <link rel="apple-touch-icon" href="/typing/icon-180.png">
+<!-- 기존 학습 메타 끝 -->
 <noscript><style>.wrap{ opacity:1 !important; }</style></noscript>
 <style>
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
@@ -392,6 +394,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
 
   <!-- ================= 처음 화면 ================= -->
   <section id="home" class="stack" aria-label="처음 화면">
+    <!-- 하루랑 타자 탐색 -->
     <header class="hero">
       <h1 class="title" aria-label="오선빈 타자연습">
         <span class="owner" aria-hidden="true"><svg class="i"><use href="#i-star"/></svg>오선빈</span>
@@ -422,6 +425,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
           <span class="desc">질문을 보고 답을 써요</span>
           <span class="cnt" id="cnt-qa">불러오는 중…</span>
         </button>
+        <!-- 기존 문제 설정 시작 -->
         <a class="mode setup" href="/typing/admin" id="setupLink">
           <span class="tick" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg></span>
           <span class="ico" aria-hidden="true"><svg class="i"><use href="#i-gear"/></svg></span>
@@ -429,6 +433,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
           <span class="desc">문제를 만들고 고쳐요</span></span>
           <span class="cnt">문제집 만들기</span>
         </a>
+        <!-- 기존 문제 설정 끝 -->
       </div>
 
       <div class="step" style="margin-top:26px"><span class="n">3</span>몇 문제 풀까요?</div>
@@ -497,7 +502,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   </section>
 </div>
 
-<script src="/typing/store.js?v=5"></script>
+<script src="/typing/store.js?v=7"></script>
 <script>
 (function () {
   "use strict";
@@ -507,12 +512,14 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   const RATE = 0.9;      /* 읽기 빠르기 — 저학년이 따라 쓰기 좋게 조금 느리게 */
 
   /* ---------- 이 기기에만 남기는 값 ---------- */
+  const shared = document.documentElement.hasAttribute("data-shared");
+  const settingsPrefix = document.documentElement.hasAttribute("data-haru") ? "haru.typing." : "typing.";
   const local = {
-    get(k, d) { try { const v = localStorage.getItem("typing." + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem("typing." + k, JSON.stringify(v)); } catch (e) {} },
+    get(k, d) { try { const v = localStorage.getItem(settingsPrefix + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(settingsPrefix + k, JSON.stringify(v)); } catch (e) {} },
   };
-  const settings = Object.assign({ mode: "dictation", count: "10", set: 0 }, local.get("settings", {}));
-  const saveSettings = () => local.set("settings", settings);
+  const settings = Object.assign({ mode: "dictation", count: "10", set: 0 }, shared ? {} : local.get("settings", {}));
+  const saveSettings = () => { if (!shared) local.set("settings", settings); };
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -683,7 +690,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   function renderSets() {
     const el = $("sets");
     if (!sets) return;
-    if (!sets.length) { el.innerHTML = "<span class='note'>아직 문제집이 없어요. '문제 설정'에서 만들어 주세요.</span>"; return; }
+    if (!sets.length) { el.textContent = shared ? "사용할 수 있는 연습이 없어요." : "아직 문제집이 없어요. 문제 설정에서 만들어 주세요."; return; }
     el.innerHTML = sets.map(x =>
       "<button type='button' class='set' data-set='" + x.id + "' aria-pressed='" + (x.id === settings.set) + "'>" + esc(x.name) +
       "<small>" + (x.counts.dictation + x.counts.qa) + "</small></button>").join("");
@@ -699,7 +706,8 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
     const cur = currentSet();
     counts = cur ? cur.counts : (sets ? { dictation: 0, qa: 0 } : null);
     renderSets();
-    $("setupLink").href = "/typing/admin" + (cur ? "?set=" + cur.id : "");
+    const setup = $("setupLink");
+    if (setup) setup.search = cur ? "?set=" + cur.id : "";
     document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === settings.mode)));
     document.querySelectorAll("[data-count]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.count === settings.count)));
     const warn = $("homeWarn");
@@ -739,15 +747,25 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   let loadError = "";
   /* 주소에 ?set=번호 가 있으면 그 문제집을 고른 채로 연다 (문제집별 링크) */
   const urlSet = Number(new URLSearchParams(location.search).get("set")) || 0;
-  if (urlSet) { settings.set = urlSet; saveSettings(); }
+  if (urlSet && !shared) { settings.set = urlSet; saveSettings(); }
 
   async function loadCounts() {
     try {
       sets = await T.store.sets();
       loadError = "";
+      if (shared && sets.length) {
+        const [practice] = sets;
+        Object.assign(settings, { set: practice.id, mode: practice.mode, count: practice.count });
+        $("counts").replaceChildren(document.createTextNode(practice.count === "all" ? "전체 문제" : practice.count + "문제"));
+        document.querySelectorAll("[data-mode]").forEach(button => {
+          button.style.display = button.dataset.mode === settings.mode ? "" : "none";
+          button.disabled = true;
+        });
+      }
       if (!currentSet() && sets.length) { settings.set = sets[0].id; saveSettings(); }
     } catch (e) {
       if (!sets) { $("cnt-dictation").textContent = $("cnt-qa").textContent = "불러오지 못함"; $("sets").innerHTML = ""; }
+      if (shared) sets = [];
       loadError = "문제를 불러오지 못했어요. " + e.message;
     }
     renderHome();

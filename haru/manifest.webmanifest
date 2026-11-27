@@ -1,0 +1,16 @@
+{
+  "id": "/haru",
+  "name": "하루랑",
+  "short_name": "하루랑",
+  "description": "발달장애인을 위한 무료 학습 서비스",
+  "lang": "ko",
+  "start_url": "/haru",
+  "scope": "/haru",
+  "display": "standalone",
+  "background_color": "#fff8e9",
+  "theme_color": "#fff8e9",
+  "icons": [
+    { "src": "/haru/assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/haru/assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

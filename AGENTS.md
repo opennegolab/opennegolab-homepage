@@ -27,9 +27,9 @@
 
 | 주소 | 내용 |
 |---|---|
-| https://www.opennegolab.com/typing | **오선빈 타자연습** — 학습 화면 (홈페이지 메뉴에는 없음, 전용 링크) |
-| https://www.opennegolab.com/typing?set=번호 | 특정 문제집이 골라진 채로 열리는 링크 (아이에게 보내는 용도) |
-| https://www.opennegolab.com/typing/admin | **문제 설정** — 문제집·문제 관리 (로그인 없음, 운영자 요청) |
+| https://www.opennegolab.com/typing | 하루랑 타자 연습으로 이동 |
+| https://www.opennegolab.com/haru/typing/shared | 보호자가 만든 토큰을 붙여 공유하는 맞춤 연습 주소 |
+| https://www.opennegolab.com/typing/admin | **문제 설정** — 문제집·문제 관리 및 맞춤 연습 링크 (보호자 로그인) |
 | https://www.opennegolab.com/api/typing/… | 타자연습 서버 API (아래 6번) |
 | https://www.opennegolab.com | 열린협상연구소 홈페이지 (같은 서버) |
 
@@ -63,9 +63,9 @@
 server.js            정적 파일 서버 + 라우트. 타자연습 관련:
                        /api/typing/*  → typing-api.js
                        /typing, /typing/admin → typing/index.html, typing/admin.html
-                       카카오톡 안에서 /typing 을 열면 빈 화면(KAKAO_HOP)으로 기본 브라우저에 넘김
+                       /typing 은 /haru/typing 으로 이동
                        HIDDEN: 사이트에 내보내지 않을 파일 목록
-typing-api.js        타자연습 서버 — 문제집·문제 저장 API, 표 만들기(prepare), 한 번만 넣는 문제집(ONCE)
+typing-api.js        타자연습 서버 — 문제집·문제 저장 API, 표 만들기(prepare), 공개 기본 문제집
 typing/
   index.html         학습 화면 (한 파일, 약 1100줄): 처음 화면 → 문제 풀기 → 결과
   admin.html         문제 설정 화면: 문제집 만들기·이름 바꾸기·삭제, 문제 등록·수정·삭제·검색·페이지
@@ -108,7 +108,7 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
 - **뒤로가기**: 연습·결과 화면에 들어갈 때 `history.pushState` → 뒤로가기 시 처음 화면으로
 - **브라우저에 남기는 것**: 마지막에 고른 문제집·연습 종류·문제 수(`localStorage` `typing.settings`)뿐.
   학습 기록·개인정보는 저장하지 않음 (학생 이름·회원가입 없음)
-- **카카오톡·앱 안 브라우저**: 음성이 안 되므로 '크롬으로 열기' 안내 (서버 쪽 `KAKAO_HOP` 과 함께 동작)
+- **카카오톡·앱 안 브라우저**: 음성이 안 되므로 '크롬으로 열기' 안내
 - 테스트용으로 `window.__typing = { S, tts, settings }` 를 열어 둠
 
 ### 6-2. 문제 설정 `typing/admin.html`
@@ -118,14 +118,15 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
   - 여러 문제: 한 줄에 하나. 질문은 `질문 / 정답 / 다른 정답` (엑셀 탭 구분도 됨)
   - 허용 정답은 `/` 로 구분, 정답 칸에서 Enter 로 바로 등록
 - 목록: 최신순, 10개씩 페이지, 검색, 수정·삭제·선택 삭제(확인 창)
-- **로그인 없음** — 링크를 아는 사람은 누구나 고칠 수 있음 (운영자 결정)
+- **보호자 로그인** — 계정별로 소유한 문제집과 맞춤 링크를 관리. 소유자가 없는 이전 데이터는 앱에서 제외
 
 ### 6-3. 서버 `typing-api.js`
 
 - **표** (서버가 처음 DB 에 붙을 때 `prepare()` 가 만듦):
   - `typing_sets(id, name, created_at)` — 문제집, 이름 중복 불가(대소문자 무시)
   - `typing_items(id, set_id, mode, prompt, answers JSONB, created_at, updated_at)` — 문제. 문제집 삭제 시 함께 삭제
-  - `typing_meta(key, done_at)` — '한 번만 하는 일'을 했다는 기록
+  - `typing_guardians` — 보호자 계정 및 비밀번호 해시
+  - `typing_practice_links` — 보호자 맞춤 연습 링크
 - **API** (`/api/typing/…`, JSON)
 
   | 요청 | 하는 일 |
@@ -137,9 +138,9 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
   | `POST /items` `{set, mode, items, skipDuplicates}` | 문제 등록 (하나라도 잘못되면 전부 취소) |
   | `PUT /items/:id` / `POST /delete {ids}` | 문제 수정·삭제 |
 
-- 변경 요청 보호: 다른 사이트 Origin 거절, JSON 만 받음, IP 당 1분 60회 제한 (로그인은 없음)
+- 변경 요청 보호: 다른 사이트 Origin 거절, JSON 만 받음, IP 당 1분 60회 제한, 보호자 세션 필요
 - `DATABASE_URL` 이 없으면 **메모리 모드**(재시작하면 사라짐, 문제 설정 화면에 경고)
-- **기본 문제집** (`ONCE` 목록, 배포 후 처음 켜질 때 한 번만 넣고 `typing_meta` 에 기록 → 지워도 다시 안 생김):
+- **공개 기본 문제집** (코드에 정의된 읽기 전용 자료):
   `예시 문제집`, `한자리 산수`(질문 30), `낱말 받아쓰기`(받아쓰기 50)
 
 ## 7. 로컬 실행·확인
@@ -177,7 +178,7 @@ node --check server.js typing-api.js typing/store.js
 ## 8. 개발할 때 주의사항
 
 1. **비밀 값 금지** — 저장소가 공개. 키·비밀번호·토큰은 Cloudtype 환경변수로만, `.env` 는 커밋 금지
-2. **주소 유지** — `/typing`, `/typing/admin`, `/typing?set=번호`, `/api/typing/…` 은 이미 아이들에게 링크로 나가 있습니다
+2. **주소 유지** — `/typing` 은 하루랑으로 이동하며, `/typing/admin` 과 문제 관리 API는 보호자 로그인을 확인합니다.
 3. **기존 기능 유지** — 받아쓰기·질문에 답하기·문제집·채점 방식·Enter/IME 처리·뒤로가기를 깨뜨리지 마세요
 4. **홈페이지와 한 저장소·한 서버** — 홈페이지 파일(`index.html` 등)과 홈페이지 SEO·통계를 건드리지 않습니다.
    타자연습은 검색에 올리지 않고(`noindex`), 홈페이지 메뉴에도 넣지 않으며, 홈페이지 통계(`hit.js`)에서 뺍니다
@@ -185,7 +186,7 @@ node --check server.js typing-api.js typing/store.js
 6. **서버는 폴더를 그대로 내보냅니다** — 새 내부 파일(메모·스크립트·서버 코드)은 `server.js` 의 `HIDDEN` 에
    **소문자 경로**로 추가해야 사이트에 노출되지 않습니다
 7. **운영 DB 에 실제 문제가 있습니다** — 표를 바꿀 때는 기존 데이터를 지우지 않게(`ADD COLUMN IF NOT EXISTS` 등) `prepare()` 에서 처리
-8. **기본 데이터 추가는 `ONCE` 에 새 `key` 로** — 이미 넣은 항목을 고쳐도 다시 안 들어갑니다. 바꿀 때는 별도 한 번짜리 처리(`fix:arith-symbols` 참고)
+8. **공개 기본 문제** — `typing-api.js`의 공개 기본 목록을 수정합니다. 보호자 문제집은 별도 저장소를 사용합니다.
 9. **캐시** — 서버가 `.js`·이미지를 하루 캐시합니다. `typing/store.js` 를 고치면 두 HTML 의 `store.js?v=N` 숫자를 올리세요
 10. **휴대폰** — 갤럭시(삼성 인터넷·크롬)가 주 사용 기기. 키보드가 입력칸을 가리지 않게(`body.kbd`), 버튼 누를 때 입력칸 포커스 유지,
     안드로이드 음성은 목소리 지정 금지, 카카오톡 안에서는 음성이 안 됨
@@ -210,12 +211,12 @@ node --check server.js typing-api.js typing/store.js
 
 - 학습 종류 선택은 `typing/index.html` 의 처음 화면(`#home`) 위에 한 단계를 더하거나,
   `/typing` 을 학습 종류 메뉴로 두고 각 학습을 하위 주소로 나누는 방식이 있습니다.
-  어느 쪽이든 **기존 링크(`/typing`, `/typing?set=번호`)가 계속 타자연습으로 열리게** 해야 합니다
+  기존 `/typing` 링크는 하루랑 기본 타자 연습으로 이동합니다.
 - 키오스크 연습은 파일이 커질 것이므로 `typing/kiosk/` 처럼 **별도 폴더·파일**로 나누는 것을 권합니다
   (`typing/index.html` 이 이미 1100줄). 새 주소를 열려면 `server.js` 의 `/typing` 라우트를 함께 고쳐야 합니다
 - 장소별 키오스크(메뉴·단계·버튼)는 화면 코드와 **데이터(JSON 등)를 나누면** 장소를 늘리기 쉽습니다
 - 공용으로 쓸 수 있는 것: 음성(`tts`, `speakable`), 디자인 토큰(`:root` 색 변수), 뒤로가기 처리(`show`/`popstate`),
-  카카오톡 넘기기(`KAKAO_HOP`), 화면 준비 뒤 한 번에 보이기(`html.ready`)
+  카카오톡 외부 브라우저 안내, 화면 준비 뒤 한 번에 보이기(`html.ready`)
 - 데이터를 서버에 둬야 하면 `typing-api.js` 에 새 표·API 를 더하되 기존 표·API 는 바꾸지 않습니다
 - 실제 기업 키오스크의 상표·로고·화면을 그대로 베끼지 말고, 일반적인 흐름으로 새로 디자인합니다
 

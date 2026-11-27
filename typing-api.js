@@ -10,15 +10,16 @@
 
    저장
      DATABASE_URL 이 있으면 PostgreSQL 의 typing_sets·typing_items 표에 둔다
-     (통계·시뮬레이터가 쓰는 그 DB). 표는 처음 붙을 때 만들고 예시 문제를 넣는다.
+     (통계·시뮬레이터가 쓰는 그 DB). 표는 처음 붙을 때 만든다.
      없으면 서버 메모리에만 담는다 — 재배포하면 사라지므로 문제 설정 화면에 경고를 띄운다.
      DATABASE_URL 이 있는데 연결이 안 되면 메모리로 떨어지지 않고 오류를 낸다.
      넣은 문제가 조용히 메모리에만 들어갔다가 사라지면 안 되기 때문이다.
 
    문제 설정
-     로그인 없이 누구나 /typing/admin 에서 문제를 넣고 뺄 수 있다 (운영자 요청).
-     다른 사이트에서 보낸 요청과 너무 잦은 변경만 막는다.
+     보호자 세션은 문제집 변경과 맞춤 링크 관리에 필요하다.
    ============================================================ */
+const { randomBytes } = require("node:crypto");
+const auth = require("./typing-auth");
 const MODES = new Set(["dictation", "qa"]);
 const MAX_TEXT = 200;        /* 문장 한 개 최대 글자 수 */
 const MAX_ANSWERS = 10;      /* 질문 하나에 허용 정답 최대 개수 */
@@ -58,12 +59,9 @@ const SAMPLES = {
   ],
 };
 
-/* 한 번만 넣는 문제집 — 배포 후 처음 켜질 때 넣고, typing_meta 에 넣었다고 적어 둔다.
-   그래서 나중에 지워도 다시 생기지 않는다. 문제는 기호로 쓰고('9 + 6 = ?'), 읽을 때만 말로 바꾼다. 같은 이름의 문제집이 이미 있으면 거기에 더하고,
-   이미 있는 문제는 건너뛴다 */
-const ONCE = [
+/* 공개 연습에 제공하는 기본 문제집입니다. */
+const DEFAULT_EXERCISES = [
   {
-    key: "set:arith-1digit-v1",
     name: "한자리 산수",
     qa: [
       ["1 + 8 = ?", ["9"]],
@@ -99,7 +97,6 @@ const ONCE = [
     ],
   },
   {
-    key: "set:words-v1",
     name: "낱말 받아쓰기",
     /* 과일·채소·탈것 이름 50개 (무작위 순서) */
     dictation: [
@@ -118,59 +115,6 @@ function seedItems(seed) {
     ...(seed.qa || []).map(([q, a]) => ({ mode: "qa", prompt: q, answers: a })),
     ...(seed.dictation || []).map(t => ({ mode: "dictation", prompt: t, answers: [] })),
   ];
-}
-
-async function seedOnce(p) {
-  await p.query(`CREATE TABLE IF NOT EXISTS typing_meta (key TEXT PRIMARY KEY, done_at TIMESTAMPTZ NOT NULL DEFAULT now())`);
-  /* '한자리 산수' 첫 배포 때는 '9 더하기 6은?' 처럼 말로 넣었다 — 기호('9 + 6 = ?')로 한 번 바꾼다 */
-  if (!(await p.query(`SELECT 1 FROM typing_meta WHERE key = 'fix:arith-symbols'`)).rows.length) {
-    const r = await p.query(`
-      UPDATE typing_items i SET
-        prompt = regexp_replace(regexp_replace(i.prompt, '^([0-9]) 더하기 ([0-9])(은|는)[?]$', '\\1 + \\2 = ?'),
-                                '^([0-9]) 빼기 ([0-9])(은|는)[?]$', '\\1 - \\2 = ?'),
-        updated_at = now()
-      FROM typing_sets s
-      WHERE s.id = i.set_id AND s.name = '한자리 산수' AND i.mode = 'qa'
-        AND i.prompt ~ '^[0-9] (더하기|빼기) [0-9](은|는)[?]$'`);
-    await p.query(`INSERT INTO typing_meta (key) VALUES ('fix:arith-symbols') ON CONFLICT DO NOTHING`);
-    if (r.rowCount) console.log("타자 연습: '한자리 산수' " + r.rowCount + "문제를 기호 표기로 바꿨다");
-  }
-  for (const seed of ONCE) {
-    const done = (await p.query(`SELECT 1 FROM typing_meta WHERE key = $1`, [seed.key])).rows.length;
-    if (done) continue;
-    const client = await p.connect();
-    try {
-      await client.query("BEGIN");
-      const found = (await client.query(`SELECT id FROM typing_sets WHERE lower(name) = lower($1)`, [seed.name])).rows[0];
-      const set = found ? found.id : (await client.query(`INSERT INTO typing_sets (name) VALUES ($1) RETURNING id`, [seed.name])).rows[0].id;
-      const have = new Set((await client.query(`SELECT mode || ':' || prompt AS k FROM typing_items WHERE set_id = $1`, [set])).rows.map(r => r.k));
-      let n = 0;
-      for (const x of seedItems(seed)) {
-        if (have.has(x.mode + ":" + x.prompt)) continue;
-        await client.query(`INSERT INTO typing_items (set_id, mode, prompt, answers) VALUES ($1, $2, $3, $4)`, [set, x.mode, x.prompt, JSON.stringify(x.answers)]);
-        n++;
-      }
-      await client.query(`INSERT INTO typing_meta (key) VALUES ($1) ON CONFLICT DO NOTHING`, [seed.key]);
-      await client.query("COMMIT");
-      console.log(`타자 연습: '${seed.name}' 문제집에 ${n}문제를 넣었다`);
-    } catch (e) {
-      try { await client.query("ROLLBACK"); } catch {}
-      console.error("타자 연습: 문제집 넣기 실패 —", e && e.message);
-    } finally { client.release(); }
-  }
-}
-
-function seedMemory() {
-  const now = new Date().toISOString();
-  const set = { id: ++memory.setSeq, name: SAMPLE_SET, created_at: now };
-  memory.sets.push(set);
-  for (const t of SAMPLES.dictation) memory.items.push({ id: ++memory.seq, set_id: set.id, mode: "dictation", prompt: t, answers: [], created_at: now, updated_at: now });
-  for (const [q, a] of SAMPLES.qa) memory.items.push({ id: ++memory.seq, set_id: set.id, mode: "qa", prompt: q, answers: a, created_at: now, updated_at: now });
-  for (const seed of ONCE) {
-    const st = { id: ++memory.setSeq, name: seed.name, created_at: now };
-    memory.sets.push(st);
-    for (const x of seedItems(seed)) memory.items.push({ id: ++memory.seq, set_id: st.id, mode: x.mode, prompt: x.prompt, answers: x.answers, created_at: now, updated_at: now });
-  }
 }
 
 /* DB 주소에 sslmode=require·ssl=true 같은 값이 붙어 있으면 pg 는 그 값을 아래 ssl 설정보다
@@ -201,14 +145,18 @@ function makePool(useSsl) {
    typing_sets  — 문제집 ('오선빈 1', '김계란 1' …)
    typing_items — 문제. 어느 문제집에 속하는지 set_id 로 안다. 문제집을 지우면 문제도 같이 지워진다 */
 async function prepare(p) {
-  const fresh = !(await p.query(`SELECT to_regclass('typing_items') AS t`)).rows[0].t;
   await p.query(`
     CREATE TABLE IF NOT EXISTS typing_sets (
       id         BIGSERIAL PRIMARY KEY,
       name       TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )`);
-  await p.query(`CREATE UNIQUE INDEX IF NOT EXISTS typing_sets_name_idx ON typing_sets (lower(name))`);
+  await p.query(`CREATE TABLE IF NOT EXISTS typing_guardians (
+    username TEXT PRIMARY KEY, password_hash TEXT NOT NULL
+  )`);
+  await p.query(`ALTER TABLE typing_sets ADD COLUMN IF NOT EXISTS owner TEXT REFERENCES typing_guardians(username)`);
+  await p.query(`CREATE UNIQUE INDEX IF NOT EXISTS typing_sets_owner_name_idx ON typing_sets (coalesce(owner, ''), lower(name))`);
+  await p.query(`DROP INDEX IF EXISTS typing_sets_name_idx`);
   await p.query(`
     CREATE TABLE IF NOT EXISTS typing_items (
       id         BIGSERIAL PRIMARY KEY,
@@ -222,27 +170,14 @@ async function prepare(p) {
   await p.query(`ALTER TABLE typing_items ADD COLUMN IF NOT EXISTS set_id BIGINT REFERENCES typing_sets(id) ON DELETE CASCADE`);
   await p.query(`CREATE INDEX IF NOT EXISTS typing_items_set_idx ON typing_items (set_id, mode, id)`);
 
-  if (fresh) {
-    /* 표를 처음 만든 때만 예시 문제집을 넣는다. 지운 뒤 다시 생기면 안 된다 */
-    const set = (await p.query(`INSERT INTO typing_sets (name) VALUES ($1) RETURNING id`, [SAMPLE_SET])).rows[0].id;
-    for (const t of SAMPLES.dictation) {
-      await p.query(`INSERT INTO typing_items (set_id, mode, prompt) VALUES ($1, 'dictation', $2)`, [set, t]);
-    }
-    for (const [q, a] of SAMPLES.qa) {
-      await p.query(`INSERT INTO typing_items (set_id, mode, prompt, answers) VALUES ($1, 'qa', $2, $3)`, [set, q, JSON.stringify(a)]);
-    }
-    console.log("타자 연습: 문제 표를 만들고 예시 문제집을 넣었다");
-  } else {
-    /* 문제집이 없던 때 넣은 문제는 '기본 문제집'으로 옮긴다 */
-    const orphan = (await p.query(`SELECT count(*)::int AS n FROM typing_items WHERE set_id IS NULL`)).rows[0].n;
-    if (orphan) {
-      const found = (await p.query(`SELECT id FROM typing_sets WHERE lower(name) = lower($1)`, ["기본 문제집"])).rows[0];
-      const set = found ? found.id : (await p.query(`INSERT INTO typing_sets (name) VALUES ($1) RETURNING id`, ["기본 문제집"])).rows[0].id;
-      await p.query(`UPDATE typing_items SET set_id = $1 WHERE set_id IS NULL`, [set]);
-      console.log("타자 연습: 문제집 없이 있던 문제 " + orphan + "개를 '기본 문제집'으로 옮겼다");
-    }
-  }
-  await seedOnce(p);
+  await p.query(`CREATE TABLE IF NOT EXISTS typing_practice_links (
+    token TEXT PRIMARY KEY,
+    label TEXT NOT NULL,
+    set_id BIGINT NOT NULL REFERENCES typing_sets(id) ON DELETE CASCADE,
+    mode TEXT NOT NULL CHECK (mode IN ('dictation','qa')),
+    count TEXT NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE
+  )`);
 }
 
 async function connect() {
@@ -302,9 +237,9 @@ class Conflict extends Error {}
 
 const store = {
   /* ----- 문제집 ----- */
-  async sets() {
+  async sets(owner) {
     if (!usingDb()) {
-      return memory.sets.map(st => ({
+      return memory.sets.filter(st => (st.owner ?? null) === owner).map(st => ({
         id: st.id, name: st.name,
         counts: {
           dictation: memory.items.filter(x => x.set_id === st.id && x.mode === "dictation").length,
@@ -317,29 +252,30 @@ const store = {
              count(i.id) FILTER (WHERE i.mode = 'dictation')::int AS d,
              count(i.id) FILTER (WHERE i.mode = 'qa')::int AS q
         FROM typing_sets s LEFT JOIN typing_items i ON i.set_id = s.id
-       GROUP BY s.id ORDER BY s.id`);
+       WHERE s.owner IS NOT DISTINCT FROM $1::text
+       GROUP BY s.id ORDER BY s.id`, [owner]);
     return r.rows.map(x => ({ id: Number(x.id), name: x.name, counts: { dictation: x.d, qa: x.q } }));
   },
   async getSet(id) {
     if (!usingDb()) { const st = memory.sets.find(x => x.id === id); return st ? { ...st } : null; }
-    const r = await (await db()).query(`SELECT id, name FROM typing_sets WHERE id = $1`, [id]);
-    return r.rows[0] ? { id: Number(r.rows[0].id), name: r.rows[0].name } : null;
+    const r = await (await db()).query(`SELECT id, name, owner FROM typing_sets WHERE id = $1`, [id]);
+    return r.rows[0] ? { id: Number(r.rows[0].id), name: r.rows[0].name, owner: r.rows[0].owner } : null;
   },
-  async createSet(name) {
+  async createSet(name, owner) {
     if (!usingDb()) {
-      if (memory.sets.some(x => x.name.toLowerCase() === name.toLowerCase())) throw new Conflict();
-      const st = { id: ++memory.setSeq, name, created_at: new Date().toISOString() };
+      if (memory.sets.some(x => (x.owner ?? null) === owner && x.name.toLowerCase() === name.toLowerCase())) throw new Conflict();
+      const st = { id: ++memory.setSeq, name, owner, created_at: new Date().toISOString() };
       memory.sets.push(st);
       return { id: st.id, name };
     }
     try {
-      const r = await (await db()).query(`INSERT INTO typing_sets (name) VALUES ($1) RETURNING id, name`, [name]);
+      const r = await (await db()).query(`INSERT INTO typing_sets (name, owner) VALUES ($1, $2) RETURNING id, name`, [name, owner]);
       return { id: Number(r.rows[0].id), name: r.rows[0].name };
     } catch (e) { if (e && e.code === "23505") throw new Conflict(); throw e; }
   },
-  async renameSet(id, name) {
+  async renameSet(id, name, owner) {
     if (!usingDb()) {
-      if (memory.sets.some(x => x.id !== id && x.name.toLowerCase() === name.toLowerCase())) throw new Conflict();
+      if (memory.sets.some(x => x.id !== id && (x.owner ?? null) === owner && x.name.toLowerCase() === name.toLowerCase())) throw new Conflict();
       const st = memory.sets.find(x => x.id === id);
       if (!st) return null;
       st.name = name;
@@ -355,6 +291,7 @@ const store = {
       const before = memory.sets.length;
       memory.sets = memory.sets.filter(x => x.id !== id);
       memory.items = memory.items.filter(x => x.set_id !== id);
+      for (const [token, link] of practiceLinks) if (link.set_id === id) practiceLinks.delete(token);
       return before - memory.sets.length;
     }
     const r = await (await db()).query(`DELETE FROM typing_sets WHERE id = $1`, [id]);   /* 문제는 ON DELETE CASCADE 로 함께 */
@@ -412,14 +349,16 @@ const store = {
        RETURNING id, set_id, mode, prompt, answers, created_at, updated_at`, [id, prompt, JSON.stringify(answers)]);
     return r.rows[0] ? rowOut(r.rows[0]) : null;
   },
-  async remove(ids) {
+  async remove(ids, owner) {
     if (!usingDb()) {
       const set = new Set(ids);
       const before = memory.items.length;
-      memory.items = memory.items.filter(x => !set.has(x.id));
+      const owned = new Set(memory.sets.filter(st => (st.owner ?? null) === owner).map(st => st.id));
+      memory.items = memory.items.filter(x => !set.has(x.id) || !owned.has(x.set_id));
       return before - memory.items.length;
     }
-    const r = await (await db()).query(`DELETE FROM typing_items WHERE id = ANY($1::bigint[])`, [ids]);
+    const r = await (await db()).query(`DELETE FROM typing_items i USING typing_sets s
+      WHERE i.id = ANY($1::bigint[]) AND i.set_id = s.id AND s.owner IS NOT DISTINCT FROM $2::text`, [ids, owner]);
     return r.rowCount;
   },
 };
@@ -483,6 +422,8 @@ function limiter(max, windowMs) {
     return false;
   };
 }
+const limitLogin = limiter(8, 60000);
+const limitLoginProxy = limiter(40, 60000);
 const limitRead = limiter(300, 60000);     /* 문제 읽기 */
 const limitWrite = limiter(60, 60000);     /* 문제 등록·수정·삭제 */
 
@@ -539,14 +480,130 @@ async function handle(req, res, urlPath) {
   }
 }
 
+const practiceLinks = new Map();
+
+async function practiceRows(token, owner) {
+  if (!usingDb()) {
+    return [...practiceLinks.values()].filter(link =>
+      (!token || link.token === token) && memory.sets.some(set => set.id === Number(link.set_id) && set.owner && (owner === undefined || (set.owner ?? null) === owner)));
+  }
+  const p = await db();
+  return (await p.query(`SELECT l.* FROM typing_practice_links l JOIN typing_sets s ON s.id = l.set_id
+    WHERE s.owner IS NOT NULL AND ($1::text IS NULL OR l.token = $1) AND ($2::boolean OR s.owner IS NOT DISTINCT FROM $3::text)
+    ORDER BY l.label, l.token`, [token || null, owner === undefined, owner ?? null])).rows;
+}
+
+async function savePractice(token, body, owner) {
+  const label = clean(body.label);
+  const setId = toId(body.set_id);
+  const mode = checkMode(body.mode);
+  const count = String(body.count);
+  if (!label || label.length > 40) throw new BadRequest("관리용 이름은 1~40자로 적어 주세요.");
+  if (!/^(all|[1-9]|[1-9][0-9]|100)$/.test(count)) throw new BadRequest("문항 수는 1~100 또는 전체를 선택해 주세요.");
+  if (typeof body.active !== "boolean") throw new BadRequest("링크 상태를 선택해 주세요.");
+  const set = await store.getSet(setId);
+  if (!set || (set.owner ?? null) !== owner) throw new BadRequest("문제집을 다시 선택해 주세요.");
+  if (token && !(await practiceRows(token, owner)).length) return null;
+  const link = { token: token || randomBytes(24).toString("hex"), label, set_id: setId, mode, count, active: body.active };
+  if (!usingDb()) {
+    if (token && !practiceLinks.has(token)) return null;
+    practiceLinks.set(link.token, link);
+    return link;
+  }
+  const p = await db();
+  const params = [link.token, label, setId, mode, count, body.active];
+  const query = token
+    ? `UPDATE typing_practice_links SET label=$2, set_id=$3, mode=$4, count=$5, active=$6 WHERE token=$1 RETURNING *`
+    : `INSERT INTO typing_practice_links (token,label,set_id,mode,count,active) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`;
+  return (await p.query(query, params)).rows[0] || null;
+}
+
+async function sharedPractice(req, res, token, resource, ip, url) {
+  if (req.method !== "GET") return send(res, 405, { ok: false }, { Allow: "GET" });
+  if (limitRead(ip)) return send(res, 429, { ok: false, message: "잠시 후 다시 해 주세요." });
+  const [link] = await practiceRows(token);
+  if (!link?.active) return send(res, 404, { ok: false, message: "현재 사용할 수 없는 연습 링크예요." });
+  // 공유 화면에는 관리용 이름이나 실제 문제집 번호를 전달하지 않습니다.
+  const items = (await store.list(Number(link.set_id), link.mode))
+    .map(({ id, mode, prompt, answers }) => ({ id, mode, prompt, answers }));
+  if (resource === "sets") {
+    return send(res, 200, { ok: true, sets: [{
+      id: 1, name: "나의 연습", mode: link.mode, count: link.count,
+      counts: { dictation: 0, qa: 0, [link.mode]: items.length }
+    }] });
+  }
+  if (url.searchParams.get("mode") !== link.mode) {
+    return send(res, 409, { ok: false, message: "연습 설정이 바뀌었어요. 페이지를 새로 열어 주세요." });
+  }
+  return send(res, 200, { ok: true, items });
+}
+
+const guardianAccounts = new Map();
+
+async function registerGuardian(username, password) {
+  const hash = await auth.hashPassword(password);
+  if (!usingDb()) {
+    if (guardianAccounts.has(username)) return false;
+    guardianAccounts.set(username, hash);
+    return true;
+  }
+  const result = await (await db()).query(`INSERT INTO typing_guardians (username,password_hash)
+    VALUES ($1,$2) ON CONFLICT DO NOTHING`, [username, hash]);
+  return result.rowCount === 1;
+}
+
+async function guardianHash(username) {
+  if (!usingDb()) return guardianAccounts.get(username);
+  const result = await (await db()).query("SELECT password_hash FROM typing_guardians WHERE username=$1", [username]);
+  return result.rows[0]?.password_hash;
+}
+
 async function route(req, res, urlPath) {
   const url = new URL(req.url, "http://x");
   const sub = urlPath.replace(/^\/api\/typing/, "").replace(/\/+$/, "") || "/";
   const method = req.method;
   const ip = clientIp(req);
+  const shared = /^\/shared\/([a-f0-9]{48})\/(sets|items)$/.exec(sub);
+  if (shared) return sharedPractice(req, res, shared[1], shared[2], ip, url);
+  if ((sub === "/session" || sub === "/register") && method === "POST") {
+    if (!sameOrigin(req)) return send(res, 403, { ok: false, message: "허용되지 않은 요청입니다." });
+    if (limitLoginProxy(req.socket.remoteAddress || "") || limitLogin(ip)) return send(res, 429, { ok: false, message: "잠시 후 다시 시도해 주세요." });
+    const body = await readJson(req);
+    const username = typeof body?.username === "string" ? body.username.trim().toLowerCase() : "";
+    const password = body?.password;
+    if (!/^[a-z0-9_]{4,24}$/.test(username) || typeof password !== "string" || password.length < 12 || password.length > 128) {
+      throw new BadRequest("아이디는 영문, 숫자, 밑줄 4~24자, 비밀번호는 12~128자로 입력해 주세요.");
+    }
+    if (sub === "/register") {
+      if (!await registerGuardian(username, password)) {
+        return send(res, 409, { ok: false, message: "사용할 수 없는 아이디입니다." });
+      }
+    } else {
+      const valid = await auth.checkPassword(password, await guardianHash(username));
+      if (!valid) return send(res, 401, { ok: false, message: "아이디와 비밀번호를 확인해 주세요." });
+    }
+    return send(res, 200, { ok: true }, { "Set-Cookie": auth.signIn(req, username) });
+  }
+  if (sub === "/session" && method === "DELETE" && sameOrigin(req)) {
+    return send(res, 200, { ok: true }, { "Set-Cookie": auth.signOut(req) });
+  }
+  const linkId = /^\/practice-links\/([a-f0-9]{48})$/.exec(sub);
+  const owner = auth.user(req);
+  if (!owner) return send(res, 401, { ok: false, message: "보호자 로그인이 필요해요." });
+  if (sub === "/practice-links" && method === "GET") {
+    return send(res, 200, { ok: true, links: await practiceRows(undefined, owner) });
+  }
+  if ((sub === "/practice-links" && method === "POST") || (linkId && method === "PUT")) {
+    if (!sameOrigin(req)) return send(res, 403, { ok: false, message: "허용되지 않은 요청입니다." });
+    if (limitWrite(ip)) return send(res, 429, { ok: false, message: "잠시 후 다시 저장해 주세요." });
+    const link = await savePractice(linkId?.[1], await readJson(req), owner);
+    if (!link) return send(res, 404, { ok: false, message: "연습 링크를 찾을 수 없어요." });
+    return send(res, 200, { ok: true, link });
+  }
+
   const mustSet = async v => {
     const st = await store.getSet(toId(v));
-    if (!st) throw new BadRequest("없는 문제집이에요. 다른 사람이 지웠을 수 있어요.");
+    if (!st || (st.owner ?? null) !== owner) throw new BadRequest("사용할 수 없는 문제집이에요.");
     return st;
   };
 
@@ -560,7 +617,7 @@ async function route(req, res, urlPath) {
       return send(res, 200, { ok: true, storage: usingDb() ? "db" : "memory", note });
     }
     /* 문제집 목록과 문제집마다의 문제 수 */
-    if (sub === "/sets") return send(res, 200, { ok: true, sets: await store.sets() });
+    if (sub === "/sets") return send(res, 200, { ok: true, sets: await store.sets(owner) });
     if (sub === "/items") {
       const st = await mustSet(url.searchParams.get("set"));
       const mode = checkMode(url.searchParams.get("mode"));
@@ -570,23 +627,25 @@ async function route(req, res, urlPath) {
     return send(res, 404, { ok: false, message: "없는 주소입니다." });
   }
 
-  /* ----- 바꾸기 (누구나) ----- */
+  /* ----- 바꾸기 (보호자) ----- */
   if (!sameOrigin(req)) return send(res, 403, { ok: false, message: "허용되지 않은 요청입니다." });
   if (limitWrite(ip)) return send(res, 429, { ok: false, message: "너무 빠르게 바꾸고 있어요. 1분 뒤에 다시 해 주세요." });
 
   if (sub === "/sets" && method === "POST") {
     const body = await readJson(req);
-    return send(res, 200, { ok: true, set: await store.createSet(checkSetName(body.name)) });
+    return send(res, 200, { ok: true, set: await store.createSet(checkSetName(body.name), owner) });
   }
   const setOne = /^\/sets\/(\d+)$/.exec(sub);
   if (setOne && method === "PUT") {
     const body = await readJson(req);
-    const st = await store.renameSet(toId(setOne[1]), checkSetName(body.name));
+    const original = await mustSet(setOne[1]);
+    const st = await store.renameSet(original.id, checkSetName(body.name), owner);
     if (!st) return send(res, 404, { ok: false, message: "없는 문제집이에요." });
     return send(res, 200, { ok: true, set: st });
   }
   if (setOne && method === "DELETE") {
-    const n = await store.removeSet(toId(setOne[1]));
+    const original = await mustSet(setOne[1]);
+    const n = await store.removeSet(original.id);
     return send(res, n ? 200 : 404, { ok: !!n, removed: n });
   }
 
@@ -619,6 +678,7 @@ async function route(req, res, urlPath) {
     const item = await store.get(id);
     if (!item) return send(res, 404, { ok: false, message: "이미 지워진 문제예요." });
     const body = await readJson(req);
+    await mustSet(item.set_id);
     const x = checkItem(item.mode, body);
     return send(res, 200, { ok: true, item: await store.update(id, x.prompt, x.answers) });
   }
@@ -627,7 +687,7 @@ async function route(req, res, urlPath) {
     const body = await readJson(req);
     const ids = (Array.isArray(body.ids) ? body.ids : []).slice(0, 10000).map(toId);
     if (!ids.length) throw new BadRequest("지울 문제를 고르세요.");
-    return send(res, 200, { ok: true, removed: await store.remove(ids) });
+    return send(res, 200, { ok: true, removed: await store.remove(ids, owner) });
   }
 
   return send(res, 404, { ok: false, message: "없는 주소입니다." });
@@ -636,7 +696,40 @@ async function route(req, res, urlPath) {
 /* 서버가 뜰 때 DB 를 미리 붙여 둔다 (첫 사람이 기다리지 않게) */
 function warmUp() {
   if (usingDb()) db().catch(() => {});
-  else { seedMemory(); console.log("타자 연습: DATABASE_URL 이 없어 메모리에 예시 문제를 담았다"); }
 }
 
-module.exports = { handle, warmUp, clean };
+/* 하루랑 공개 문제는 코드에 포함된 기본 문제만 읽습니다.
+   운영 문제집, 메모리 저장소, 데이터베이스 어느 쪽에도 접근하지 않습니다. */
+const publicSeeds = [
+  { name: SAMPLE_SET, ...SAMPLES },
+  ...DEFAULT_EXERCISES,
+];
+const publicSets = publicSeeds.map((seed, index) => {
+  const id = index + 1;
+  const items = seedItems(seed).map((item, position) => ({ ...item, id: position + 1 }));
+  const counts = { dictation: 0, qa: 0 };
+  for (const item of items) counts[item.mode]++;
+  return { id, name: seed.name, counts, items };
+});
+
+function handlePublic(req, res, pathname) {
+  if (req.method !== "GET") {
+    return send(res, 405, { ok: false, message: "읽기만 할 수 있어요." }, { Allow: "GET" });
+  }
+  if (pathname === "/haru/practice-data/sets") {
+    const sets = publicSets.map(({ id, name, counts }) => ({ id, name, counts }));
+    return send(res, 200, { ok: true, sets });
+  }
+  if (pathname === "/haru/practice-data/items") {
+    const query = new URL(req.url, "http://x").searchParams;
+    const set = publicSets.find(entry => String(entry.id) === query.get("set"));
+    const mode = query.get("mode");
+    if (!set || (mode !== "qa" && mode !== "dictation")) {
+      return send(res, 404, { ok: false, message: "공개 문제집을 찾을 수 없어요." });
+    }
+    return send(res, 200, { ok: true, items: set.items.filter(item => item.mode === mode) });
+  }
+  return send(res, 404, { ok: false, message: "학습 자료를 찾을 수 없어요." });
+}
+
+module.exports = { handle, handlePublic, warmUp, clean };

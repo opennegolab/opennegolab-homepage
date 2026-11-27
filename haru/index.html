@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="하루랑은 발달장애인을 위한 무료 학습 서비스입니다. 타자 연습, 키오스크, 은행 이용, 교통수단을 하루와 함께 연습해요.">
+  <meta name="theme-color" content="#fff8e9">
+  <link rel="canonical" href="https://www.opennegolab.com/haru">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:site_name" content="하루랑">
+  <meta property="og:title" content="하루랑 | 하루와 함께 세상 배우기">
+  <meta property="og:description" content="하루와 함께 타자, 키오스크, 은행 이용, 교통수단을 연습하는 무료 학습 서비스">
+  <meta property="og:url" content="https://www.opennegolab.com/haru">
+  <meta property="og:image" content="https://www.opennegolab.com/haru/assets/share.png?v=2">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="하루랑. 하루와 함께 세상 배우기. 손을 흔드는 하루 캐릭터.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/haru/assets/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="/haru/assets/icon-192.png">
+  <link rel="manifest" href="/haru/manifest.webmanifest">
+  <link rel="stylesheet" href="/haru/brand.css?v=1">
+  <link rel="stylesheet" href="/haru/home.css?v=2">
+  <script type="module" src="/haru/home.js?v=1"></script>
+  <title>하루랑 HARURANG | 하루와 함께 세상 배우기</title>
+</head>
+<body class="haru-home">
+  <header class="home-header">
+    <img src="/haru/assets/logo.png" width="180" height="64" alt="하루랑 HARURANG">
+    <button id="greeting-audio" type="button" hidden>
+      <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3zM16 9a4 4 0 0 1 0 6m2-9a8 8 0 0 1 0 12"/></svg>
+      <span>안내 듣기</span>
+    </button>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="headline">
+      <div class="intro-copy">
+        <h1 id="headline">하루와 함께<br>세상 배우기</h1>
+        <p class="description">발달장애인을 위한 무료 학습 서비스</p>
+        <p id="greeting">안녕하세요! 저는 하루예요. 오늘은 무엇을 해볼까요?</p>
+        <p id="speech-message" role="status" hidden></p>
+      </div>
+      <img class="mascot" src="/haru/assets/haru-wave.webp" width="360" height="440" alt="손을 흔들며 인사하는 하루">
+    </section>
+    <nav class="learning-menu" aria-label="학습 영역">
+      <a href="/haru/typing">
+        <img src="/haru/assets/keyboard.webp" alt="" width="480" height="300">
+        <span><strong>타자 연습</strong><small>타자 · 받아쓰기 · 문제집</small></span>
+      </a>
+      <a href="/haru/kiosk">
+        <img src="/typing/learn/images/places-1.webp" alt="" width="480" height="300">
+        <span><strong>키오스크</strong><small>마트 · 문구점 · 카페 · 음식점</small></span>
+      </a>
+      <a href="/haru/bank">
+        <img src="/typing/learn/images/places-5.webp" alt="" width="480" height="300">
+        <span><strong>은행 이용</strong><small>은행 창구 · ATM</small></span>
+      </a>
+      <a href="/haru/transport">
+        <img src="/typing/learn/images/places-6.webp" alt="" width="480" height="300">
+        <span><strong>교통수단</strong><small>버스 · 지하철 · 택시 · 기차 · 비행기</small></span>
+      </a>
+    </nav>
+  </main>
+</body>
+</html>

@@ -1,0 +1,39 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Pretendard, "Noto Sans KR", system-ui, sans-serif; color: var(--haru-ink); background: #fbfaf5; }
+[hidden] { display: none !important; }
+.home-header, main { max-width: 1072px; padding-inline: clamp(1rem, 3vw, 2.25rem); margin-inline: auto; }
+.home-header { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.home-header img { width: clamp(132px, 22vw, 180px); height: auto; }
+.home-header button {
+  display: inline-flex; align-items: center; gap: .45rem; min-height: 48px;
+  border: 0; border-radius: .85rem; padding: .55rem .9rem; white-space: nowrap;
+  background: var(--haru-green); color: white; cursor: pointer; font: inherit; font-weight: 750;
+}
+.intro {
+  display: grid; grid-template-columns: 1fr minmax(115px, 30%); gap: .5rem; align-items: center;
+  border: 1px solid #e8ddc4; border-radius: 1.35rem; background: var(--haru-cream); overflow: hidden;
+  padding: clamp(.95rem, 3.5vw, 2.25rem);
+}
+h1 { font-size: clamp(1.85rem, 5.6vw, 3.5rem); margin: 0; line-height: 1.15; letter-spacing: -.045em; }
+.description { color: var(--haru-muted); font-weight: 650; font-size: clamp(.95rem, 2.5vw, 1.12rem); }
+#greeting { font-size: clamp(1rem, 2.6vw, 1.2rem); line-height: 1.5; margin: 0; }
+#speech-message { font-size: .95rem; }
+.mascot { width: 100%; height: clamp(125px, 24vw, 220px); object-fit: contain; mix-blend-mode: multiply; }
+.learning-menu { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(.65rem, 2vw, 1.25rem); margin-top: clamp(.8rem, 2vw, 1.4rem); }
+.learning-menu a {
+  min-width: 0; overflow: hidden; display: flex; flex-direction: column;
+  text-decoration: none; color: inherit; border-radius: 1.05rem;
+  background: white; border: 1px solid var(--haru-line); touch-action: manipulation;
+}
+.learning-menu img { display: block; width: 100%; height: clamp(105px, 18vw, 185px); object-fit: cover; background: var(--haru-mint); }
+.learning-menu a:hover { border-color: var(--haru-green); }
+.learning-menu a:active { background: var(--haru-mint); }
+.learning-menu span { display: grid; align-content: start; gap: .25rem; padding: clamp(.65rem, 1.8vw, 1rem); }
+.learning-menu strong { font-size: clamp(1.12rem, 3.45vw, 1.68rem); line-height: 1.2; }
+.learning-menu small { color: var(--haru-muted); font-size: clamp(.88rem, 2vw, 1rem); line-height: 1.35; }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--haru-green); outline-offset: 3px; }
+main { padding-bottom: 1.5rem; }
+@media (max-width: 355px) {
+  .intro { grid-template-columns: 1fr 76px; }
+  .learning-menu { grid-template-columns: 1fr; }
+}
