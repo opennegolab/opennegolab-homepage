@@ -115,3 +115,17 @@ html[data-haru] {
   html[data-haru] #back, html[data-haru] #home { order: 2; }
   .kiosk-session .controls { position: static; }
 }
+
+.problem-goal {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: .65rem; margin-bottom: 1rem; padding: .65rem .85rem;
+  border: 1px solid var(--line); border-radius: .85rem; background: #fff8e9;
+}
+.problem-goal p { margin: 0; font-weight: 750; line-height: 1.45; }
+.problem-feedback { color: #634b19; font-weight: 750; line-height: 1.5; }
+.problem-feedback:empty { margin: 0; }
+.goal-items { display: flex; flex-wrap: wrap; gap: .75rem; }
+.goal-item {
+  display: grid; gap: .5rem; padding: .75rem;
+  border: 1px solid var(--line); border-radius: .85rem; background: var(--paper);
+}
