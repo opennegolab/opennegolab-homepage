@@ -27,6 +27,7 @@ const TYPES = {
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
   ".svg": "image/svg+xml",
   ".png": "image/png",
   ".jpg": "image/jpeg",
@@ -41,6 +42,20 @@ const TYPES = {
 };
 
 const home = () => path.join(ROOT, "index.html");
+
+const HARU_TYPING_META = `<title>타자 연습 | 하루랑</title>
+<meta name="description" content="하루랑에서 한글 타자와 받아쓰기를 무료로 연습해요.">
+<link rel="canonical" href="https://www.opennegolab.com/haru/typing">
+<meta property="og:title" content="타자 연습 | 하루랑">
+<meta property="og:description" content="하루와 함께 하는 무료 한글 타자 연습">
+<meta property="og:image" content="https://www.opennegolab.com/haru/assets/share.png">
+<meta name="theme-color" content="#fff8e9">
+<link rel="icon" href="/haru/assets/favicon.png">
+<link rel="manifest" href="/haru/manifest.webmanifest">
+<link rel="stylesheet" href="/haru/brand.css?v=1">`;
+const HARU_TYPING_NAV = `<nav aria-label="하루랑"><a class="haru-return" href="/haru">
+  <img src="/haru/assets/icon-192.png" alt="" width="32" height="32">하루랑 처음으로</a></nav>`;
+
 
 /* 카카오톡에서 /typing 을 열었을 때 보내는 빈 화면 — 바로 기본 브라우저로 넘긴다.
    같은 창에서는 한 번만 넘기고, 넘어가지 못하면 1.5초 뒤 원래 화면(?inapp=1)을 연다 */
@@ -155,6 +170,38 @@ function handle(req, res) {
   if (urlPath === "/stats") {
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
     return fs.createReadStream(path.join(ROOT, "stats.html")).pipe(res);
+  }
+
+  if (urlPath === "/haru/practice-data" || urlPath.startsWith("/haru/practice-data/")) {
+    return typing.handlePublic(req, res, urlPath);
+  }
+  const haruPath = urlPath.replace(/\/$/, "");
+  if (haruPath === "/haru/typing") {
+    const template = fs.readFileSync(path.join(ROOT, "typing", "index.html"), "utf8");
+    const html = template
+      .replace('<html lang="ko">', '<html lang="ko" data-haru>')
+      .replace(/<!-- 기존 학습 메타 시작 -->[\s\S]*?<!-- 기존 학습 메타 끝 -->/, HARU_TYPING_META)
+      .replace(/<!-- 기존 문제 설정 시작 -->[\s\S]*?<!-- 기존 문제 설정 끝 -->/, "")
+      .replace("<!-- 하루랑 타자 탐색 -->", HARU_TYPING_NAV)
+      .replace(/@import url\('https:\/\/cdn\.jsdelivr\.net[^']*'\);/, "")
+      .replace('aria-label="오선빈 타자연습"', 'aria-label="하루랑 타자 연습"')
+      .replace(">오선빈</span>", ">하루랑</span>");
+    res.writeHead(200, { "Content-Type": TYPES[".html"], "Cache-Control": "no-cache",
+      "X-Content-Type-Options": "nosniff" });
+    return res.end(html);
+  }
+  if (["/haru/kiosk", "/haru/bank", "/haru/transport"].includes(haruPath)) {
+    const template = fs.readFileSync(path.join(ROOT, "typing", "learn", "index.html"), "utf8");
+    const title = { "/haru/kiosk": "키오스크", "/haru/bank": "은행 이용", "/haru/transport": "교통수단" }[haruPath];
+    const html = template.replace('<meta name="robots" content="noindex,nofollow">', `
+      <meta name="description" content="하루와 함께 ${title} 학습을 해요.">
+      <link rel="canonical" href="https://www.opennegolab.com${haruPath}">
+      <meta property="og:title" content="${title} | 하루랑">
+      <meta property="og:image" content="https://www.opennegolab.com/haru/assets/share.png">`)
+      .replace("<title>생활학습 | 초등 공부방</title>", `<title>${title} | 하루랑</title>`);
+    res.writeHead(200, { "Content-Type": TYPES[".html"], "Cache-Control": "no-cache",
+      "X-Content-Type-Options": "nosniff" });
+    return res.end(html);
   }
 
   /* 타자 연습 — 문제 저장은 typing-api.js 가 맡는다 (누가 접속하든 같은 문제) */

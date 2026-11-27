@@ -626,4 +626,39 @@ function warmUp() {
   else { seedMemory(); console.log("타자 연습: DATABASE_URL 이 없어 메모리에 예시 문제를 담았다"); }
 }
 
-module.exports = { handle, warmUp, clean };
+/* 하루랑 공개 문제는 코드에 포함된 기본 문제만 읽습니다.
+   운영 문제집, 메모리 저장소, 데이터베이스 어느 쪽에도 접근하지 않습니다. */
+const publicSeeds = [
+  { name: SAMPLE_SET, ...SAMPLES },
+  ONCE.find(seed => seed.key === "set:arith-1digit-v1"),
+  ONCE.find(seed => seed.key === "set:words-v1"),
+];
+const publicSets = publicSeeds.map((seed, index) => {
+  const id = index + 1;
+  const items = seedItems(seed).map((item, position) => ({ ...item, id: position + 1 }));
+  const counts = { dictation: 0, qa: 0 };
+  for (const item of items) counts[item.mode]++;
+  return { id, name: seed.name, counts, items };
+});
+
+function handlePublic(req, res, pathname) {
+  if (req.method !== "GET") {
+    return send(res, 405, { ok: false, message: "읽기만 할 수 있어요." }, { Allow: "GET" });
+  }
+  if (pathname === "/haru/practice-data/sets") {
+    const sets = publicSets.map(({ id, name, counts }) => ({ id, name, counts }));
+    return send(res, 200, { ok: true, sets });
+  }
+  if (pathname === "/haru/practice-data/items") {
+    const query = new URL(req.url, "http://x").searchParams;
+    const set = publicSets.find(entry => String(entry.id) === query.get("set"));
+    const mode = query.get("mode");
+    if (!set || (mode !== "qa" && mode !== "dictation")) {
+      return send(res, 404, { ok: false, message: "공개 문제집을 찾을 수 없어요." });
+    }
+    return send(res, 200, { ok: true, items: set.items.filter(item => item.mode === mode) });
+  }
+  return send(res, 404, { ok: false, message: "학습 자료를 찾을 수 없어요." });
+}
+
+module.exports = { handle, handlePublic, warmUp, clean };

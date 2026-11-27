@@ -76,3 +76,43 @@ h1:focus { outline: none; }
   .top-inner button, .room { padding-inline: .45rem; font-size: .92rem; }
   .items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+html[data-haru] {
+  background: #fbfaf5;
+  color: var(--haru-ink);
+  --green: var(--haru-green);
+  --line: var(--haru-line);
+}
+.top-inner .haru-return { padding: 0 .65rem; }
+.haru-return img { width: clamp(94px, 20vw, 123px); height: auto; }
+.with-haru {
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+  padding: .7rem clamp(.75rem, 2.5vw, 1.4rem);
+  border-radius: 1rem; background: var(--haru-cream);
+}
+.haru-pose {
+  width: clamp(64px, 12vw, 128px);
+  height: clamp(74px, 13vw, 150px);
+  object-fit: contain; mix-blend-mode: multiply;
+}
+.kiosk-menu { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.kiosk-session .categories {
+  padding: .55rem;
+  border: 1px solid var(--line);
+  border-radius: .9rem;
+  background: var(--haru-cream);
+}
+.kiosk-session .categories button { flex: 1; }
+.kiosk-session .controls {
+  position: sticky; bottom: 0;
+  padding: .7rem;
+  margin-block: .8rem;
+  border: 1px solid var(--line);
+  border-radius: .9rem;
+  background: var(--paper);
+}
+@media (max-width: 520px) {
+  html[data-haru] .top-inner { flex-wrap: wrap; }
+  html[data-haru] .listen { order: 1; }
+  html[data-haru] #back, html[data-haru] #home { order: 2; }
+  .kiosk-session .controls { position: static; }
+}

@@ -14,6 +14,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<!-- 기존 학습 메타 시작 -->
 <title>오선빈 타자연습</title>
 <meta name="description" content="듣고 쓰는 받아쓰기, 질문에 답하기로 한글 타자를 연습해요.">
 <!-- 전용 링크로만 들어오는 학습 화면이라 검색에는 올리지 않는다 -->
@@ -38,6 +39,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
 <link rel="icon" type="image/png" sizes="64x64" href="/typing/icon-64.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/typing/icon-192.png">
 <link rel="apple-touch-icon" href="/typing/icon-180.png">
+<!-- 기존 학습 메타 끝 -->
 <noscript><style>.wrap{ opacity:1 !important; }</style></noscript>
 <style>
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
@@ -392,6 +394,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
 
   <!-- ================= 처음 화면 ================= -->
   <section id="home" class="stack" aria-label="처음 화면">
+    <!-- 하루랑 타자 탐색 -->
     <header class="hero">
       <h1 class="title" aria-label="오선빈 타자연습">
         <span class="owner" aria-hidden="true"><svg class="i"><use href="#i-star"/></svg>오선빈</span>
@@ -422,6 +425,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
           <span class="desc">질문을 보고 답을 써요</span>
           <span class="cnt" id="cnt-qa">불러오는 중…</span>
         </button>
+        <!-- 기존 문제 설정 시작 -->
         <a class="mode setup" href="/typing/admin" id="setupLink">
           <span class="tick" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg></span>
           <span class="ico" aria-hidden="true"><svg class="i"><use href="#i-gear"/></svg></span>
@@ -429,6 +433,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
           <span class="desc">문제를 만들고 고쳐요</span></span>
           <span class="cnt">문제집 만들기</span>
         </a>
+        <!-- 기존 문제 설정 끝 -->
       </div>
 
       <div class="step" style="margin-top:26px"><span class="n">3</span>몇 문제 풀까요?</div>
@@ -497,7 +502,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   </section>
 </div>
 
-<script src="/typing/store.js?v=5"></script>
+<script src="/typing/store.js?v=6"></script>
 <script>
 (function () {
   "use strict";
@@ -507,9 +512,10 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   const RATE = 0.9;      /* 읽기 빠르기 — 저학년이 따라 쓰기 좋게 조금 느리게 */
 
   /* ---------- 이 기기에만 남기는 값 ---------- */
+  const settingsPrefix = document.documentElement.hasAttribute("data-haru") ? "haru.typing." : "typing.";
   const local = {
-    get(k, d) { try { const v = localStorage.getItem("typing." + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem("typing." + k, JSON.stringify(v)); } catch (e) {} },
+    get(k, d) { try { const v = localStorage.getItem(settingsPrefix + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(settingsPrefix + k, JSON.stringify(v)); } catch (e) {} },
   };
   const settings = Object.assign({ mode: "dictation", count: "10", set: 0 }, local.get("settings", {}));
   const saveSettings = () => local.set("settings", settings);
@@ -699,7 +705,8 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
     const cur = currentSet();
     counts = cur ? cur.counts : (sets ? { dictation: 0, qa: 0 } : null);
     renderSets();
-    $("setupLink").href = "/typing/admin" + (cur ? "?set=" + cur.id : "");
+    const setup = $("setupLink");
+    if (setup) setup.search = cur ? "?set=" + cur.id : "";
     document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === settings.mode)));
     document.querySelectorAll("[data-count]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.count === settings.count)));
     const warn = $("homeWarn");

@@ -20,6 +20,11 @@
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
+  <url><loc>https://www.opennegolab.com/haru</loc></url>
+  <url><loc>https://www.opennegolab.com/haru/typing</loc></url>
+  <url><loc>https://www.opennegolab.com/haru/kiosk</loc></url>
+  <url><loc>https://www.opennegolab.com/haru/bank</loc></url>
+  <url><loc>https://www.opennegolab.com/haru/transport</loc></url>
   <!-- /privacy 는 일부러 뺐다. (플러그인 개인정보 안내·이용약관도 같은 이유로 뺐다) 그 페이지는 noindex 라 검색에 올리지 않는데,
        사이트맵에 넣으면 "가져가라"와 "올리지 마라"를 같이 말하는 셈이 된다.
        검색엔진 보고서에 계속 제외 항목으로 잡혀 진짜 문제를 가린다.

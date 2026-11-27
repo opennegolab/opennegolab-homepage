@@ -6,11 +6,21 @@ const back = document.querySelector('#back');
 const home = document.querySelector('#home');
 const room = document.querySelector('.room');
 const voiceStatus = document.querySelector('#voice-status');
+const area = {
+  '/haru/kiosk': { id: 'kiosk', title: '키오스크', prompt: '어느 가게에서 주문해 볼까요?' },
+  '/haru/bank': { id: 'bank', title: '은행 이용', prompt: '창구와 ATM 중에서 골라요. 돈을 넣거나 꺼내 볼 수 있어요.' },
+  '/haru/transport': { id: 'transport', title: '교통수단', prompt: '무엇을 타 볼까요?' }
+}[window.location.pathname.replace(/\/$/, '')];
+
+if (area) {
+  document.documentElement.setAttribute('data-haru', '');
+  document.querySelector('.haru-return').hidden = false;
+}
 
 const welcome = '어디에 가 볼까요? 가 보고 싶은 곳의 사진을 눌러요.';
 let state = { view: 'home' };
 let trail = [];
-let narration = welcome;
+let narration;
 
 function say(text) {
   narration = text;
@@ -47,13 +57,22 @@ function node(tag, className = '', text) {
   return element;
 }
 
-function heading(title, prompt, detail) {
+function heading(title, prompt, detail, pose) {
   const header = node('div', 'heading');
-  if (detail) header.append(node('p', 'context', detail));
+  const copy = node('div');
+  if (detail) copy.append(node('p', 'context', detail));
   const titleElement = node('h1', '', title);
   titleElement.tabIndex = -1;
-  header.append(titleElement);
-  if (prompt) header.append(node('p', 'prompt', prompt));
+  copy.append(titleElement);
+  if (prompt) copy.append(node('p', 'prompt', prompt));
+  header.append(copy);
+  if (area && pose) {
+    header.classList.add('with-haru');
+    const mascot = node('img', 'haru-pose');
+    mascot.src = '/haru/assets/haru-' + pose + '.webp';
+    mascot.alt = '';
+    header.append(mascot);
+  }
   app.append(header);
 }
 
@@ -103,8 +122,9 @@ function placeChoices(id) {
 
 function resetActivity(parent) {
   const start = { view: 'home' };
-  trail = parent ? [start] : [];
-  state = parent ? { view: 'places', id: parent } : start;
+  const hasParentMenu = parent && area?.id !== parent;
+  trail = hasParentMenu ? [start] : [];
+  state = hasParentMenu ? { view: 'places', id: parent } : start;
 }
 
 function restartShop(id) {
@@ -249,9 +269,14 @@ function shopScreen(shop) {
     group('controls', button(shop.receive, () => changeShop('shop-done'), true));
     return text + ' 이제 ' + (menu ? '주문한 메뉴를' : '산 물건을') + ' 받아요.';
   }
-  heading('활동을 마쳤어요', shop.done, shop.name);
+  heading('활동을 마쳤어요', shop.done, shop.name, 'cheer');
   receipt(cart, false);
-  finishActions(() => restartShop(id), id === 'fruit' || id === 'vegetable' ? () => { trail = []; show({ view: 'places', id: 'mart' }); } : reset);
+  const isMarket = id === 'fruit' || id === 'vegetable';
+  const other = !area && isMarket ? () => {
+    trail = [];
+    show({ view: 'places', id: 'mart' });
+  } : reset;
+  finishActions(() => restartShop(id), other);
   return shop.done + ' ' + cart.map(line => wording(line.item, line.count) + ' 받았어요.').join(' ');
 }
 
@@ -260,20 +285,24 @@ function activityScreen() {
   const steps = activity.steps;
   const nextStep = steps[step];
   if (!nextStep) {
-    heading('활동을 마쳤어요', activity.done, activity.name);
+    heading('활동을 마쳤어요', activity.done, activity.name, 'cheer');
     group('scene', photo(activity.image));
     finishActions(() => {
       resetActivity(place);
       openActivity(id, place, activity);
     }, () => {
-      trail = [];
-      show({ view: 'places', id: place });
+      if (area?.id === place) reset();
+      else {
+        trail = [];
+        show({ view: 'places', id: place });
+      }
     });
     return activity.done;
   }
   const scene = typeof nextStep === 'function' ? nextStep(values) : nextStep;
   heading(activity.name, scene.prompt, typeof step === 'number'
-    ? (step + 1) + ' / ' + steps.length : '가상 은행 연습');
+    ? (step + 1) + ' / ' + steps.length : '가상 은행 연습',
+  step === (activity.start ?? 0) ? 'guide' : undefined);
   if (scene.image) {
     const picture = photo(scene.image);
     picture.alt = scene.alt || '';
@@ -295,10 +324,22 @@ function activityScreen() {
 function render() {
   app.replaceChildren();
   const { id, view } = state;
+  app.classList.toggle('kiosk-session', area?.id === 'kiosk' && Boolean(shops[id]));
   back.hidden = trail.length === 0;
   home.hidden = view === 'home';
-  room.hidden = view !== 'home';
+  room.hidden = Boolean(area) || view !== 'home';
   if (view === 'home') {
+    if (area) {
+      heading(area.title, area.prompt, undefined, 'guide');
+      if (area.id === 'kiosk') {
+        group('grid places kiosk-menu', ...places.slice(0, 4).map(([key, name, desc, image]) =>
+          card(name, image, () => startPlace(key), desc)));
+      } else {
+        group('grid places', ...placeChoices(area.id).map(([key, activity]) =>
+          card(activity.name, activity.image, () => openActivity(key, area.id, activity))));
+      }
+      return area.title + '. ' + area.prompt;
+    }
     heading('생활학습', '어디에 가 볼까요?');
     group('grid places', ...places.map(([key, name, desc, image]) =>
       card(name, image, () => startPlace(key), desc)));
@@ -321,4 +362,4 @@ function render() {
 back.addEventListener('click', previous);
 home.addEventListener('click', reset);
 document.querySelector('#listen').addEventListener('click', () => say(narration));
-render();
+narration = render();
