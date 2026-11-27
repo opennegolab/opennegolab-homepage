@@ -26,8 +26,12 @@ const KINDS = new Set(["view", "inquiry_open", "generate_lead", "simulator_click
 const KEEP_DAYS = 400;
 
 /* 홈페이지가 아닌 화면 — 같은 서버에 있어도 홈페이지 방문자로 세지 않는다.
-   타자 연습(/typing)은 아이들이 쓰는 별도 서비스라 숫자에 섞이면 안 된다 */
-const NOT_HOMEPAGE = /^\/typing(\/|$)/i;
+   하루랑(/haru)·타자 연습(/typing)·초등 공부방(/grade1-learning)은 아이들이 쓰는
+   별도 서비스라 숫자에 섞이면 안 된다. 그 아래 없는 주소로 들어오면 서버가 홈페이지를
+   대신 보여 주는데, 그때도 홈페이지 방문으로 세지 않도록 서버에서 한 번 더 거른다.
+   아래 SQL 의 NOT_HOMEPAGE_SQL 과 반드시 같은 규칙이어야 한다 */
+const NOT_HOMEPAGE = /^\/(haru|typing|grade1-learning|stats|api)(\/|\.|$)/i;
+const NOT_HOMEPAGE_SQL = "^/(haru|typing|grade1-learning|stats|api)(/|\\.|$)";
 
 /* ---------- 저장소 ---------- */
 let pool = null;
@@ -240,7 +244,7 @@ async function rowsSince(since) {
     try {
       const r = await p.query(
         `SELECT at, kind, ref, device, visitor FROM hp_hits
-          WHERE at >= $1 AND (path IS NULL OR path !~* '^/typing(/|$)') ORDER BY at`, [since]);
+          WHERE at >= $1 AND (path IS NULL OR path !~* $2) ORDER BY at`, [since, NOT_HOMEPAGE_SQL]);
       return { rows: r.rows, mode: "db" };
     } catch (e) {
       console.error("통계 조회 실패:", e && e.message);
