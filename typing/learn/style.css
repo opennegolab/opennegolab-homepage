@@ -1,6 +1,6 @@
 :root {
   color-scheme: light;
-  font-family: Pretendard, "Noto Sans KR", system-ui, sans-serif;
+  font-family: var(--haru-font);
   color: #202b28;
   background: #f8f7f2;
   --green: #215742;
@@ -11,10 +11,10 @@
 body { margin: 0; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button {
-  min-height: 48px;
+  min-height: var(--haru-touch);
   padding: .65rem 1rem;
   border: 1px solid var(--line);
-  border-radius: .8rem;
+  border-radius: var(--haru-radius);
   background: var(--paper);
   color: inherit;
   font: inherit;
@@ -28,8 +28,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid #1d654f; outline-offs
 [hidden] { display: none !important; }
 .primary, .listen, [aria-pressed="true"] { background: var(--green); color: white; border-color: var(--green); }
 .primary:active, .listen:active { background: #173e30; }
-.top { background: #fff; border-bottom: 1px solid var(--line); }
-.top-inner { max-width: 1100px; margin: auto; padding: .65rem 1rem; display: flex; gap: .5rem; align-items: center; }
 .listen { display: inline-flex; align-items: center; gap: .45rem; margin-left: auto; white-space: nowrap; }
 main { max-width: 1100px; margin: auto; padding: clamp(1rem, 3vw, 2.25rem) 1rem 2.5rem; }
 .heading { margin-bottom: clamp(1rem, 3vw, 1.65rem); }
@@ -52,7 +50,7 @@ h1:focus { outline: none; }
 .action .photo-card { border: 2px solid var(--green); }
 .action .card-copy { background: var(--green); color: white; }
 .action .photo-card:active .card-copy { background: #173e30; }
-.scene img { width: min(100%, 480px); aspect-ratio: 16 / 9; object-fit: cover; border-radius: .8rem; display: block; margin: 0 auto 1rem; }
+.scene img { width: min(100%, 480px); aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--haru-radius); display: block; margin: 0 auto 1rem; }
 .controls, .categories { display: flex; flex-wrap: wrap; gap: .65rem; margin: 1rem 0; }
 .controls .photo-card { width: min(100%, 220px); }
 .quantities { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: .7rem; }
@@ -62,7 +60,7 @@ h1:focus { outline: none; }
 .quantity-photo .repeated { justify-content: flex-start; }
 .quantity-photo img { width: clamp(3.1rem, 13vw, 7rem); }
 .receipt { padding: 0; margin: 0; list-style: none; display: grid; gap: .6rem; }
-.receipt-row { border: 1px solid var(--line); border-radius: .8rem; background: white; padding: .65rem; display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
+.receipt-row { border: 1px solid var(--line); border-radius: var(--haru-radius); background: white; padding: .65rem; display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
 .receipt-row .repeated { justify-content: flex-start; }
 #voice-status { max-width: 1100px; padding: 0 1rem; margin: 0 auto 1rem; color: #584714; }
 @media (max-width: 700px) {
@@ -71,27 +69,15 @@ h1:focus { outline: none; }
   .card-copy { padding: .6rem; }
 }
 @media (max-width: 370px) {
-  .top-inner { padding-inline: .45rem; }
-  .top-inner button { padding-inline: .45rem; font-size: .92rem; }
+  .haru-top-inner { padding-inline: .45rem; }
+  .haru-top-inner button { padding-inline: .45rem; font-size: .92rem; }
   .items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 html[data-haru] {
-  background: #fbfaf5;
+  background: var(--haru-background);
   color: var(--haru-ink);
   --green: var(--haru-green);
   --line: var(--haru-line);
-}
-.top-inner .haru-return { padding: 0 .65rem; }
-.haru-return img { width: clamp(94px, 20vw, 123px); height: auto; }
-.with-haru {
-  display: flex; align-items: center; justify-content: space-between; gap: .75rem;
-  padding: .7rem clamp(.75rem, 2.5vw, 1.4rem);
-  border-radius: 1rem; background: var(--haru-cream);
-}
-.haru-pose {
-  width: clamp(64px, 12vw, 128px);
-  height: clamp(74px, 13vw, 150px);
-  object-fit: contain; mix-blend-mode: multiply;
 }
 .kiosk-menu { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .kiosk-session .categories {
@@ -110,7 +96,6 @@ html[data-haru] {
   background: var(--paper);
 }
 @media (max-width: 520px) {
-  html[data-haru] .top-inner { flex-wrap: wrap; }
   html[data-haru] .listen { order: 1; }
   html[data-haru] #back, html[data-haru] #home { order: 2; }
   .kiosk-session .controls { position: static; }

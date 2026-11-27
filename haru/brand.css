@@ -5,25 +5,47 @@
   --haru-green: #24543c;
   --haru-mint: #e6efdd;
   --haru-line: #dce3d4;
+  --haru-background: #fbfaf5;
+  --haru-radius: .8rem;
+  --haru-touch: 48px;
+  --haru-font: Pretendard, "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
 }
 .haru-return {
   display: inline-flex;
   align-items: center;
   gap: .55rem;
-  min-height: 48px;
+  min-height: var(--haru-touch);
   padding: .35rem .8rem;
   border: 1px solid var(--haru-line);
-  border-radius: .8rem;
+  border-radius: var(--haru-radius);
   background: white;
   color: var(--haru-green);
   font-weight: 800;
   text-decoration: none;
 }
 .haru-return:focus-visible, [data-haru] a:focus-visible { outline: 3px solid var(--haru-green); outline-offset: 3px; }
-html[data-haru]:root {
-  --bg: var(--haru-cream);
-  --ink: var(--haru-ink);
-  --line: var(--haru-line);
+/* 학습 화면의 공통 상단과 제목 영역 */
+.haru-top { background: white; border-bottom: 1px solid var(--haru-line); }
+.haru-top-inner {
+  max-width: 1100px; margin: auto; padding: .65rem 1rem;
+  display: flex; align-items: center; gap: .5rem;
 }
-html[data-haru] .btn-primary { background: var(--haru-green); color: white; }
-html[data-haru] .wrap { padding-top: 1rem; }
+.haru-top .haru-return { padding: 0 .65rem; }
+.haru-top .haru-return img { width: clamp(94px, 20vw, 123px); height: auto; }
+.haru-top .haru-top-action { margin-left: auto; }
+.haru-heading {
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+  padding: .7rem clamp(.75rem, 2.5vw, 1.4rem);
+  border-radius: 1rem; background: var(--haru-cream);
+}
+.haru-heading h1 {
+  font-size: clamp(1.85rem, 5vw, 3.15rem);
+  line-height: 1.2; margin: 0; letter-spacing: -.035em;
+}
+.haru-heading .haru-pose {
+  width: clamp(64px, 12vw, 128px); height: clamp(74px, 13vw, 150px);
+  object-fit: contain; mix-blend-mode: multiply;
+}
+@media (max-width: 520px) {
+  .haru-top-inner { flex-wrap: wrap; }
+}

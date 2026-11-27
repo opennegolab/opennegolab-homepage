@@ -1,5 +1,5 @@
 * { box-sizing: border-box; }
-body { margin: 0; font-family: Pretendard, "Noto Sans KR", system-ui, sans-serif; color: var(--haru-ink); background: #fbfaf5; }
+body { margin: 0; font-family: var(--haru-font); color: var(--haru-ink); background: var(--haru-background); }
 [hidden] { display: none !important; }
 .home-header, main { max-width: 1072px; padding-inline: clamp(1rem, 3vw, 2.25rem); margin-inline: auto; }
 .home-header { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: .5rem; }

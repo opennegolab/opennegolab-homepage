@@ -66,7 +66,7 @@ function heading(title, prompt, detail, pose) {
   if (prompt) copy.append(node('p', 'prompt', prompt));
   header.append(copy);
   if (area && pose) {
-    header.classList.add('with-haru');
+    header.classList.add('haru-heading');
     const mascot = node('img', 'haru-pose');
     mascot.src = '/haru/assets/haru-' + pose + '.webp';
     mascot.alt = '';
