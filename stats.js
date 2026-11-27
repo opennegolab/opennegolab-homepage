@@ -48,13 +48,25 @@ const TABLE = `
     visitor TEXT
   )`;
 
+/* DB 주소에 sslmode=require·ssl=true 같은 값이 붙어 있으면 pg 는 그 값을 아래 ssl 설정보다
+   우선한다. 그러면 "SSL 없이 다시 해보기"가 실제로는 또 SSL 로 붙어, SSL 을 받지 않는 DB 에서
+   두 번 다 실패한다. 그래서 주소에서 SSL 관련 값은 떼고, 쓸지 말지는 여기서만 정한다 */
+function withoutSslParams(url) {
+  url = String(url || "");
+  const q = url.indexOf("?", url.lastIndexOf("@") + 1);   /* 비밀번호 안의 ? 는 건드리지 않는다 */
+  if (q < 0) return url;
+  const keep = url.slice(q + 1).split("&")
+    .filter(kv => kv && !/^(sslmode|ssl|uselibpqcompat)=/i.test(kv));
+  return url.slice(0, q) + (keep.length ? "?" + keep.join("&") : "");
+}
+
 function makePool(useSsl) {
   const { Pool } = require("pg");
   const p = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: withoutSslParams(process.env.DATABASE_URL),
     max: 3,
     connectionTimeoutMillis: 8000,
-    ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+    ssl: useSsl ? { rejectUnauthorized: false } : false,   /* false 도 꼭 적는다 — 없으면 PGSSLMODE 환경변수를 따른다 */
   });
   p.on("error", e => console.error("통계 DB 풀 오류:", e && e.message));
   return p;
@@ -70,7 +82,7 @@ async function connect() {
      주소만 보고 맞히려다 틀리면 조용히 메모리 모드로 떨어져 원인을 찾기 어렵다.
      그래서 한 번 해보고 안 되면 반대로 한 번 더 해본다 */
   const guess = !/localhost|127\.0\.0\.1|@postgresql:|\.svc|sslmode=disable/i.test(url);
-  let last = "";
+  const fails = [];
   for (const useSsl of [guess, !guess]) {
     let p;
     try {
@@ -81,11 +93,12 @@ async function connect() {
       console.log("통계: DB 연결 완료 (SSL " + (useSsl ? "사용" : "미사용") + ")");
       return p;
     } catch (e) {
-      last = (e && e.message) || String(e);
+      /* 두 번 다 실패하면 둘 다 보여 준다 — 마지막 것만 보이면 진짜 원인이 가려진다 */
+      fails.push("SSL " + (useSsl ? "사용" : "미사용") + ": " + ((e && e.message) || String(e)));
       if (p) { try { await p.end(); } catch {} }
     }
   }
-  note = "DB에 연결하지 못했습니다 — " + last;
+  note = "DB에 연결하지 못했습니다 — " + fails.join(" / ");
   console.error("통계:", note);
   return null;
 }
