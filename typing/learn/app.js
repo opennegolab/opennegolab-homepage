@@ -1,5 +1,5 @@
 import { bankContexts, bankProblems, banks, places, shopProblems, shops, tripContexts, tripProblems, trips } from './content.js?v=3';
-import { speak } from './speech.js?v=1';
+import { showSpeechHelp, speak } from './speech.js?v=2';
 import { notes, values as noteValues, total, won } from '/haru/money/currency.js?v=1';
 
 const app = document.querySelector('#app');
@@ -25,10 +25,7 @@ let narration;
 function say(text) {
   narration = text;
   voiceStatus.hidden = true;
-  speak(text, () => {
-    voiceStatus.textContent = '소리가 들리지 않으면 기기의 음량과 한국어 음성 설정을 확인해 주세요.';
-    voiceStatus.hidden = false;
-  });
+  speak(text, () => showSpeechHelp(voiceStatus));
 }
 
 function show(next, remember = true, confirmation = "") {
