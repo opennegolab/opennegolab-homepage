@@ -241,6 +241,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   .segs i{ flex:1; border-radius:999px; background:var(--blue-mid); opacity:.55; transition:background .3s, opacity .3s; }
   .segs i.p{ background:var(--mint); opacity:1; } .segs i.h{ background:var(--yellow); opacity:1; } .segs i.z{ background:var(--lav); opacity:1; }
   .segs i.now{ background:var(--blue); opacity:1; }
+  .segs i.x{ background:#d0605a; opacity:1; }     /* 틀린 문제 */
   .segs.dense{ gap:0; border-radius:999px; overflow:hidden; background:var(--blue-mid); }
   .segs.dense i{ border-radius:0; }
 
@@ -309,7 +310,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   .fb .fq{ font-size:.9rem; font-weight:700; color:var(--ink-soft); margin-bottom:14px; }
   .compare{ margin:18px auto 0; text-align:left; max-width:540px; background:#FBF8F3; border-radius:var(--r); padding:14px 16px; display:grid; grid-template-columns:auto 1fr; gap:8px 14px; align-items:baseline; }
   .compare dt{ font-size:.76rem; font-weight:900; color:var(--ink-soft); white-space:nowrap; padding:2px 8px; border-radius:8px; background:#fff; }
-  .compare dd{ font-size:1.2rem; font-weight:700; word-break:break-all; letter-spacing:.02em; }
+  .compare dd{ font-size:1.2rem; font-weight:700; word-break:keep-all; overflow-wrap:anywhere; letter-spacing:.02em; }
   mark{ background:none; color:inherit; border-radius:5px; padding:0 1px; }
   mark.wrong{ background:var(--coral-soft); color:var(--coral); }
   mark.extra{ background:var(--coral-soft); color:var(--coral); text-decoration:line-through; text-decoration-thickness:2px; }
@@ -344,6 +345,8 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   .tile.t100{ background:var(--mint-soft); } .tile.t100 b{ color:var(--mint-d); }
   .tile.tpart{ background:var(--yellow-soft); } .tile.tpart b{ color:var(--yellow-d); }
   .tile.t0{ background:var(--lav-soft); } .tile.t0 b{ color:var(--lav-d); }
+  .tiles.three{ grid-template-columns:repeat(3,1fr); }
+  .tile.tx{ background:#FBE9E7; } .tile.tx b{ color:#B8443E; }
   .actions{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .actions .btn{ width:100%; justify-content:flex-start; padding:14px 18px; }
   .actions .btn, .topbar .btn, .seg button{ white-space:nowrap; }
@@ -357,12 +360,14 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   .rlist li:first-child{ border-top:none; }
   .rlist .no{ width:30px; height:30px; border-radius:10px; display:grid; place-items:center; background:#F5EFE6; font-weight:800; font-size:.85rem; color:var(--ink-soft); }
   .rlist .q{ font-size:.86rem; font-weight:700; color:var(--ink-soft); margin-bottom:2px; }
-  .rlist .line{ font-size:1.06rem; font-weight:700; word-break:break-all; line-height:1.7; }
+  .rlist .line{ font-size:1.06rem; font-weight:700; word-break:keep-all; overflow-wrap:anywhere; line-height:1.7; }   /* 낱말 단위로 줄바꿈 */
   .rlist .line em{ font-style:normal; font-size:.7rem; font-weight:900; color:var(--ink-soft); background:#F5EFE6; border-radius:6px; padding:1px 6px; margin-right:8px; vertical-align:2px; }
   .badge{ font-weight:900; border-radius:999px; padding:5px 11px; font-size:.86rem; white-space:nowrap; }
   .badge.b100{ background:var(--mint-soft); color:var(--mint-d); }
   .badge.bmid{ background:var(--yellow-soft); color:var(--yellow-d); }
   .badge.b0{ background:var(--lav-soft); color:var(--lav-d); }
+  .badge.b100, .badge.bx{ min-width:2.2rem; text-align:center; font-size:1.05rem; }
+  .badge.bx{ background:#FBE9E7; color:#B8443E; }
   .empty{ text-align:center; padding:18px 0 6px; color:var(--ink-soft); font-weight:700; }
 
   .loading{ text-align:center; color:var(--ink-soft); font-weight:700; }
@@ -391,6 +396,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
     .listen-big{ width:100px; height:100px; }
     .listen-big svg{ width:42px; height:42px; }
     .tiles{ grid-template-columns:repeat(2,1fr); }
+    .tiles.three{ grid-template-columns:repeat(3,1fr); }
     .actions{ grid-template-columns:1fr; }
     .topbar{ gap:8px; }
     .progress .txt{ gap:6px; font-size:.8rem; }
@@ -488,7 +494,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
       <button type="button" class="btn btn-soft" id="playBack">이전 단계</button>
       <button type="button" class="iconbtn" id="quitBtn" aria-label="처음 화면으로"><svg class="i"><use href="#i-home"/></svg></button>
       <div class="progress">
-        <div class="txt"><span><b id="qNo">1</b> / <span id="qTotal">10</span> 문제</span><span class="avg">평균 <b id="avgNow">-</b>점</span></div>
+        <div class="txt"><span><b id="qNo">1</b> / <span id="qTotal">10</span> 문제</span><span class="avg">맞힘 <b id="avgNow">0</b>개</span></div>
         <div class="segs" role="progressbar" aria-label="진행률" aria-valuemin="0" aria-valuemax="100" id="barWrap"></div>
       </div>
     </div>
@@ -515,7 +521,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
     <div class="card final" id="finalCard"></div>
     <div class="actions" id="actions">
       <button type="button" class="btn btn-soft wide" id="resultBack">이전 단계</button>
-      <button type="button" class="btn btn-yellow wide" id="retryWrong">100점 아닌 문제만 다시</button>
+      <button type="button" class="btn btn-yellow wide" id="retryWrong">틀린 문제만 다시</button>
       <button type="button" class="btn btn-mint" id="retryAll"><svg class="i" aria-hidden="true"><use href="#i-redo"/></svg>같은 문제 다시</button>
       <button type="button" class="btn btn-lav" id="newRandom"><svg class="i" aria-hidden="true"><use href="#i-shuffle"/></svg>새 문제 시작</button>
       <button type="button" class="btn btn-white wide" id="toHome"><svg class="i" aria-hidden="true"><use href="#i-home"/></svg>처음 화면</button>
@@ -525,7 +531,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
         <div class="step" style="margin:0">문제별 결과</div>
         <div class="seg" role="group" aria-label="보기">
           <button type="button" data-filter="all" aria-pressed="true">전체</button>
-          <button type="button" data-filter="wrong" aria-pressed="false">다시 볼 문제</button>
+          <button type="button" data-filter="wrong" aria-pressed="false">틀린 문제</button>
         </div>
       </div>
       <div class="legend" style="justify-content:flex-start; margin:0 0 4px">
@@ -571,6 +577,15 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     return "<div class='ring " + tier(score) + "' style='--sz:" + size + "px;--len:" + len + ";--off:" + off + "'>" +
       "<svg viewBox='0 0 120 120' aria-hidden='true'><circle class='bg' cx='60' cy='60' r='" + r + "'/><circle class='fg' cx='60' cy='60' r='" + r + "'/></svg>" +
       "<div class='score'>" + score + "<small>점</small></div></div>";
+  }
+
+  /* 결과 화면의 '맞힌 문제' 원 — 7 / 10 처럼 (원은 맞힌 비율만큼 찬다) */
+  function countRing(right, total, size) {
+    const pct = total ? right / total * 100 : 0;
+    const r = 52, len = (2 * Math.PI * r).toFixed(1), off = (len * (1 - pct / 100)).toFixed(1);
+    return "<div class='ring " + tier(pct) + "' style='--sz:" + size + "px;--len:" + len + ";--off:" + off + "' role='img' aria-label='" + total + "문제 중 " + right + "문제 맞힘'>" +
+      "<svg viewBox='0 0 120 120' aria-hidden='true'><circle class='bg' cx='60' cy='60' r='" + r + "'/><circle class='fg' cx='60' cy='60' r='" + r + "'/></svg>" +
+      "<div class='score'>" + right + "<small>/ " + total + "</small></div></div>";
   }
 
   const T = window.TypingStore;   /* 문제 저장·채점 — 이 기기 안에서만 (store.js) */
@@ -856,15 +871,15 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     const pct = Math.round(done / S.items.length * 100);
     const bar = $("barWrap");
     bar.setAttribute("aria-valuenow", pct);
-    /* 문제마다 한 칸 — 끝난 문제는 점수에 따라 색을 칠한다. 너무 많으면 칸 사이를 붙인다 */
+    /* 문제마다 한 칸 — 끝난 문제는 맞음(초록)·틀림(빨강)으로 칠한다 (100점만 맞음). 너무 많으면 칸 사이를 붙인다 */
     bar.classList.toggle("dense", S.items.length > 30);
     let h = "";
     for (let k = 0; k < S.items.length; k++) {
       const r = S.results[k];
-      h += "<i class='" + (r ? (r.score === 100 ? "p" : r.score > 0 ? "h" : "z") : k === S.i ? "now" : "") + "'></i>";
+      h += "<i class='" + (r ? (r.score === 100 ? "p" : "x") : k === S.i ? "now" : "") + "'></i>";
     }
     bar.innerHTML = h;
-    $("avgNow").textContent = done ? Math.round(S.results.reduce((s, r) => s + r.score, 0) / done) : "-";
+    $("avgNow").textContent = S.results.filter(r => r.score === 100).length;
   }
 
   function showQuestion(read = true) {
@@ -1089,30 +1104,28 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     input.blur();
     const rs = S.results;
     const total = rs.length;
-    const avg = total ? Math.round(rs.reduce((s, r) => s + r.score, 0) / total) : 0;
-    const perfect = rs.filter(r => r.score === 100).length;
-    const zero = rs.filter(r => r.score === 0).length;
-    const partial = total - perfect - zero;
+    /* 맞음(100점)·틀림으로만 센다 (운영자 요청 — 점수·평균은 보여 주지 않는다) */
+    const right = rs.filter(r => r.score === 100).length;
+    const wrongCount = total - right;
+    const pct = total ? Math.round(right / total * 100) : 0;
 
-    const medal = avg === 100 ? icon("trophy") + "모두 100점" : avg >= 80 ? icon("star") + "아주 잘했어요" : icon("check") + "연습 완료";
-    const say = avg === 100 ? "모두 맞았어요! 정말 멋져요." : avg >= 80 ? "아주 잘했어요!" : avg >= 50 ? "끝까지 잘했어요! 조금만 더 연습해요." : "끝까지 해낸 것이 대단해요. 다시 해 봐요!";
+    const medal = right === total ? icon("trophy") + "모두 맞았어요" : pct >= 80 ? icon("star") + "아주 잘했어요" : icon("check") + "연습 완료";
+    const say = right === total ? "모두 맞았어요! 정말 멋져요." : pct >= 80 ? "아주 잘했어요!" : pct >= 50 ? "끝까지 잘했어요! 조금만 더 연습해요." : "끝까지 해낸 것이 대단해요. 다시 해 봐요!";
     $("finalCard").innerHTML =
       "<div class='medal'>" + medal + "</div>" +
-      ring(avg, 168) +
+      countRing(right, total, 168) +
       "<div class='say'>" + say + "</div>" +
-      "<div class='mode-name'>" + (S.setName ? esc(S.setName) + " · " : "") + (MODE_NAME[S.mode] ? MODE_NAME[S.mode] + " " : "") + "평균 점수</div>" +
-      "<div class='tiles'>" +
+      "<div class='mode-name'>" + (S.setName ? esc(S.setName) + " · " : "") + (MODE_NAME[S.mode] ? MODE_NAME[S.mode] + " " : "") + "맞힌 문제</div>" +
+      "<div class='tiles three'>" +
         "<div class='tile'><b>" + total + "</b><span>전체 문제</span></div>" +
-        "<div class='tile t100'><b>" + perfect + "</b><span>100점</span></div>" +
-        "<div class='tile tpart'><b>" + partial + "</b><span>부분 점수</span></div>" +
-        "<div class='tile t0'><b>" + zero + "</b><span>0점</span></div>" +
+        "<div class='tile t100'><b>" + right + "</b><span>맞힘</span></div>" +
+        "<div class='tile tx'><b>" + wrongCount + "</b><span>틀림</span></div>" +
       "</div>" +
-      (avg >= 80 ? "<div class='burst' aria-hidden='true'>" + stars() + "</div>" : "");
+      (pct >= 80 ? "<div class='burst' aria-hidden='true'>" + stars() + "</div>" : "");
 
-    const wrong = rs.filter(r => r.score < 100).length;
-    $("retryWrong").disabled = !wrong;
-    $("retryWrong").innerHTML = icon("pencil") + (wrong ? "100점 아닌 문제만 다시 (" + wrong + "개)" : "다시 풀 문제가 없어요");
-    filter = wrong ? "wrong" : "all";
+    $("retryWrong").disabled = !wrongCount;
+    $("retryWrong").innerHTML = icon("pencil") + (wrongCount ? "틀린 문제만 다시 (" + wrongCount + "개)" : "다시 풀 문제가 없어요");
+    filter = wrongCount ? "wrong" : "all";
     renderList();
     show("result");
   }
@@ -1121,13 +1134,13 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     document.querySelectorAll("[data-filter]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.filter === filter)));
     const list = S.results.map((r, k) => ({ r, k })).filter(x => filter === "all" || x.r.score < 100);
     $("rlist").innerHTML = list.length ? list.map(({ r, k }) => {
-      const b = r.score === 100 ? "b100" : r.score > 0 ? "bmid" : "b0";
+      const b = r.score === 100 ? "b100" : "bx";
       return "<li><span class='no'>" + (k + 1) + "</span><div>" +
         (r.question ? "<div class='q'>" + esc(r.question) + "</div>" : "") +
         "<div class='line'><em>정답</em>" + (r.score === 100 ? esc(r.answer) : diffHtml(r.ops, "answer")) + "</div>" +
         "<div class='line'><em>내 답</em>" + (r.score === 100 ? esc(r.input) : diffHtml(r.ops, "input")) + "</div>" +
-        "</div><span class='badge " + b + "'>" + r.score + "점</span></li>";
-    }).join("") : "<li style='display:block'><div class='empty'>모든 문제를 100점 받았어요!</div></li>";
+        "</div><span class='badge " + b + "' role='img' aria-label='" + (r.score === 100 ? "맞음" : "틀림") + "'>" + (r.score === 100 ? "✓" : "✕") + "</span></li>";
+    }).join("") : "<li style='display:block'><div class='empty'>모든 문제를 맞혔어요!</div></li>";
   }
   document.querySelectorAll("[data-filter]").forEach(b => b.addEventListener("click", () => { filter = b.dataset.filter; renderList(); }));
 
