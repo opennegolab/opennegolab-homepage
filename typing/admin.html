@@ -169,12 +169,6 @@ details > summary { cursor:pointer; font-weight:800; }
 details[open] > summary { margin-bottom:.8rem; }
 .bulk-settings { margin-top:1rem; padding-top:.65rem; border-top:1px solid var(--line); }
 #curSetName { margin-inline-start:.35rem; }
-#practiceForm {display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));}
-#practiceForm label {display:grid; gap:.25rem; min-width:0;}
-#practiceForm input, #practiceForm select {min-width:0; max-width:100%;}
-#practiceForm label:has(input[type=checkbox]) {display:flex;align-items:center}
-#practiceForm select {padding:.5rem; font:inherit}
-#practiceUrl {max-width:100%;width:34em;}
 </style>
 </head>
 <body>
@@ -277,28 +271,11 @@ details[open] > summary { margin-bottom:.8rem; }
     </div>
     </div>
 
-    <details class="card" id="shareSettings">
-      <summary>연습 링크 공유</summary>
-      <p class="note">링크를 받은 사람은 로그인 없이 연습할 수 있어요. 이름은 보호자 화면에서만 보입니다.</p>
-      <form id="practiceForm">
-        <label>저장한 링크 <select id="practiceSaved"><option value="">새 링크</option></select></label>
-        <label>관리용 이름 <input id="practiceLabel" required maxlength="40" placeholder="예: A용"></label>
-        <label>문제집 <select id="practiceSet" required></select></label>
-        <label>연습 방식 <select id="practiceMode"><option value="dictation">받아쓰기</option><option value="qa">질문에 답하기</option></select></label>
-        <label>문항 수 <input id="practiceCount" type="number" min="1" max="100" value="10" required></label>
-        <label><input type="checkbox" id="practiceAll"> 전체 문제</label>
-        <label><input type="checkbox" id="practiceActive" checked> 링크 사용</label>
-        <button class="btn primary" type="submit">링크 설정 저장</button>
-      </form>
-      <p><input id="practiceUrl" readonly aria-label="공유 링크" hidden><button class="btn white" id="practiceCopy" hidden type="button">링크 복사</button></p>
-      <p id="practiceStatus" class="note" role="status"></p>
-    </details>
 
   </section>
 </div>
 
-<script src="/typing/store.js?v=7"></script>
-<script src="/typing/practice-admin.js?v=1" defer></script>
+<script src="/typing/store.js?v=8"></script>
 <script>
 (function () {
   "use strict";

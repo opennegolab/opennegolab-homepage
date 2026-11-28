@@ -28,8 +28,8 @@
 | 주소 | 내용 |
 |---|---|
 | https://www.opennegolab.com/typing | 하루랑 타자 연습으로 이동 |
-| https://www.opennegolab.com/haru/typing/shared | 보호자가 만든 토큰을 붙여 공유하는 맞춤 연습 주소 |
-| https://www.opennegolab.com/typing/admin | **문제 설정** — 문제집·문제 관리 및 맞춤 연습 링크 (보호자 로그인) |
+| https://www.opennegolab.com/haru/typing | 하루랑 한글 공부 — 공개 기본 문제집 + 로그인한 보호자의 문제집 |
+| https://www.opennegolab.com/typing/admin | **문제 설정** — 보호자 로그인 후 내 문제집·문제 관리 |
 | https://www.opennegolab.com/api/typing/… | 타자연습 서버 API (아래 6번) |
 | https://www.opennegolab.com | 열린협상연구소 홈페이지 (같은 서버) |
 
@@ -118,7 +118,11 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
   - 여러 문제: 한 줄에 하나. 질문은 `질문 / 정답 / 다른 정답` (엑셀 탭 구분도 됨)
   - 허용 정답은 `/` 로 구분, 정답 칸에서 Enter 로 바로 등록
 - 목록: 최신순, 10개씩 페이지, 검색, 수정·삭제·선택 삭제(확인 창)
-- **보호자 로그인** — 계정별로 소유한 문제집과 맞춤 링크를 관리. 소유자가 없는 이전 데이터는 앱에서 제외
+- **보호자 로그인** — 계정별로 자기 문제집만 관리. **링크 공유 기능은 없음**(2026-11 운영자 요청으로 제거)
+- 보호자가 로그인한 **같은 브라우저**에서 한글 공부(`/haru/typing`)를 열면, 그 보호자의 문제집이
+  공개 기본 문제집 앞에 함께 나옵니다 (`/haru/practice-data/*`, 보호자 문제집 번호는 음수 `-DB번호`).
+  로그인하지 않은 사람에게는 공개 기본 문제집만 보입니다
+- 로그인 세션은 서버 메모리에 8시간 — 서버가 다시 켜지면(배포) 다시 로그인해야 합니다
 
 ### 6-3. 서버 `typing-api.js`
 
@@ -126,7 +130,8 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
   - `typing_sets(id, name, created_at)` — 문제집, 이름 중복 불가(대소문자 무시)
   - `typing_items(id, set_id, mode, prompt, answers JSONB, created_at, updated_at)` — 문제. 문제집 삭제 시 함께 삭제
   - `typing_guardians` — 보호자 계정 및 비밀번호 해시
-  - `typing_practice_links` — 보호자 맞춤 연습 링크
+  - `typing_meta` — 한 번만 하는 일의 기록 (`reset:guardian-data-2026-11`: 그동안의 보호자 문제집·공유 링크를 지운 일)
+  - (`typing_practice_links` 는 공유 기능 제거 때 삭제됨)
 - **API** (`/api/typing/…`, JSON)
 
   | 요청 | 하는 일 |

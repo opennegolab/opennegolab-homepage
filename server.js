@@ -70,13 +70,13 @@ ${haruShareMeta("/haru/typing", "한글 공부", "하루랑에서 받아쓰기�
 <link rel="stylesheet" href="/haru/brand.css?v=4">
 <link rel="stylesheet" href="/haru/typing.css?v=1">`;
 
-function haruTypingHeader(shared) {
+function haruTypingHeader() {
   return `<header class="haru-top">
   <nav class="haru-top-inner" aria-label="하루랑">
     <a class="haru-return" href="/haru" aria-label="하루랑 처음으로">
       <img src="/haru/assets/logo.png" width="123" height="44" alt="하루랑">
     </a>
-    ${shared ? "" : '<a class="haru-return haru-top-action haru-typing-settings" href="/typing/admin">보호자 문제 설정</a>'}
+    <a class="haru-return haru-top-action haru-typing-settings" href="/typing/admin">보호자 문제 설정</a>
   </nav>
 </header>`;
 }
@@ -210,14 +210,18 @@ function handle(req, res) {
     return typing.handlePublic(req, res, urlPath);
   }
   const haruPath = urlPath.replace(/\/$/, "");
-  if (haruPath === "/haru/typing" || haruPath === "/haru/typing/shared") {
-    const shared = haruPath.endsWith("/shared");
+  /* 예전 '연습 링크 공유' 주소 — 공유 기능을 없앴으므로 한글 공부로 보낸다 */
+  if (haruPath === "/haru/typing/shared") {
+    res.writeHead(302, { Location: "/haru/typing", "Cache-Control": "no-cache" });
+    return res.end();
+  }
+  if (haruPath === "/haru/typing") {
     const template = fs.readFileSync(path.join(ROOT, "typing", "index.html"), "utf8");
     const html = template
-      .replace('<html lang="ko">', shared ? '<html lang="ko" data-haru data-shared>' : '<html lang="ko" data-haru>')
-      .replace(/<!-- 기존 학습 메타 시작 -->[\s\S]*?<!-- 기존 학습 메타 끝 -->/, HARU_TYPING_META + (shared ? '<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">' : ""))
+      .replace('<html lang="ko">', '<html lang="ko" data-haru>')
+      .replace(/<!-- 기존 학습 메타 시작 -->[\s\S]*?<!-- 기존 학습 메타 끝 -->/, HARU_TYPING_META)
       .replace(/<!-- 기존 문제 설정 시작 -->[\s\S]*?<!-- 기존 문제 설정 끝 -->/, "")
-      .replace("<!-- 하루랑 타자 상단 -->", haruTypingHeader(shared))
+      .replace("<!-- 하루랑 타자 상단 -->", haruTypingHeader())
       .replace(/<!-- 타자 제목 시작 -->[\s\S]*?<!-- 타자 제목 끝 -->/, HARU_TYPING_HEADING)
       .replace(/@import url\('https:\/\/cdn\.jsdelivr\.net[^']*'\);/, "");
     res.writeHead(200, { "Content-Type": TYPES[".html"], "Cache-Control": "no-cache",

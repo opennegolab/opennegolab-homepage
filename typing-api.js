@@ -18,7 +18,6 @@
    문제 설정
      보호자 세션은 문제집 변경과 맞춤 링크 관리에 필요하다.
    ============================================================ */
-const { randomBytes } = require("node:crypto");
 const auth = require("./typing-auth");
 const MODES = new Set(["dictation", "qa"]);
 const MAX_TEXT = 200;        /* 문장 한 개 최대 글자 수 */
@@ -170,14 +169,28 @@ async function prepare(p) {
   await p.query(`ALTER TABLE typing_items ADD COLUMN IF NOT EXISTS set_id BIGINT REFERENCES typing_sets(id) ON DELETE CASCADE`);
   await p.query(`CREATE INDEX IF NOT EXISTS typing_items_set_idx ON typing_items (set_id, mode, id)`);
 
-  await p.query(`CREATE TABLE IF NOT EXISTS typing_practice_links (
-    token TEXT PRIMARY KEY,
-    label TEXT NOT NULL,
-    set_id BIGINT NOT NULL REFERENCES typing_sets(id) ON DELETE CASCADE,
-    mode TEXT NOT NULL CHECK (mode IN ('dictation','qa')),
-    count TEXT NOT NULL,
-    active BOOLEAN NOT NULL DEFAULT TRUE
-  )`);
+  await resetGuardianData(p);
+}
+
+/* 보호자 설정 데이터 정리 — 운영자 요청으로 한 번만 한다 (2026-11).
+   그동안 저장된 문제집·문제와 연습 링크 공유를 모두 지운다. 보호자 계정(아이디·비밀번호)은 남긴다.
+   typing_meta 에 했다고 적어 두므로 다시 켜져도 새로 만든 문제집은 지워지지 않는다 */
+const RESET_KEY = "reset:guardian-data-2026-11";
+async function resetGuardianData(p) {
+  await p.query(`CREATE TABLE IF NOT EXISTS typing_meta (key TEXT PRIMARY KEY, done_at TIMESTAMPTZ NOT NULL DEFAULT now())`);
+  if ((await p.query(`SELECT 1 FROM typing_meta WHERE key = $1`, [RESET_KEY])).rows.length) return;
+  const client = await p.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query(`DROP TABLE IF EXISTS typing_practice_links`);
+    const r = await client.query(`DELETE FROM typing_sets`);   /* 문제는 ON DELETE CASCADE 로 함께 */
+    await client.query(`INSERT INTO typing_meta (key) VALUES ($1)`, [RESET_KEY]);
+    await client.query("COMMIT");
+    console.log("타자 연습: 보호자 설정 데이터를 정리했다 (문제집 " + r.rowCount + "개와 공유 링크)");
+  } catch (e) {
+    try { await client.query("ROLLBACK"); } catch {}
+    throw e;
+  } finally { client.release(); }
 }
 
 async function connect() {
@@ -291,7 +304,6 @@ const store = {
       const before = memory.sets.length;
       memory.sets = memory.sets.filter(x => x.id !== id);
       memory.items = memory.items.filter(x => x.set_id !== id);
-      for (const [token, link] of practiceLinks) if (link.set_id === id) practiceLinks.delete(token);
       return before - memory.sets.length;
     }
     const r = await (await db()).query(`DELETE FROM typing_sets WHERE id = $1`, [id]);   /* 문제는 ON DELETE CASCADE 로 함께 */
@@ -481,64 +493,6 @@ async function handle(req, res, urlPath) {
   }
 }
 
-const practiceLinks = new Map();
-
-async function practiceRows(token, owner) {
-  if (!usingDb()) {
-    return [...practiceLinks.values()].filter(link =>
-      (!token || link.token === token) && memory.sets.some(set => set.id === Number(link.set_id) && set.owner && (owner === undefined || (set.owner ?? null) === owner)));
-  }
-  const p = await db();
-  return (await p.query(`SELECT l.* FROM typing_practice_links l JOIN typing_sets s ON s.id = l.set_id
-    WHERE s.owner IS NOT NULL AND ($1::text IS NULL OR l.token = $1) AND ($2::boolean OR s.owner IS NOT DISTINCT FROM $3::text)
-    ORDER BY l.label, l.token`, [token || null, owner === undefined, owner ?? null])).rows;
-}
-
-async function savePractice(token, body, owner) {
-  const label = clean(body.label);
-  const setId = toId(body.set_id);
-  const mode = checkMode(body.mode);
-  const count = String(body.count);
-  if (!label || label.length > 40) throw new BadRequest("관리용 이름은 1~40자로 적어 주세요.");
-  if (!/^(all|[1-9]|[1-9][0-9]|100)$/.test(count)) throw new BadRequest("문항 수는 1~100 또는 전체를 선택해 주세요.");
-  if (typeof body.active !== "boolean") throw new BadRequest("링크 상태를 선택해 주세요.");
-  const set = await store.getSet(setId);
-  if (!set || (set.owner ?? null) !== owner) throw new BadRequest("문제집을 다시 선택해 주세요.");
-  if (token && !(await practiceRows(token, owner)).length) return null;
-  const link = { token: token || randomBytes(24).toString("hex"), label, set_id: setId, mode, count, active: body.active };
-  if (!usingDb()) {
-    if (token && !practiceLinks.has(token)) return null;
-    practiceLinks.set(link.token, link);
-    return link;
-  }
-  const p = await db();
-  const params = [link.token, label, setId, mode, count, body.active];
-  const query = token
-    ? `UPDATE typing_practice_links SET label=$2, set_id=$3, mode=$4, count=$5, active=$6 WHERE token=$1 RETURNING *`
-    : `INSERT INTO typing_practice_links (token,label,set_id,mode,count,active) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`;
-  return (await p.query(query, params)).rows[0] || null;
-}
-
-async function sharedPractice(req, res, token, resource, ip, url) {
-  if (req.method !== "GET") return send(res, 405, { ok: false }, { Allow: "GET" });
-  if (limitRead(ip)) return send(res, 429, { ok: false, message: "잠시 후 다시 해 주세요." });
-  const [link] = await practiceRows(token);
-  if (!link?.active) return send(res, 404, { ok: false, message: "현재 사용할 수 없는 연습 링크예요." });
-  // 공유 화면에는 관리용 이름이나 실제 문제집 번호를 전달하지 않습니다.
-  const items = (await store.list(Number(link.set_id), link.mode))
-    .map(({ id, mode, prompt, answers }) => ({ id, mode, prompt, answers }));
-  if (resource === "sets") {
-    return send(res, 200, { ok: true, sets: [{
-      id: 1, name: "나의 연습", mode: link.mode, count: link.count,
-      counts: { dictation: 0, qa: 0, [link.mode]: items.length }
-    }] });
-  }
-  if (url.searchParams.get("mode") !== link.mode) {
-    return send(res, 409, { ok: false, message: "연습 설정이 바뀌었어요. 페이지를 새로 열어 주세요." });
-  }
-  return send(res, 200, { ok: true, items });
-}
-
 const guardianAccounts = new Map();
 
 async function registerGuardian(username, password) {
@@ -580,8 +534,6 @@ async function route(req, res, urlPath) {
   const sub = urlPath.replace(/^\/api\/typing/, "").replace(/\/+$/, "") || "/";
   const method = req.method;
   const ip = clientIp(req);
-  const shared = /^\/shared\/([a-f0-9]{48})\/(sets|items)$/.exec(sub);
-  if (shared) return sharedPractice(req, res, shared[1], shared[2], ip, url);
   if ((sub === "/session" || sub === "/register") && method === "POST") {
     if (!sameOrigin(req)) return send(res, 403, { ok: false, message: "허용되지 않은 요청입니다." });
     if (limitLoginProxy(req.socket.remoteAddress || "") || limitLogin(ip)) return send(res, 429, { ok: false, message: "잠시 후 다시 시도해 주세요." });
@@ -616,19 +568,8 @@ async function route(req, res, urlPath) {
   if (sub === "/session" && method === "DELETE" && sameOrigin(req)) {
     return send(res, 200, { ok: true }, { "Set-Cookie": auth.signOut(req) });
   }
-  const linkId = /^\/practice-links\/([a-f0-9]{48})$/.exec(sub);
   const owner = auth.user(req);
   if (!owner) return send(res, 401, { ok: false, message: "보호자 로그인이 필요해요." });
-  if (sub === "/practice-links" && method === "GET") {
-    return send(res, 200, { ok: true, links: await practiceRows(undefined, owner) });
-  }
-  if ((sub === "/practice-links" && method === "POST") || (linkId && method === "PUT")) {
-    if (!sameOrigin(req)) return send(res, 403, { ok: false, message: "허용되지 않은 요청입니다." });
-    if (limitWrite(ip)) return send(res, 429, { ok: false, message: "잠시 후 다시 저장해 주세요." });
-    const link = await savePractice(linkId?.[1], await readJson(req), owner);
-    if (!link) return send(res, 404, { ok: false, message: "연습 링크를 찾을 수 없어요." });
-    return send(res, 200, { ok: true, link });
-  }
 
   const mustSet = async v => {
     const st = await store.getSet(toId(v));
@@ -727,8 +668,7 @@ function warmUp() {
   if (usingDb()) db().catch(() => {});
 }
 
-/* 하루랑 공개 문제는 코드에 포함된 기본 문제만 읽습니다.
-   운영 문제집, 메모리 저장소, 데이터베이스 어느 쪽에도 접근하지 않습니다. */
+/* 공개 기본 문제집 — 코드에 들어 있는 읽기 전용 문제 */
 const publicSeeds = [
   { name: SAMPLE_SET, ...SAMPLES },
   ...DEFAULT_EXERCISES,
@@ -741,24 +681,43 @@ const publicSets = publicSeeds.map((seed, index) => {
   return { id, name: seed.name, counts, items };
 });
 
-function handlePublic(req, res, pathname) {
+/* 한글 공부(/haru/typing)가 읽는 문제
+   - 누구나: 코드에 들어 있는 공개 기본 문제집 (번호 1, 2, 3 …)
+   - 보호자가 로그인한 브라우저: 그 보호자가 문제 설정에서 만든 문제집도 함께.
+     공개 문제집 번호와 겹치지 않게 '-DB 번호'(음수)로 내보낸다 */
+async function handlePublic(req, res, pathname) {
   if (req.method !== "GET") {
     return send(res, 405, { ok: false, message: "읽기만 할 수 있어요." }, { Allow: "GET" });
   }
-  if (pathname === "/haru/practice-data/sets") {
-    const sets = publicSets.map(({ id, name, counts }) => ({ id, name, counts }));
-    return send(res, 200, { ok: true, sets });
-  }
-  if (pathname === "/haru/practice-data/items") {
-    const query = new URL(req.url, "http://x").searchParams;
-    const set = publicSets.find(entry => String(entry.id) === query.get("set"));
-    const mode = query.get("mode");
-    if (!set || (mode !== "qa" && mode !== "dictation")) {
-      return send(res, 404, { ok: false, message: "공개 문제집을 찾을 수 없어요." });
+  if (limitRead(clientIp(req))) return send(res, 429, { ok: false, message: "잠시 후 다시 해 주세요." });
+  const owner = auth.user(req);
+  try {
+    if (pathname === "/haru/practice-data/sets") {
+      const mine = owner ? (await store.sets(owner)).map(({ id, name, counts }) => ({ id: -id, name, counts })) : [];
+      const sets = [...mine, ...publicSets.map(({ id, name, counts }) => ({ id, name, counts }))];
+      return send(res, 200, { ok: true, sets });
     }
-    return send(res, 200, { ok: true, items: set.items.filter(item => item.mode === mode) });
+    if (pathname === "/haru/practice-data/items") {
+      const query = new URL(req.url, "http://x").searchParams;
+      const id = Number(query.get("set"));
+      const mode = query.get("mode");
+      if (mode !== "qa" && mode !== "dictation") return send(res, 404, { ok: false, message: "문제집을 찾을 수 없어요." });
+      if (id < 0 && owner) {
+        const st = await store.getSet(-id);
+        if (!st || (st.owner ?? null) !== owner) return send(res, 404, { ok: false, message: "문제집을 찾을 수 없어요." });
+        const items = (await store.list(st.id, mode)).map(({ id, mode, prompt, answers }) => ({ id, mode, prompt, answers }));
+        return send(res, 200, { ok: true, items });
+      }
+      const set = publicSets.find(entry => entry.id === id);
+      if (!set) return send(res, 404, { ok: false, message: "문제집을 찾을 수 없어요." });
+      return send(res, 200, { ok: true, items: set.items.filter(item => item.mode === mode) });
+    }
+    return send(res, 404, { ok: false, message: "학습 자료를 찾을 수 없어요." });
+  } catch (e) {
+    if (e instanceof StoreError) return send(res, 503, { ok: false, message: "문제 저장소에 연결하지 못했어요. 잠시 후 다시 해 주세요." });
+    console.error("타자 연습 오류:", pathname, "—", e && e.message);
+    return send(res, 500, { ok: false, message: "잠시 후 다시 시도해 주세요." });
   }
-  return send(res, 404, { ok: false, message: "학습 자료를 찾을 수 없어요." });
 }
 
 module.exports = { handle, handlePublic, warmUp, clean };
