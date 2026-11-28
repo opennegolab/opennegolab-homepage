@@ -9,6 +9,7 @@ const app = document.querySelector('#app');
 const back = document.querySelector('#back');
 const home = document.querySelector('#home');
 const replay = document.querySelector('#problem-replay');
+const resetOrder = document.querySelector('#order-reset');
 const voiceStatus = document.querySelector('#voice-status');
 const area = {
   '/haru/kiosk': { id: 'kiosk', title: '키오스크', prompt: '가게에서 주문하거나 ATM을 이용해 보세요.' },
@@ -257,14 +258,13 @@ function kioskOrder(shop) {
   basket.setAttribute('aria-label', '담은 상품');
   basket.tabIndex = -1;
   const rows = node('ul', 'kiosk-lines');
-  const resetOrder = button('다시 선택', () => {
+  resetOrder.onclick = () => {
     state = { ...state, cart: [] };
     feedback('');
     for (const updateCount of productCounters.values()) updateCount(0);
     drawBasket();
     jump.focus({ preventScroll: true });
-  });
-  resetOrder.classList.add('kiosk-basket-reset');
+  };
   basket.append(rows);
   feedbackLine(basket);
   const checkout = button('결제하기', submitCart, true);
@@ -293,7 +293,7 @@ function kioskOrder(shop) {
   jump.classList.add('kiosk-order-jump');
   jump.setAttribute('aria-live', 'polite');
   const orderBar = node('div', 'kiosk-order-bar');
-  orderBar.append(jump, resetOrder);
+  orderBar.append(jump);
   group('kiosk-layout', orderBar, menu, basket);
 
   function adjust(item, delta, focusControl = false) {
@@ -676,6 +676,8 @@ function render() {
   back.hidden = !navigation.hasPrevious && !area;
   home.hidden = view === 'home';
   replay.hidden = !showGoal;
+  resetOrder.hidden = view !== 'kiosk-order';
+  if (resetOrder.hidden) resetOrder.onclick = null;
   home.parentElement.hidden = home.hidden;
   if (view === 'home') {
     if (area) {
