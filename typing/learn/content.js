@@ -75,8 +75,11 @@ export const shops = {
     receive: '음식 받기', done: '음식을 받았어요. 잘 먹겠습니다.', groups: (() => {
       const menu = items('food', list('햄버거 돈가스 제육볶음 짜장면 짬뽕 볶음밥 치킨 피자 떡볶이 김밥 우동 라면 카레라이스 불고기 만두 스파게티')
         .map(([name]) => [name, '인분']));
-      return [['식사', menu.slice(0, 6).concat(menu.slice(10, 14), menu.slice(15))],
-        ['간식과 함께 먹는 음식', menu.slice(6, 10).concat(menu.slice(14, 15))]];
+      /* 햄버거·치킨·피자는 패스트푸드에서 연습하므로 음식점에서는 뺀다 (그림·가격 번호는 그대로 두려고 만든 뒤에 거른다) */
+      const fastFood = new Set(['햄버거', '치킨', '피자']);
+      const keep = group => group.filter(item => !fastFood.has(item.name));
+      return [['식사', keep(menu.slice(0, 6).concat(menu.slice(10, 14), menu.slice(15)))],
+        ['분식', keep(menu.slice(6, 10).concat(menu.slice(14, 15)))]];
     })() }
 };
 
