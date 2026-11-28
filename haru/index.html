@@ -23,13 +23,18 @@
   <link rel="apple-touch-icon" href="/haru/assets/icon-192.png">
   <link rel="manifest" href="/haru/manifest.webmanifest">
   <link rel="stylesheet" href="/haru/brand.css?v=4">
-  <link rel="stylesheet" href="/haru/home.css?v=3">
+  <link rel="stylesheet" href="/haru/home.css?v=6">
+  <script src="/haru/rewards.js?v=2"></script>
   <script type="module" src="/haru/home.js?v=5"></script>
   <title>하루랑 HARURANG | 하루와 함께 세상 배우기</title>
 </head>
 <body class="haru-home">
   <header class="home-header">
     <img src="/haru/assets/logo.png" width="180" height="64" alt="하루랑 HARURANG">
+    <a class="stars-link" href="/haru/stars">
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="m12 2.6 2.9 6 6.5.9-4.7 4.6 1.1 6.5L12 17.5l-5.8 3.1 1.1-6.5L2.6 9.5l6.5-.9z" fill="#f7c948" stroke="#b07d12" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      <span><span class="word">내 별 </span><b id="star-count">0</b><span class="word">개</span></span>
+    </a>
     <button id="greeting-audio" type="button" hidden>
       <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3zM16 9a4 4 0 0 1 0 6m2-9a8 8 0 0 1 0 12"/></svg>
       <span>안내 듣기</span>
@@ -64,5 +69,13 @@
       </a>
     </nav>
   </main>
+  <script>
+    /* 모은 별 수 — 이 기기에 저장된 것 (haru/rewards.js) */
+    (function () {
+      const show = () => { if (window.HaruRewards) document.getElementById("star-count").textContent = window.HaruRewards.load().stars; };
+      show();
+      window.addEventListener("pageshow", show);
+    })();
+  </script>
 </body>
 </html>

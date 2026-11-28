@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko" data-haru>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#fff8e9">
+  <title>내 별 | 하루랑</title>
+  <link rel="icon" href="/haru/assets/favicon.png" type="image/png">
+  <link rel="stylesheet" href="/haru/brand.css?v=4">
+  <script src="/haru/rewards.js?v=2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--haru-font); color: var(--haru-ink); background: var(--haru-background); }
+    main { max-width: 1000px; margin: auto; padding: clamp(.8rem, 2.5vw, 1.4rem) clamp(.75rem, 3vw, 1.5rem) 2rem; display: grid; gap: 1rem; }
+    .card { background: white; border: 1px solid var(--haru-line); border-radius: 1.2rem; padding: clamp(.9rem, 2.5vw, 1.4rem); }
+    h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 2.6rem); letter-spacing: -.03em; }
+    h2 { margin: 0 0 .8rem; font-size: clamp(1.2rem, 3.2vw, 1.5rem); display: flex; align-items: center; gap: .5rem; }
+    h2 small { margin-left: auto; font-size: .9rem; color: var(--haru-muted); font-weight: 700; }
+    .lead { display: flex; align-items: center; gap: .8rem; background: var(--haru-cream); border: 1px solid #e8ddc4; }
+    .lead p { margin: .25rem 0 0; color: var(--haru-muted); font-weight: 650; word-break: keep-all; }
+    .lead .total { margin-left: auto; display: grid; place-items: center; min-width: 5.5rem; padding: .5rem .8rem; border-radius: 1rem; background: white; border: 2px solid #f0d27a; }
+    .lead .total b { font-size: 2rem; line-height: 1; color: #8a5e06; }
+    .lead .total span { font-size: .8rem; font-weight: 800; color: var(--haru-muted); }
+    .star { width: 1.4em; height: 1.4em; flex: none; }
+
+    /* 하루 꾸미기 */
+    .dress { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 1rem; align-items: center; }
+    .haru-dressed { position: relative; width: min(100%, 300px); margin: auto; aspect-ratio: 420 / 508; border-radius: 1rem; background: var(--haru-cream); overflow: hidden; }
+    .haru-dressed img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+    .haru-dressed svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
+    .item { display: grid; gap: .15rem; text-align: left; min-height: 64px; padding: .6rem .75rem; border: 2px solid var(--haru-line); border-radius: .9rem; background: white; font: inherit; color: inherit; cursor: pointer; }
+    .item b { font-size: 1.02rem; }
+    .item span { font-size: .82rem; color: var(--haru-muted); font-weight: 650; }
+    .item[aria-pressed="true"] { border-color: var(--haru-green); background: var(--haru-mint); }
+    .item:disabled { cursor: default; color: #8b958c; background: #f6f6f1; border-style: dashed; }
+    .item:focus-visible { outline: 3px solid var(--haru-green); outline-offset: 2px; }
+
+    /* 별 스티커판 */
+    .board { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .5rem; max-width: 520px; }
+    .slot { aspect-ratio: 1; display: grid; place-items: center; border: 2px dashed #e3d9bf; border-radius: 1rem; background: #fffcf3; color: #c9bd9c; font-weight: 800; }
+    .slot.on { border: 2px solid #f0d27a; background: #fff6d6; }
+    .slot.on svg { width: 72%; height: 72%; }
+    .board-note { margin: .7rem 0 0; color: var(--haru-muted); font-weight: 650; word-break: keep-all; }
+
+    /* 장소 도장 수첩 */
+    .stamps { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: .6rem; }
+    .stamp { display: grid; place-items: center; gap: .25rem; padding: .8rem .4rem; border-radius: 1rem; border: 2px dashed var(--haru-line); text-align: center; }
+    .stamp i { width: 62px; height: 62px; display: grid; place-items: center; border-radius: 50%; border: 3px dashed #cfd6c8; color: #aab3a6; font-style: normal; font-weight: 900; font-size: .8rem; }
+    .stamp b { font-size: .98rem; }
+    .stamp span { font-size: .78rem; color: var(--haru-muted); }
+    .stamp.on { border-style: solid; border-color: #e7b6b6; background: #fff7f6; }
+    .stamp.on i { border: 4px double #c9485b; color: #c9485b; transform: rotate(-10deg); font-size: .82rem; }
+
+    @media (max-width: 640px) {
+      .dress { grid-template-columns: 1fr; }
+      .haru-dressed { width: min(70%, 240px); }
+    }
+  </style>
+</head>
+<body>
+  <header class="haru-top">
+    <nav class="haru-top-inner" aria-label="하루랑">
+      <a class="haru-return" href="/haru" aria-label="하루랑 처음으로"><img src="/haru/assets/logo.png" width="123" height="44" alt="하루랑"></a>
+      <a class="haru-return haru-top-action" href="/haru">처음으로</a>
+    </nav>
+  </header>
+  <main>
+    <section class="card lead" aria-labelledby="title">
+      <div>
+        <h1 id="title">내 별</h1>
+        <p id="cheer">연습을 끝까지 하면 별을 하나 받아요.</p>
+      </div>
+      <div class="total" aria-live="polite"><b id="total">0</b><span>모은 별</span></div>
+    </section>
+
+    <section class="card" aria-labelledby="dress-title">
+      <h2 id="dress-title">하루 꾸미기 <small>별을 모으면 열려요</small></h2>
+      <div class="dress">
+        <div id="figure"></div>
+        <div class="items" id="items" role="group" aria-label="꾸미기"></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="board-title">
+      <h2 id="board-title">별 스티커판 <small id="board-count"></small></h2>
+      <div class="board" id="board"></div>
+      <p class="board-note" id="board-note"></p>
+    </section>
+
+    <section class="card" aria-labelledby="stamp-title">
+      <h2 id="stamp-title">장소 도장 수첩 <small id="stamp-count"></small></h2>
+      <div class="stamps" id="stamps"></div>
+    </section>
+  </main>
+  <script>
+  (function () {
+    "use strict";
+    const R = window.HaruRewards;
+    const $ = id => document.getElementById(id);
+    const STAR = '<svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.6 2.9 6 6.5.9-4.7 4.6 1.1 6.5L12 17.5l-5.8 3.1 1.1-6.5L2.6 9.5l6.5-.9z" fill="#f7c948" stroke="#b07d12" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+
+    function render() {
+      const d = R.load();
+      $("total").textContent = d.stars;
+      const next = R.ITEMS.find(item => d.stars < item.need);
+      $("cheer").textContent = !d.stars ? "연습을 끝까지 하면 별을 하나 받아요."
+        : next ? "다음 꾸미기 '" + next.name + "'까지 별 " + (next.need - d.stars) + "개!"
+        : "모든 꾸미기를 열었어요. 정말 멋져요!";
+
+      /* 꾸미기 */
+      $("figure").innerHTML = R.figure(d);
+      $("items").replaceChildren(...R.ITEMS.map(item => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "item";
+        const open = R.unlocked(d, item);
+        b.disabled = !open;
+        b.setAttribute("aria-pressed", String(open && d.wear[item.slot] === item.id));
+        b.innerHTML = "<b>" + item.name + "</b><span>" +
+          (open ? (d.wear[item.slot] === item.id ? "입었어요 · 누르면 벗기" : "누르면 입기") : "별 " + item.need + "개 모으면") + "</span>";
+        b.addEventListener("click", () => { R.wear(item.id); render(); $("items").querySelector("button:nth-child(" + (R.ITEMS.indexOf(item) + 1) + ")").focus(); });
+        return b;
+      }));
+
+      /* 스티커판 — 지금 채우는 판. 10칸을 다 채우면 새 판 */
+      const full = Math.floor(d.stars / R.BOARD);
+      const onBoard = d.stars % R.BOARD;
+      const showFull = onBoard === 0 && d.stars > 0;       /* 방금 한 판을 다 채운 순간은 꽉 찬 판을 보여 준다 */
+      const filled = showFull ? R.BOARD : onBoard;
+      $("board").replaceChildren(...Array.from({ length: R.BOARD }, (_, i) => {
+        const s = document.createElement("div");
+        s.className = "slot" + (i < filled ? " on" : "");
+        s.innerHTML = i < filled ? STAR : String(i + 1);
+        return s;
+      }));
+      $("board").setAttribute("aria-label", "스티커판 " + R.BOARD + "칸 중 " + filled + "칸");
+      $("board-count").textContent = filled + " / " + R.BOARD;
+      $("board-note").textContent = full ? "다 채운 스티커판 " + full + "장! " + (showFull ? "다음 별부터 새 판이 시작돼요." : "")
+        : "10칸을 다 채우면 새 스티커판이 시작돼요.";
+
+      /* 도장 */
+      const got = R.PLACES.filter(([key]) => d.stamps[key]).length;
+      $("stamp-count").textContent = got + " / " + R.PLACES.length;
+      $("stamps").replaceChildren(...R.PLACES.map(([key, name]) => {
+        const s = document.createElement("div");
+        const on = d.stamps[key];
+        s.className = "stamp" + (on ? " on" : "");
+        s.innerHTML = "<i>" + (on ? "참 잘했어요" : "?") + "</i><b>" + name + "</b><span>" + (on ? on.at.replace(/-/g, ".") : "아직이에요") + "</span>";
+        return s;
+      }));
+    }
+    render();
+    /* 다른 창에서 별을 받고 돌아오면 다시 그린다 */
+    window.addEventListener("pageshow", render);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
+  })();
+  </script>
+</body>
+</html>

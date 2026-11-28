@@ -152,6 +152,7 @@ function showComparison() {
   function check(choice) {
     if (choice === correct) {
       status.textContent = '맞아요. ' + won(sums[choice]) + '이 ' + won(sums[1 - choice]) + '보다 ' + (larger ? '커요.' : '작아요.');
+      window.HaruRewards?.award('money');
       for (const control of choices.querySelectorAll('button')) control.disabled = true;
       advance.hidden = false;
       advance.focus();
@@ -190,6 +191,7 @@ function showWallet() {
     const sum = total(wallet);
     if (sum === target) {
       status.textContent = '맞아요. ' + won(target) + '을 만들었어요!';
+      window.HaruRewards?.award('money');
       for (const control of [...choices.querySelectorAll('button'), reset, check]) control.disabled = true;
       advance.hidden = false;
       advance.focus();

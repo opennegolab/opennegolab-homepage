@@ -549,7 +549,15 @@ function shopScreen(shop) {
     return;
   }
   heading('문제를 해결했어요', shop.done, shop.name, 'cheer');
+  rewardOnce();
   showPickup(cart, menu);
+}
+
+/* 하루랑 보상 — 주문·결제를 끝까지 하면 별 하나. 같은 완료 화면이 다시 그려져도 한 번만 */
+function rewardOnce() {
+  if (state.rewarded) return;
+  state.rewarded = true;
+  window.HaruRewards?.award(state.id);
 }
 
 function atmScreen(step, scene, values, choose) {
@@ -617,6 +625,7 @@ function atmActivityScreen() {
   const nextStep = atm.steps[step];
   if (!nextStep) {
     heading('문제를 해결했어요', atm.done, atm.name, 'cheer');
+    rewardOnce();
     const card = photo('bank-12');
     card.alt = '돌려받은 카드';
     group('scene', card);

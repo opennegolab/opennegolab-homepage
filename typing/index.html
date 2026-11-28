@@ -503,6 +503,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
 </div>
 
 <script src="/typing/store.js?v=8"></script>
+<script src="/haru/rewards.js?v=2"></script>
 <script type="module">
 import { screenHistory } from "/haru/navigation.js?v=1";
 import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } from "/typing/learn/speech.js?v=2";
@@ -995,6 +996,8 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
 
   function finish() {
     S.phase = "idle";
+    /* 하루랑 보상 — 한 판을 끝까지 하면 별 하나 (점수와 상관없이) */
+    if (window.HaruRewards && S.results.length) window.HaruRewards.award("typing");
     tts.stop();
     input.blur();
     const rs = S.results;
