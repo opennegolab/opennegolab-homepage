@@ -254,24 +254,18 @@ function kioskOrder(shop) {
   const menu = node('section', 'kiosk-products');
   menu.setAttribute('aria-label', '상품');
   const basket = node('aside', 'kiosk-basket');
-  basket.setAttribute('aria-labelledby', 'kiosk-basket-title');
-  const title = node('h2', '', '주문 목록');
-  title.id = 'kiosk-basket-title';
-  title.tabIndex = -1;
+  basket.setAttribute('aria-label', '담은 상품');
+  basket.tabIndex = -1;
   const rows = node('ul', 'kiosk-lines');
-  const summary = node('p', 'kiosk-total');
-  summary.setAttribute('aria-live', 'polite');
   const resetOrder = button('다시 선택', () => {
     state = { ...state, cart: [] };
     feedback('');
     for (const updateCount of productCounters.values()) updateCount(0);
     drawBasket();
-    title.focus({ preventScroll: true });
+    jump.focus({ preventScroll: true });
   });
   resetOrder.classList.add('kiosk-basket-reset');
-  const basketHeader = node('div', 'kiosk-basket-header');
-  basketHeader.append(title, resetOrder);
-  basket.append(basketHeader, rows, summary);
+  basket.append(rows);
   feedbackLine(basket);
   const checkout = button('결제하기', submitCart, true);
   checkout.classList.add('kiosk-checkout');
@@ -292,9 +286,15 @@ function kioskOrder(shop) {
     menu.append(categories);
   }
   menu.append(products);
-  const jump = button('', () => title.focus());
-  jump.classList.add('kiosk-mobile-basket');
-  group('kiosk-layout', jump, menu, basket);
+  const jump = button('', () => {
+    basket.focus({ preventScroll: true });
+    basket.scrollIntoView({ block: 'nearest' });
+  });
+  jump.classList.add('kiosk-order-jump');
+  jump.setAttribute('aria-live', 'polite');
+  const orderBar = node('div', 'kiosk-order-bar');
+  orderBar.append(jump, resetOrder);
+  group('kiosk-layout', orderBar, menu, basket);
 
   function adjust(item, delta, focusControl = false) {
     const cart = [...state.cart];
@@ -344,7 +344,6 @@ function kioskOrder(shop) {
       rows.append(row);
       if (focusControl?.item === item) focused = focusControl.delta < 0 ? decrease : increase;
     }
-    summary.textContent = '합계 ' + won(orderTotal(state.cart));
     jump.textContent = '주문 목록 · ' + won(orderTotal(state.cart));
     checkout.disabled = resetOrder.disabled = state.cart.length === 0;
     if (focusControl) (focused || rows.querySelector('button') || products.querySelector('button'))?.focus();
