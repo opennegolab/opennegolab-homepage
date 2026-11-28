@@ -395,13 +395,12 @@ function paymentScreen(shop) {
   heading('현금으로 결제', prompt, shop.name);
   const paidLabel = node('p', 'pay-total');
   paidLabel.setAttribute('aria-live', 'polite');
-  const selected = node('div', 'pay-cash-summary');
   const counters = new Map();
   const choices = group('grid actions pay-notes', ...noteValues.map(value => {
     const label = won(value) + ' 담기';
     const choice = card(label, notes[value].image, () => {
       if (state.cash.length >= 20) {
-        feedback('담긴 지폐를 빼고 다시 골라 보세요.');
+        feedback('‘다시 선택’을 눌러 다시 골라 보세요.');
         return;
       }
       state = { ...state, cash: [...state.cash, value] };
@@ -411,8 +410,16 @@ function paymentScreen(shop) {
     counters.set(value, selectionCounter(choice, label, '장'));
     return choice;
   }));
-  app.append(paidLabel, selected);
   feedbackLine();
+  const resetCash = button('다시 선택', () => {
+    state = { ...state, cash: [] };
+    feedback('');
+    updateCash();
+    choices.querySelector('button').focus();
+  });
+  const selection = node('div', 'cash-selection');
+  selection.append(paidLabel, resetCash);
+  choices.before(selection);
   group('controls', button('현금 내기', () => {
     const tendered = total(state.cash);
     if (tendered < due) {
@@ -423,23 +430,12 @@ function paymentScreen(shop) {
     finishPayment('현금', tendered, change);
   }, true));
 
-  function updateCash(focusValue) {
-    paidLabel.textContent = '담은 금액 ' + won(total(state.cash));
-    selected.replaceChildren();
-    for (const value of noteValues) {
-      const count = state.cash.filter(note => note === value).length;
-      counters.get(value)(count);
-      if (!count) continue;
-      const remove = button(won(value) + ' ' + count + '장 · 한 장 빼기', () => {
-        const position = state.cash.indexOf(value);
-        state = { ...state, cash: state.cash.filter((_, index) => index !== position) };
-        app.querySelector('.problem-feedback').textContent = '';
-        updateCash(value);
-      });
-      selected.append(remove);
-      if (value === focusValue) remove.focus();
+  function updateCash() {
+    for (const [value, updateCount] of counters) {
+      updateCount(state.cash.filter(note => note === value).length);
     }
-    if (focusValue && !state.cash.includes(focusValue)) choices.querySelector('button').focus();
+    paidLabel.textContent = '담은 금액 ' + won(total(state.cash));
+    resetCash.disabled = state.cash.length === 0;
   }
   updateCash();
 }

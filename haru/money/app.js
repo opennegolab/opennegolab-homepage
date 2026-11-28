@@ -175,60 +175,55 @@ function showWallet() {
   const prompt = won(target) + '을 만들어 보세요.';
   heading(sections.build[0], prompt);
   const choices = element('div', '', 'grid money-menu');
-  const selected = element('div', '', 'money-wallet');
   const sumLabel = element('p', '', 'money-total');
   sumLabel.setAttribute('aria-live', 'polite');
   const status = messageLine();
   const advance = button('다음 문제', () => next(targets), 'primary');
   advance.hidden = true;
+  const reset = button('다시 선택', () => {
+    wallet = [];
+    status.textContent = '';
+    update();
+    choices.querySelector('button').focus();
+  });
   const check = button('금액 확인', () => {
     const sum = total(wallet);
     if (sum === target) {
       status.textContent = '맞아요. ' + won(target) + '을 만들었어요!';
-      for (const control of [...choices.querySelectorAll('button'), ...selected.querySelectorAll('button'), check]) control.disabled = true;
+      for (const control of [...choices.querySelectorAll('button'), reset, check]) control.disabled = true;
       advance.hidden = false;
       advance.focus();
     } else {
-      const hint = sum < target ? '지폐를 더 담아 볼까요?' : '지폐를 빼 볼까요?';
+      const hint = sum < target ? '지폐를 더 담아 볼까요?' : '‘다시 선택’을 눌러 다시 골라 보세요.';
       status.textContent = '지금은 ' + won(sum) + '이에요. ' + hint;
     }
   }, 'primary');
   const counters = new Map();
   function update() {
-    selected.replaceChildren();
-    if (!wallet.length) selected.append(element('p', '담은 지폐가 없어요.'));
-    for (const value of values) {
-      const count = wallet.filter(note => note === value).length;
-      counters.get(value)(count);
-      if (!count) continue;
-      const remove = button(won(value) + ' ' + count + '장 · 한 장 빼기', () => {
-        wallet.splice(wallet.indexOf(value), 1);
-        status.textContent = '';
-        update();
-        (selected.querySelector('[data-note="' + value + '"]') || choices.querySelector('[data-note="' + value + '"]')).focus();
-      });
-      remove.dataset.note = value;
-      selected.append(remove);
+    for (const [value, updateCount] of counters) {
+      updateCount(wallet.filter(note => note === value).length);
     }
     sumLabel.textContent = '담은 금액 ' + won(total(wallet));
+    reset.disabled = wallet.length === 0;
   }
   for (const value of values) {
     const choice = noteCard(value, () => {
       if (wallet.length >= 15) {
-        status.textContent = '담긴 지폐를 빼고 다시 골라 보세요.';
+        status.textContent = '‘다시 선택’을 눌러 다시 골라 보세요.';
         return;
       }
       wallet.push(value);
       status.textContent = '';
       update();
     }, '담기 · ');
-    choice.dataset.note = value;
     counters.set(value, selectionCounter(choice, '담기 · ' + won(value), '장'));
     choices.append(choice);
   }
   const controls = element('div', '', 'controls');
   controls.append(check, button('문제 다시 듣기', () => announce(prompt)), advance);
-  app.append(choices, sumLabel, selected, status, controls);
+  const selection = element('div', '', 'cash-selection');
+  selection.append(sumLabel, reset);
+  app.append(selection, choices, status, controls);
   update();
 }
 
