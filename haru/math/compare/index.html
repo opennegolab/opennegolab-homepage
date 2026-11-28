@@ -45,11 +45,15 @@
     .compare-done strong { font-size: 1.3rem; }
     .compare-done span { color: var(--haru-muted, #526456); font-weight: 700; }
     #compare-app button:disabled { cursor: default; }
+/* 맞힌 뒤 저절로 다음 문제로 넘어가기까지 차오르는 막대 */
+    .auto-next { display: block; width: min(100%, 240px); height: 6px; margin: .6rem 0 0; border-radius: 3px; background: #e1e6de; overflow: hidden; }
+    .auto-next i { display: block; height: 100%; width: 0; background: var(--haru-green, #24543c); animation: auto-next-fill var(--t, 2500ms) linear forwards; }
+    @keyframes auto-next-fill { to { width: 100%; } }
     @keyframes compare-shake { 0%, 100% { transform: none; } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
     @media (prefers-reduced-motion: reduce) { .compare-option.wrong { animation: none; } }
   </style>
   <script src="/haru/rewards.js?v=4"></script>
-  <script type="module" src="/haru/math/compare/app.js?v=3"></script>
+  <script type="module" src="/haru/math/compare/app.js?v=4"></script>
 </head>
 <body>
   <header class="haru-top">

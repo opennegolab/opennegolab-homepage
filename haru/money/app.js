@@ -54,8 +54,10 @@ let wallet = [];
 const navigation = screenHistory(
   () => ({ page, question, wallet, contents: [...app.childNodes] }),
   screen => {
+    stopAuto();
     ({ page, question, wallet } = screen);
     app.replaceChildren(...screen.contents);
+    app.querySelectorAll('.auto-next').forEach(bar => bar.remove());   /* 돌아온 화면에서는 저절로 넘어가지 않는다 */
     stopSpeech();
     voiceStatus.hidden = true;
     app.querySelector('h1').focus();
@@ -109,7 +111,23 @@ function open(next) {
   draw(true);
 }
 
+/* 맞힌 뒤 잠시 기다렸다가 저절로 다음 문제로 ('다음 문제'를 누르면 바로).
+   칭찬 말이 끝날 만큼 기다리고, 그동안 막대가 차오른다 */
+const AUTO_MS = 2500;
+let autoTimer = 0;
+function stopAuto() { clearTimeout(autoTimer); }
+function autoNext(advance, place) {
+  stopAuto();
+  const bar = element('span', '', 'auto-next');
+  bar.style.setProperty('--t', AUTO_MS + 'ms');
+  bar.setAttribute('aria-hidden', 'true');
+  bar.append(element('i'));
+  place.after(bar);
+  autoTimer = setTimeout(() => { if (advance.isConnected && !advance.hidden) advance.click(); }, AUTO_MS);
+}
+
 function draw(focus = false) {
+  stopAuto();
   app.replaceChildren();
   back.hidden = false;
   if (page === 'home') {
@@ -184,6 +202,7 @@ function showComparison() {
       for (const control of choices.querySelectorAll('button')) control.disabled = true;
       advance.hidden = false;
       advance.focus();
+      autoNext(advance, advance.parentElement === app ? advance : advance.parentElement);
     } else {
       status.textContent = '두 쪽에 적힌 금액을 다시 비교해 보세요. 지폐 장수만으로 금액을 알 수 없어요.';
     }
@@ -227,6 +246,7 @@ function showChange() {
         for (const control of choices.querySelectorAll('button')) control.disabled = true;
         advance.hidden = false;
         advance.focus();
+        autoNext(advance, advance);
       } else {
         status.textContent = '다시 생각해 볼까요? 낸 돈 ' + won(paid) + '에서 물건값 ' + won(price) + '을 빼 보세요.';
         announce(status.textContent);
@@ -268,6 +288,7 @@ function showWallet() {
       for (const control of [...choices.querySelectorAll('button'), reset, check]) control.disabled = true;
       advance.hidden = false;
       advance.focus();
+      autoNext(advance, advance.parentElement === app ? advance : advance.parentElement);
     } else {
       const hint = sum < target ? '지폐를 더 담아 볼까요?' : '‘다시 선택’을 눌러 다시 골라 보세요.';
       status.textContent = '지금은 ' + won(sum) + '이에요. ' + hint;

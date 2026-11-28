@@ -138,9 +138,11 @@ let page = 'home', kind = null, round = null;
 const navigation = screenHistory(
   () => ({ page, kind, round: round && { ...round, list: [...round.list] }, contents: [...app.childNodes] }),
   screen => {
+    stopAuto();
     ({ page, kind } = screen);
     round = screen.round;
     app.replaceChildren(...screen.contents);
+    app.querySelectorAll('.auto-next').forEach(bar => bar.remove());   /* 돌아온 화면에서는 저절로 넘어가지 않는다 */
     stopSpeech();
     voiceStatus.hidden = true;
     back.hidden = page === 'home';
@@ -174,7 +176,23 @@ function heading(title, prompt) {
   app.append(header);
 }
 
+/* 맞힌 뒤 잠시 기다렸다가 저절로 다음 문제로 ('다음 문제'를 누르면 바로).
+   칭찬 말이 끝날 만큼 기다리고, 그동안 막대가 차오른다 */
+const AUTO_MS = 2500;
+let autoTimer = 0;
+function stopAuto() { clearTimeout(autoTimer); }
+function autoNext(advance, place) {
+  stopAuto();
+  const bar = el('span', '', 'auto-next');
+  bar.style.setProperty('--t', AUTO_MS + 'ms');
+  bar.setAttribute('aria-hidden', 'true');
+  bar.append(el('i'));
+  place.after(bar);
+  autoTimer = setTimeout(() => { if (advance.isConnected && !advance.hidden) advance.click(); }, AUTO_MS);
+}
+
 function drawHome() {
+  stopAuto();
   page = 'home';
   back.hidden = true;
   app.replaceChildren();
@@ -210,6 +228,7 @@ function start(key) {
 }
 
 function drawQuestion() {
+  stopAuto();
   back.hidden = false;
   app.replaceChildren();
   const q = round.list[round.i];
@@ -240,6 +259,7 @@ function drawQuestion() {
         announce(say);
         advance.hidden = false;
         advance.focus();
+        q.advanceBar();
       } else {
         q.tries++;
         card.classList.remove('wrong'); void card.offsetWidth; card.classList.add('wrong');
@@ -256,11 +276,13 @@ function drawQuestion() {
   const controls = el('div', '', 'controls');
   controls.append(btn('문제 다시 듣기', () => announce(q.prompt)), advance);
   app.append(choices, status, controls);
+  q.advanceBar = () => autoNext(advance, controls);
   app.querySelector('h1').focus();
   announce(q.prompt);
 }
 
 function finish() {
+  stopAuto();
   page = 'done';
   stopSpeech();
   app.replaceChildren();

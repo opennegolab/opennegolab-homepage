@@ -39,3 +39,8 @@
   .money-change .money-pictures img { width: calc(50% - .3rem); max-width: 96px; }
   .money-change .card-copy { flex: none; width: 5.6rem; }
 }
+
+/* 맞힌 뒤 저절로 다음 문제로 넘어가기까지 차오르는 막대 */
+.auto-next { display: block; width: min(100%, 240px); height: 6px; margin: .6rem 0 0; border-radius: 3px; background: #e1e6de; overflow: hidden; }
+.auto-next i { display: block; height: 100%; width: 0; background: var(--haru-green, #24543c); animation: auto-next-fill var(--t, 2500ms) linear forwards; }
+@keyframes auto-next-fill { to { width: 100%; } }
