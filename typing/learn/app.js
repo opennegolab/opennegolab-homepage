@@ -8,6 +8,7 @@ import { notes, values as noteValues, total, won } from '/haru/money/currency.js
 const app = document.querySelector('#app');
 const back = document.querySelector('#back');
 const home = document.querySelector('#home');
+const replay = document.querySelector('#problem-replay');
 const voiceStatus = document.querySelector('#voice-status');
 const area = {
   '/haru/kiosk': { id: 'kiosk', title: '키오스크', prompt: '가게에서 주문하거나 ATM을 이용해 보세요.' },
@@ -161,7 +162,7 @@ function problemScreen() {
 function showProblemGoal() {
   const card = node('aside', 'problem-goal');
   card.setAttribute('aria-label', '지금 푸는 문제');
-  card.append(node('p', '', state.goal), button('문제 다시 듣기', readProblem));
+  card.append(node('p', '', state.goal));
   app.append(card);
 }
 
@@ -667,8 +668,11 @@ function render() {
   const { id, view } = state;
   app.classList.toggle('kiosk-session', usesOrderScreen && Boolean(shops[id]));
   app.classList.toggle('kiosk-order-screen', view === 'kiosk-order');
+  const showGoal = view === 'kiosk-order' || (id === 'atm' && state.step === atm.start);
   back.hidden = !navigation.hasPrevious && !area;
   home.hidden = view === 'home';
+  replay.hidden = !showGoal;
+  home.parentElement.hidden = home.hidden;
   if (view === 'home') {
     if (area) {
       heading(area.title, area.prompt, undefined, 'guide');
@@ -695,12 +699,13 @@ function render() {
     problemScreen();
     return;
   }
-  if (view === 'kiosk-order' || (id === 'atm' && state.step === atm.start)) showProblemGoal();
+  if (showGoal) showProblemGoal();
   if (view === 'action') atmActivityScreen();
   else shopScreen(shops[id]);
 }
 
 back.addEventListener('click', () => navigation.back());
 home.addEventListener('click', reset);
+replay.addEventListener('click', readProblem);
 if (area?.id === 'burger') openShop('burger', undefined, false);
 else render();
