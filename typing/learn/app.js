@@ -261,7 +261,17 @@ function kioskOrder(shop) {
   const rows = node('ul', 'kiosk-lines');
   const summary = node('p', 'kiosk-total');
   summary.setAttribute('aria-live', 'polite');
-  basket.append(title, rows, summary);
+  const resetOrder = button('다시 선택', () => {
+    state = { ...state, cart: [] };
+    feedback('');
+    for (const updateCount of productCounters.values()) updateCount(0);
+    drawBasket();
+    title.focus({ preventScroll: true });
+  });
+  resetOrder.classList.add('kiosk-basket-reset');
+  const basketHeader = node('div', 'kiosk-basket-header');
+  basketHeader.append(title, resetOrder);
+  basket.append(basketHeader, rows, summary);
   feedbackLine(basket);
   const checkout = button('결제하기', submitCart, true);
   checkout.classList.add('kiosk-checkout');
@@ -336,7 +346,7 @@ function kioskOrder(shop) {
     }
     summary.textContent = '합계 ' + won(orderTotal(state.cart));
     jump.textContent = '주문 목록 · ' + won(orderTotal(state.cart));
-    checkout.disabled = !state.cart.length;
+    checkout.disabled = resetOrder.disabled = state.cart.length === 0;
     if (focusControl) (focused || rows.querySelector('button') || products.querySelector('button'))?.focus();
   }
 
