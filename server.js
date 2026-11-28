@@ -314,12 +314,26 @@ function handle(req, res) {
   }
 
   const ext = path.extname(file).toLowerCase();
-  res.writeHead(200, {
+  /* 하루랑·타자연습 그림은 같은 이름으로 바꿔 넣는 일이 많다 (실사 이미지 교체).
+     하루 동안 그대로 두면 바꾼 그림이 안 보이므로, 매번 '바뀌었는지'만 물어보게 한다.
+     안 바뀌었으면 304 로 짧게 답해 다시 받지 않는다 */
+  const image = /^\.(webp|png|jpe?g|gif|svg)$/.test(ext);
+  const revalidate = image && /^\/(haru|typing)\//.test(urlPath);
+  const stat = fs.statSync(file);
+  const modified = new Date(Math.floor(stat.mtimeMs / 1000) * 1000);
+  const headers = {
     "Content-Type": TYPES[ext] || "application/octet-stream",
     /* HTML은 매번 새로 받고(수정이 바로 보이게), 이미지 등은 하루 캐시 */
-    "Cache-Control": ext === ".html" ? "no-cache" : "public, max-age=86400",
+    "Cache-Control": ext === ".html" || revalidate ? "no-cache" : "public, max-age=86400",
+    "Last-Modified": modified.toUTCString(),
     "X-Content-Type-Options": "nosniff",
-  });
+  };
+  const since = Date.parse(req.headers["if-modified-since"] || "");
+  if (revalidate && since && since >= modified.getTime()) {
+    res.writeHead(304, headers);
+    return res.end();
+  }
+  res.writeHead(200, headers);
   fs.createReadStream(file).pipe(res);
 }
 

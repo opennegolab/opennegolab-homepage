@@ -24,6 +24,7 @@
     .compare-pic svg { flex: 1; min-width: 0; height: auto; max-height: 150px; }
     .compare-menu .compare-pic { aspect-ratio: 16 / 9; align-items: center; }
     .compare-menu .compare-pic svg { max-height: 100%; }
+    .compare-menu .photo-card img { aspect-ratio: auto; width: 100%; height: clamp(88px, 24vw, 160px); object-fit: cover; }
     .compare-menu .card-copy { gap: .15rem; }
     .compare-menu .card-copy strong { font-size: clamp(1rem, 2.5vw, 1.25rem); }
     .compare-menu .card-copy small { font-size: clamp(.8rem, 2vw, .95rem); word-break: keep-all; }
@@ -48,7 +49,7 @@
     @media (prefers-reduced-motion: reduce) { .compare-option.wrong { animation: none; } }
   </style>
   <script src="/haru/rewards.js?v=4"></script>
-  <script type="module" src="/haru/math/compare/app.js?v=2"></script>
+  <script type="module" src="/haru/math/compare/app.js?v=3"></script>
 </head>
 <body>
   <header class="haru-top">

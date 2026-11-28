@@ -173,6 +173,7 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
 - `/haru` 처음 화면 메뉴: 한글 공부 · **수학** · 키오스크 · 패스트푸드 (예전 '돈 공부' 칸 자리)
 - `haru/math/index.html` — 수학 메뉴 3칸. 그림은 `haru/math/assets/*.svg` (돈 계산은 기존 지폐 사진)
 - `haru/math/compare/` — 비교하기 (`app.js` ES 모듈, 기존 학습 화면 스타일 `typing/learn/style.css` 를 같이 씀)
+  - 고르기 카드 그림은 실사 사진 `haru/math/assets/compare-{length,height,size,weight,count,number}.webp`, 모두 섞어서는 `compare.svg`
   - 종류: 길이(연필, 왼쪽 끝 맞춤) · 높이(건물) · 크기(공) · 무게(저울 — 내려간 쪽이 무거움, 상자 크기와 무게는 따로 정함) ·
     개수(과일 1~12개) · 수(1~20) · 모두 섞어서. 그림은 모두 SVG 도형, 문제마다 값·색을 새로 정함 (`KINDS` 의 `make()`)
   - 한 판 5문제. 틀리면 힌트를 말해 주고 다시 고르게 함. 끝까지 하면 '처음에 바로 맞힌 문제 N개'와 별
@@ -247,7 +248,9 @@ node --check server.js typing-api.js typing/store.js
    **소문자 경로**로 추가해야 사이트에 노출되지 않습니다
 7. **운영 DB 에 실제 문제가 있습니다** — 표를 바꿀 때는 기존 데이터를 지우지 않게(`ADD COLUMN IF NOT EXISTS` 등) `prepare()` 에서 처리
 8. **공개 기본 문제** — `typing-api.js`의 공개 기본 목록을 수정합니다. 보호자 문제집은 별도 저장소를 사용합니다.
-9. **캐시** — 서버가 `.js`·이미지를 하루 캐시합니다. `typing/store.js` 를 고치면 두 HTML 의 `store.js?v=N` 숫자를 올리세요
+9. **캐시** — 서버가 `.js`·CSS 를 하루 캐시합니다. `typing/store.js` 를 고치면 두 HTML 의 `store.js?v=N` 숫자를 올리세요.
+   `/haru/`·`/typing/` 아래 **이미지**는 같은 이름으로 바꿔 넣어도 바로 보이게, 매번 '바뀌었는지'만 확인합니다(`no-cache` + `Last-Modified` → 304).
+   그래서 실사 이미지를 바꿀 때는 파일 이름을 그대로 두고 덮어쓰면 됩니다 (홈페이지 이미지는 예전처럼 하루 캐시)
 10. **휴대폰** — 갤럭시(삼성 인터넷·크롬)가 주 사용 기기. 키보드가 입력칸을 가리지 않게(`body.kbd`), 버튼 누를 때 입력칸 포커스 유지,
     안드로이드 음성은 목소리 지정 금지, 카카오톡 안에서는 음성이 안 됨
 11. **유료 API·외부 서비스 추가 금지** (운영자 요청). 음성도 브라우저 내장만

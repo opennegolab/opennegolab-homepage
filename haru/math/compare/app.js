@@ -183,9 +183,12 @@ function drawHome() {
   for (const [key, k] of [...Object.entries(KINDS), ['mix', { title: '모두 섞어서', text: '여러 가지를 번갈아' }]]) {
     const card = btn('', () => start(key), 'photo-card compare-kind');
     card.dataset.kind = key;
-    const pic = el('span', '', 'compare-pic');
-    const sample = key === 'mix' ? null : KINDS[key].make();
-    pic.innerHTML = sample ? (sample.scene || sample[0].art + sample[1].art) : KINDS.size.make().map(x => x.art).join('');
+    /* 고르기 카드는 실사 사진 (haru/math/assets/compare-종류.webp, 모두 섞어서는 compare.svg). 문제 화면은 도형 그림 */
+    const pic = el('img');
+    pic.alt = '';
+    pic.width = 640;
+    pic.height = 360;
+    pic.src = key === 'mix' ? '/haru/math/assets/compare.svg' : '/haru/math/assets/compare-' + key + '.webp';
     const copy = el('span', '', 'card-copy');
     copy.append(el('strong', k.title), el('small', k.text));
     card.append(pic, copy);
