@@ -114,9 +114,8 @@ function startPlace(id) {
   else show({ view: 'places', id });
 }
 
-function newShopTarget(id, previous) {
-  // 자유 선택도 출제하되 같은 문제를 연달아 내지 않습니다.
-  if (previous !== null && Math.random() < 0.2) return null;
+function newShopTarget(id) {
+  if (Math.random() < 0.2) return null;
   const products = shops[id].groups.flatMap(([, entries]) => entries);
   const namedTargets = shopProblems[id].map(problem => problem.items.map(([name, count]) => ({
     item: products.find(item => item.name === name), count
@@ -124,12 +123,11 @@ function newShopTarget(id, previous) {
   const singleTargets = products.flatMap(item => [1, 2, 3].map(count => [{ item, count }]));
   const pairTargets = products.flatMap((item, index) => products.slice(index + 1).map(other =>
     [{ item, count: 1 }, { item: other, count: 2 }]));
-  const key = target => target?.map(({ item, count }) => item.image + ':' + count).sort().join('|');
-  const options = [...namedTargets, ...singleTargets, ...pairTargets].filter(target => key(target) !== key(previous));
-  return randomQuestion(options);
+  return randomQuestion([...namedTargets, ...singleTargets, ...pairTargets]);
 }
 
-function openShop(id, target = newShopTarget(id), remember = true) {
+function openShop(id, remember = true) {
+  const target = newShopTarget(id);
   const menu = shops[id].submit === '주문하기';
   const goal = target
     ? target.map(({ item, count }) => wording(item, count)).join(', ') + (menu ? ' 주문해 보세요.' : ' 사 보세요.')
@@ -139,7 +137,8 @@ function openShop(id, target = newShopTarget(id), remember = true) {
   if (usesOrderScreen) readProblem();
 }
 
-function openAtm(target = randomQuestion(atmProblems)) {
+function openAtm() {
+  const target = randomQuestion(atmProblems);
   const goal = 'ATM에서 ' + won(target.amount) + '을 ' + (target.deposit ? '입금해 보세요.' : '출금해 보세요.');
   show({ view: 'action', id: 'atm', goal, target, step: atm.start, values: {} });
   readProblem();
@@ -479,14 +478,8 @@ function showPickup(cart, menu) {
   app.append(list);
 }
 
-function finishActions(repeat, other = reset, nextProblem) {
-  const actions = [button('같은 문제 다시 풀기', repeat), button('다른 활동 하기', other)];
-  if (nextProblem) actions.unshift(button('새 문제 풀기', nextProblem, true));
-  group('controls', ...actions);
-}
-
 function shopScreen(shop) {
-  const { id, view, category, cart, item, count, notice } = state;
+  const { view, category, cart, item, count, notice } = state;
   const kiosk = usesOrderScreen;
   const menu = shop.submit === '주문하기';
   if (kiosk) kioskProgress(view);
@@ -566,10 +559,6 @@ function shopScreen(shop) {
   }
   heading('문제를 해결했어요', shop.done, shop.name, 'cheer');
   showPickup(cart, menu);
-  const isMarket = id === 'fruit' || id === 'vegetable';
-  const other = !area && isMarket ? () => show({ view: 'places', id: 'mart' }) : reset;
-  const { target } = state;
-  finishActions(() => openShop(id, target), other, () => openShop(id, newShopTarget(id, target)));
 }
 
 function atmScreen(step, scene, values, choose) {
@@ -633,7 +622,7 @@ function atmScreen(step, scene, values, choose) {
 }
 
 function atmActivityScreen() {
-  const { step, values, target } = state;
+  const { step, values } = state;
   const nextStep = atm.steps[step];
   if (!nextStep) {
     heading('문제를 해결했어요', atm.done, atm.name, 'cheer');
@@ -645,7 +634,6 @@ function atmActivityScreen() {
       cash.alt = '받은 현금 ' + won(values.amount);
       group('atm-pickup-cash', cash, node('p', '', cash.alt));
     }
-    finishActions(() => openAtm(target), reset, () => openAtm(randomQuestion(atmProblems, target)));
     return;
   }
 
@@ -707,5 +695,5 @@ function render() {
 back.addEventListener('click', () => navigation.back());
 home.addEventListener('click', reset);
 replay.addEventListener('click', readProblem);
-if (area?.id === 'burger') openShop('burger', undefined, false);
+if (area?.id === 'burger') openShop('burger', false);
 else render();
