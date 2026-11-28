@@ -435,7 +435,11 @@ details[open] > summary { margin-bottom:.8rem; }
     const q = $("search").value.trim().normalize("NFC").toLowerCase();
     /* 새로 넣은 문제가 먼저 보이게 최신순으로. 번호는 넣은 순서 그대로 둔다 */
     const no = new Map(items.map((x, k) => [x.id, k + 1]));
-    const shown = items.filter(x => !q || (x.prompt + " " + x.answers.join(" ")).toLowerCase().includes(q)).reverse();
+    /* 나중에 넣은 묶음이 위로, 한꺼번에 넣은 묶음 안에서는 적은 순서대로(먼저 적은 것이 위로).
+       한꺼번에 넣은 문제는 등록 시각(at)이 같다 */
+    const time = x => Date.parse(x.at) || 0;
+    const shown = items.filter(x => !q || (x.prompt + " " + x.answers.join(" ")).toLowerCase().includes(q))
+      .sort((a, b) => time(b) - time(a) || a.id - b.id);
     $("listCount").textContent = (q ? shown.length + " / " + items.length : items.length) + "개";
     $("n-" + mode).textContent = items.length;
     const pages = Math.max(1, Math.ceil(shown.length / PER_PAGE));

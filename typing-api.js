@@ -605,7 +605,8 @@ async function route(req, res, urlPath) {
     if (sub === "/items") {
       const st = await mustSet(url.searchParams.get("set"));
       const mode = checkMode(url.searchParams.get("mode"));
-      const items = (await store.list(st.id, mode)).map(x => ({ id: x.id, mode: x.mode, prompt: x.prompt, answers: x.answers }));
+      /* 등록 시각(at)도 보낸다 — 문제 설정 목록이 한꺼번에 넣은 묶음을 적은 순서대로 보여 주는 데 쓴다 */
+      const items = (await store.list(st.id, mode)).map(x => ({ id: x.id, mode: x.mode, prompt: x.prompt, answers: x.answers, at: x.created_at }));
       return send(res, 200, { ok: true, items });
     }
     return send(res, 404, { ok: false, message: "없는 주소입니다." });
