@@ -796,7 +796,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     }
     show("play");
     $("qTotal").textContent = S.items.length;
-    if (S.phase === "feedback") showFeedback(S.results[S.i], S.items[S.i], false);
+    if (S.phase === "feedback") showFeedback(S.results[S.i], S.items[S.i]);   /* 돌아온 결과 화면도 잠시 뒤 저절로 넘어간다 */
     else showQuestion(false);
     input.value = snapshot.answer;
   }
@@ -913,11 +913,8 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   function setMsg(t) { $("msg").textContent = t; }
 
   async function submit() {
-    if (S.phase === "feedback") {
-      /* 결과가 뜬 직후의 Enter 는 무시한다 — 제출하려고 누른 Enter 가 두 번 들어오는 기기가 있다 */
-      if (Date.now() - S.fbAt > 500) next();
-      return;
-    }
+    /* 채점 결과가 보이는 동안은 아무것도 하지 않는다 — 잠시 뒤 저절로 다음 문제로 넘어간다
+       ('다음' 버튼 없음, 운영자 요청). Enter 를 두 번 눌러도 문제를 건너뛰지 않는다 */
     if (S.phase !== "answer") return;
     const value = input.value.normalize("NFC").replace(/\s+/g, " ").trim();
     if (!value) { setMsg("답을 먼저 써 주세요."); focusInput(); return; }
@@ -948,7 +945,6 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     S.phase = "feedback";
     S.fbAt = Date.now();
     updateTop();
-    const last = S.i + 1 >= S.items.length;
     $("stage").innerHTML =
       "<div class='fb'>" +
         (item.mode === "qa" ? "<div class='fq'>" + esc(item.question) + "</div>" : "") +
@@ -957,13 +953,13 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
         (r.score === 100 ? "" :
           "<dl class='compare'><dt>정답</dt><dd>" + diffHtml(r.ops, "answer") + "</dd><dt>내 답</dt><dd>" + diffHtml(r.ops, "input") + "</dd></dl>" +
           "<div class='legend'><span><mark class='wrong'>가</mark> 틀린 글자</span><span><mark class='extra'>가</mark> 더 쓴 글자</span><span><mark class='miss'>가</mark> 빠진 글자</span></div>") +
-        /* '다음 문제' 버튼 없이 잠시 뒤 저절로 넘어간다 (막대가 차오름). 답 칸 옆 버튼·Enter 로 바로 넘길 수도 있다 */
+        /* '다음' 버튼 없이 잠시 뒤 저절로 넘어간다 (막대가 차오름) */
         "<div class='next-row'>" +
         "<div class='timer' aria-hidden='true'><i class='run' style='--t:" + FEEDBACK_MS + "ms'></i></div></div>" +
       "</div>" +
       (r.score === 100 ? "<div class='burst' aria-hidden='true'>" + stars() + "</div>" : "");
-    $("submitBtn").textContent = last ? "결과" : "다음";
-    $("submitBtn").disabled = false;
+    $("submitBtn").textContent = "제출";     /* 결과가 보이는 동안 답 칸 버튼은 꺼 둔다 (저절로 넘어감) */
+    $("submitBtn").disabled = true;
     if (advance) S.timer = setTimeout(next, FEEDBACK_MS);
     keepVisible();
   }
@@ -1037,7 +1033,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   document.addEventListener("keydown", e => {
     if ($("play").classList.contains("hidden") || e.target === input) return;
     if (e.key === "Escape") { replay(); return; }
-    if (isEnter(e) && S.phase === "feedback" && e.target.tagName !== "BUTTON") { e.preventDefault(); submit(); }
+    if (isEnter(e) && S.phase === "feedback") e.preventDefault();   /* 결과가 보이는 동안 Enter 는 무시 (저절로 넘어감) */
   });
 
   /* ---------- 휴대폰 키보드가 입력창을 가리지 않게 ---------- */
