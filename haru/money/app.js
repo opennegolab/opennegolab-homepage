@@ -113,7 +113,7 @@ function open(next) {
 
 /* 맞힌 뒤 잠시 기다렸다가 저절로 다음 문제로 ('다음 문제' 버튼 없이).
    칭찬 말이 끝날 만큼 기다리고, 그동안 막대가 차오른다 */
-const AUTO_MS = 2500;
+const AUTO_MS = 1500;   /* 말 없이 ✓ 표시만 보여 주므로 짧게 */
 let autoTimer = 0;
 function stopAuto() { clearTimeout(autoTimer); }
 function autoNext(go, place) {
@@ -124,6 +124,18 @@ function autoNext(go, place) {
   bar.append(element('i'));
   place.after(bar);
   autoTimer = setTimeout(() => { if (place.isConnected) go(); }, AUTO_MS);   /* 그사이 화면을 나갔으면 넘기지 않는다 */
+}
+
+/* 정답 여부 표시 — 맞으면 초록 ✓, 틀리면 빨간 ✕와 흔들림 (문장·음성 없이) */
+function markRight(target) {
+  stopSpeech();
+  target.classList.remove('wrong');
+  target.classList.add('right');
+}
+function markWrong(target) {
+  stopSpeech();
+  target.classList.remove('wrong'); void target.offsetWidth; target.classList.add('wrong');
+  if (target.blur) target.blur();
 }
 
 function draw(focus = false) {
@@ -194,18 +206,17 @@ function showComparison() {
   const status = messageLine();
   const choices = element('div', '', 'grid money-compare');
   const advance = () => next(comparisons);
-  function check(choice) {
+  /* 정답 여부만 표시 — 문장·음성 없이 ✓ / ✕ (운영자 요청) */
+  function check(choice, option) {
     if (choice === correct) {
-      status.textContent = '맞아요. ' + won(sums[choice]) + '이 ' + won(sums[1 - choice]) + '보다 ' + (larger ? '커요.' : '작아요.');
+      markRight(option);
       window.HaruRewards?.award('money');
       for (const control of choices.querySelectorAll('button')) control.disabled = true;
       autoNext(advance, status);
-    } else {
-      status.textContent = '두 쪽에 적힌 금액을 다시 비교해 보세요. 지폐 장수만으로 금액을 알 수 없어요.';
-    }
+    } else markWrong(option);
   }
   for (const [side, notesToShow] of [left, right].entries()) {
-    const option = button('', () => check(side), 'photo-card money-option');
+    const option = button('', () => check(side, option), 'photo-card money-option');
     const photos = element('span', '', 'money-pictures');
     for (const value of notesToShow) photos.append(picture(value));
     option.append(photos, element('span', won(sums[side]), 'card-copy'));
@@ -235,18 +246,11 @@ function showChange() {
   for (const amount of changeChoices(question)) {
     const option = button('', () => {
       if (amount === answer) {
-        status.textContent = '맞아요. ' + won(paid) + '에서 ' + won(price) + '을 빼면 ' + won(answer) + '이에요.';
-        announce(status.textContent);
+        markRight(option);
         window.HaruRewards?.award('money');
-        option.classList.add('right');
         for (const control of choices.querySelectorAll('button')) control.disabled = true;
         autoNext(advance, status);
-      } else {
-        status.textContent = '다시 생각해 볼까요? 낸 돈 ' + won(paid) + '에서 물건값 ' + won(price) + '을 빼 보세요.';
-        announce(status.textContent);
-        option.classList.remove('wrong'); void option.offsetWidth; option.classList.add('wrong');
-        option.blur();
-      }
+      } else markWrong(option);
     }, 'photo-card money-option');
     option.dataset.amount = amount;
     const photos = element('span', '', 'money-pictures');
@@ -276,14 +280,11 @@ function showWallet() {
   const check = button('금액 확인', () => {
     const sum = total(wallet);
     if (sum === target) {
-      status.textContent = '맞아요. ' + won(target) + '을 만들었어요!';
+      markRight(selection);
       window.HaruRewards?.award('money');
       for (const control of [...choices.querySelectorAll('button'), reset, check]) control.disabled = true;
       autoNext(advance, status);
-    } else {
-      const hint = sum < target ? '지폐를 더 담아 볼까요?' : '‘다시 선택’을 눌러 다시 골라 보세요.';
-      status.textContent = '지금은 ' + won(sum) + '이에요. ' + hint;
-    }
+    } else markWrong(selection);   /* 담은 금액은 상자에 늘 보인다 — 아이가 더 담거나 '다시 선택' */
   }, 'primary');
   const counters = new Map();
   function update() {
@@ -291,6 +292,7 @@ function showWallet() {
       updateCount(wallet.filter(note => note === value).length);
     }
     sumLabel.textContent = '담은 금액 ' + won(total(wallet));
+    selection.classList.remove('wrong');   /* 다시 담기 시작하면 ✕ 를 지운다 */
     reset.disabled = wallet.length === 0;
   }
   for (const value of values) {

@@ -29,6 +29,19 @@
 .money-change .money-pictures img { width: min(46%, 110px); }
 .money-option.right { border: 3px solid var(--haru-green, #24543c); }
 .money-option.wrong { border-color: #d98b8b; animation: money-shake .4s; }
+/* 정답 여부 표시 — 맞으면 초록 ✓, 틀리면 빨간 ✕ (문장 없이) */
+.money-option, .cash-selection { position: relative; }
+.money-option.right::after, .money-option.wrong::after,
+.cash-selection.right::after, .cash-selection.wrong::after {
+  position: absolute; top: .5rem; right: .5rem; width: 2.6rem; height: 2.6rem; border-radius: 50%;
+  display: grid; place-items: center; font-size: 1.5rem; font-weight: 900; line-height: 1; color: white;
+  box-shadow: 0 4px 10px -4px rgba(0,0,0,.35); z-index: 1;
+}
+.cash-selection.right::after, .cash-selection.wrong::after { top: -1rem; right: -.4rem; }
+.money-option.right::after, .cash-selection.right::after { content: "✓"; background: var(--haru-green, #24543c); }
+.money-option.wrong::after, .cash-selection.wrong::after { content: "✕"; background: #d0605a; }
+.cash-selection.right { outline: 3px solid var(--haru-green, #24543c); outline-offset: 2px; border-radius: .9rem; }
+.cash-selection.wrong { animation: money-shake .4s; }
 @keyframes money-shake { 0%, 100% { transform: none; } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 @media (prefers-reduced-motion: reduce) { .money-option.wrong { animation: none; } }
 @media (max-width: 520px) {
