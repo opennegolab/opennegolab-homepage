@@ -139,23 +139,22 @@ function openShop(id, target = newShopTarget(id), remember = true) {
 
 function openAtm(target = randomQuestion(atmProblems)) {
   const goal = 'ATM에서 ' + won(target.amount) + '을 ' + (target.deposit ? '입금해 보세요.' : '출금해 보세요.');
-  show({ view: 'problem', id: 'atm', goal, target, step: atm.start, values: {} });
+  show({ view: 'action', id: 'atm', goal, target, step: atm.start, values: {} });
+  readProblem();
 }
 
 function problemScreen() {
-  const activity = state.id === 'atm' ? atm : shops[state.id];
+  const activity = shops[state.id];
   heading(activity.name + ' 문제', state.goal, undefined, 'guide');
-  if (shops[state.id] && state.target) {
+  if (state.target) {
     group('goal-items', ...state.target.map(({ item, count }) => {
       const figure = node('div', 'goal-item');
       figure.append(repeated(item, count), node('strong', '', wording(item, count)));
       return figure;
     }));
   }
-  group('controls', button('문제 풀기', () => {
-    const view = state.id === 'atm' ? 'action' : 'entrance';
-    show({ ...state, view });
-  }, true), button('문제 다시 듣기', readProblem));
+  group('controls', button('문제 풀기', () => show({ ...state, view: 'entrance' }), true),
+    button('문제 다시 듣기', readProblem));
 }
 
 function showProblemGoal() {
@@ -592,12 +591,11 @@ function shopScreen(shop) {
 function atmScreen(step, scene, values, choose) {
   const cardAction = step === 'card' || step === 'returnCard';
   const cashAction = step === 'takeCash' || (step === 'transaction' && values.deposit);
-  heading('ATM', undefined, 'ATM 사용 연습');
+  heading('ATM');
   const machine = node('section', 'atm-machine');
   machine.setAttribute('aria-label', '연습용 ATM');
-  const panel = node('div', 'atm-display');
-  const caption = node('p', 'atm-caption', '거래 화면');
-  panel.append(caption);
+  const panel = node('section', 'atm-display');
+  panel.setAttribute('aria-label', '거래 화면');
 
   if (cardAction || cashAction) {
     const message = {
@@ -611,7 +609,10 @@ function atmScreen(step, scene, values, choose) {
     panel.append(node('p', 'atm-screen-message', scene.prompt));
     const buttons = node('div', 'atm-screen-buttons');
     for (const option of scene.options) {
-      const control = button(option.label, () => choose(option));
+      const image = step === 'choice' ? (option.values.deposit ? 'bank-10' : 'bank-11') :
+        notes[option.values?.amount]?.image;
+      const action = () => choose(option);
+      const control = image ? card(option.label, image, action) : button(option.label, action);
       control.classList.add('atm-screen-action');
       buttons.append(control);
     }
@@ -626,16 +627,21 @@ function atmScreen(step, scene, values, choose) {
       else feedback('지금은 이곳을 사용할 차례가 아니에요. 거래 화면을 확인해 보세요.');
     });
     control.classList.add('atm-slot');
-    const opening = node('span', 'atm-opening');
-    opening.setAttribute('aria-hidden', 'true');
-    control.append(node('strong', '', title), opening);
-    if (active) control.append(photo(image), node('span', 'atm-slot-action', option.label));
+    control.append(node('strong', '', title));
+    if (active) {
+      control.classList.add('atm-slot-active');
+      control.append(photo(image), node('span', 'atm-slot-action', option.label));
+    } else {
+      const opening = node('span', 'atm-opening');
+      opening.setAttribute('aria-hidden', 'true');
+      control.append(opening);
+    }
     return control;
   }
 
   const slots = node('div', 'atm-slots');
   slots.append(
-    slot('카드 투입구', step === 'returnCard' ? 'bank-12' : 'bank-7', cardAction),
+    slot('카드 투입구', step === 'returnCard' ? 'bank-12' : 'bank-9', cardAction),
     slot('현금 투입·수령', step === 'takeCash' ? 'bank-11' : 'bank-10', cashAction)
   );
   machine.append(panel, slots);
@@ -706,7 +712,7 @@ function render() {
     problemScreen();
     return;
   }
-  if (view === 'kiosk-order') showProblemGoal();
+  if (view === 'kiosk-order' || (id === 'atm' && state.step === atm.start)) showProblemGoal();
   if (view === 'action') atmActivityScreen();
   else shopScreen(shops[id]);
 }
