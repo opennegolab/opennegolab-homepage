@@ -40,7 +40,7 @@ function show(next, remember = true) {
 
 function readProblem() {
   voiceStatus.hidden = true;
-  const spokenGoal = state.goal.replace(/([1-5])인분/g, (_, count) => ' 일이삼사오'[count] + '인분');
+  const spokenGoal = (state.spokenGoal ?? state.goal).replace(/([1-5])인분/g, (_, count) => ' 일이삼사오'[count] + '인분');
   speak(spokenGoal, () => showSpeechHelp(voiceStatus));
 }
 
@@ -129,11 +129,14 @@ function newShopTarget(id) {
 function openShop(id, remember = true) {
   const target = newShopTarget(id);
   const menu = shops[id].submit === '주문하기';
-  const goal = target
-    ? target.map(({ item, count }) => wording(item, count)).join(', ') + (menu ? ' 주문해 보세요.' : ' 사 보세요.')
-    : menu ? '먹고 싶은 것을 선택해 주세요.' : '사고 싶은 것을 선택해 주세요.';
+  const freeChoice = menu ? '먹고 싶은 것을 선택해 주세요.' : '사고 싶은 것을 선택해 주세요.';
+  const instruction = menu ? ' 주문해 보세요.' : ' 사 보세요.';
+  const describe = format => target
+    ? target.map(({ item, count }) => format(item, count)).join(', ') + instruction
+    : freeChoice;
   const view = usesOrderScreen ? 'kiosk-order' : 'problem';
-  show({ view, id, goal, target, category: 0, cart: [] }, remember);
+  show({ view, id, goal: describe(numericQuantity), spokenGoal: describe(wording),
+    target, category: 0, cart: [] }, remember);
   if (usesOrderScreen) readProblem();
 }
 
@@ -150,7 +153,7 @@ function problemScreen() {
   if (state.target) {
     group('goal-items', ...state.target.map(({ item, count }) => {
       const figure = node('div', 'goal-item');
-      figure.append(repeated(item, count), node('strong', '', wording(item, count)));
+      figure.append(repeated(item, count), node('strong', '', numericQuantity(item, count)));
       return figure;
     }));
   }
@@ -199,8 +202,12 @@ function changeShop(view, patch = {}, remember = true) {
   show({ ...state, ...patch, view }, remember);
 }
 
+function numericQuantity(item, count) {
+  return item.name + ' ' + count + item.unit;
+}
+
 function wording(item, count) {
-  if (item.unit === '인분') return item.name + ' ' + count + '인분';
+  if (item.unit === '인분') return numericQuantity(item, count);
   const number = ['', '한', '두', '세', '네', '다섯'][count];
   return item.name + ' ' + number + ' ' + item.unit;
 }
