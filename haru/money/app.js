@@ -191,8 +191,8 @@ function showNotes() {
   app.append(grid, status);
 }
 
+/* 다음 문제는 기록을 남기지 않는다 — 몇 번째 문제에서든 뒤로가기(이전 단계)를 누르면 돈 계산 고르는 화면으로 (운영자 요청) */
 function next(questions) {
-  navigation.push();
   question = randomQuestion(questions, question);
   draw(true);
 }
@@ -239,7 +239,6 @@ function showChange() {
   const status = messageLine();
   const choices = element('div', '', 'grid money-change');
   const advance = () => {
-    navigation.push();
     question = changeQuestion(question);
     draw(true);
   };

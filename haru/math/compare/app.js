@@ -215,9 +215,11 @@ function drawHome() {
   app.append(grid);
 }
 
+/* 뒤로가기: 한 판 안에서는 문제마다 기록을 남기지 않는다 — 몇 번 문제에서든, 다 한 화면에서든
+   뒤로가기(이전 단계)를 누르면 비교하기 고르는 화면으로 나간다 (운영자 요청) */
 function start(key) {
   prepareSpeech();
-  navigation.push();
+  if (page === 'home') navigation.push();     /* '한 번 더 하기'는 새로 기록하지 않음 */
   kind = key;
   const kinds = Object.keys(KINDS);
   /* 모두 섞어서: 여섯 가지 중 다섯 가지를 겹치지 않게 */
@@ -242,10 +244,7 @@ function drawQuestion() {
   const status = el('p', '', 'problem-feedback');
   status.setAttribute('role', 'status');
   const last = round.i + 1 >= ROUND;
-  const advance = () => {
-    navigation.push();
-    if (last) finish(); else { round.i++; drawQuestion(); }
-  };
+  const advance = () => { if (last) finish(); else { round.i++; drawQuestion(); } };
   q.options.forEach((option, i) => {
     const card = btn('', () => {
       if (i === q.answer) {
@@ -288,7 +287,7 @@ function finish() {
   box.append(el('strong', '처음에 바로 맞힌 문제 ' + round.firstTry + '개'),
     el('span', round.firstTry === ROUND ? '모두 한 번에 맞혔어요. 정말 멋져요!' : '끝까지 잘했어요!'));
   const controls = el('div', '', 'controls');
-  controls.append(btn('한 번 더 하기', () => start(kind), 'primary'), btn('다른 비교 고르기', () => { navigation.push(); drawHome(); }));
+  controls.append(btn('한 번 더 하기', () => start(kind), 'primary'), btn('다른 비교 고르기', () => navigation.back()));
   app.append(box, controls);
   app.querySelector('h1').focus();
   announce('다 했어요! 처음에 바로 맞힌 문제는 ' + round.firstTry + '개예요.');

@@ -821,8 +821,11 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     input.value = snapshot.answer;
   }
 
+  /* 뒤로가기: 한 판 안에서는 문제마다 기록을 남기지 않는다 — 몇 번 문제에서든, 결과 화면에서든
+     뒤로가기(이전 단계)를 누르면 문제집 고르는 처음 화면으로 나간다 (운영자 요청).
+     그래서 처음 화면에서 시작할 때만 한 번 기록한다 (결과 화면의 '다시 풀기'는 새로 기록하지 않음) */
   async function begin(req, remember = true) {
-    if (remember) navigation.push();
+    if (remember && screen === "home") navigation.push();
     clearTimeout(S.timer);
     tts.stop();
     const seq = ++S.seq;
@@ -938,7 +941,6 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     if (S.phase !== "answer") return;
     const value = input.value.normalize("NFC").replace(/\s+/g, " ").trim();
     if (!value) { setMsg("답을 먼저 써 주세요."); focusInput(); return; }
-    navigation.push();
     S.phase = "grading";
     const seq = S.seq;
     const item = S.items[S.i];
@@ -952,7 +954,6 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
 
   function next() {
     if (S.phase !== "feedback") return;
-    navigation.push();
     clearTimeout(S.timer);
     S.phase = "loading";
     S.i++;
@@ -1072,9 +1073,10 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   input.addEventListener("focus", () => setTimeout(keepVisible, 250));
   input.addEventListener("blur", () => setTimeout(() => document.body.classList.remove("kbd"), 200));
 
+  /* 처음 화면으로 — 한 판은 기록 하나뿐이므로 뒤로가기와 같다 */
   function goHome() {
-    navigation.push();
-    toHomeScreen();
+    if (screen !== "home" && navigation.hasPrevious) navigation.back();
+    else toHomeScreen();
   }
   function toHomeScreen() {
     clearTimeout(S.timer);
