@@ -111,19 +111,19 @@ function open(next) {
   draw(true);
 }
 
-/* 맞힌 뒤 잠시 기다렸다가 저절로 다음 문제로 ('다음 문제'를 누르면 바로).
+/* 맞힌 뒤 잠시 기다렸다가 저절로 다음 문제로 ('다음 문제' 버튼 없이).
    칭찬 말이 끝날 만큼 기다리고, 그동안 막대가 차오른다 */
 const AUTO_MS = 2500;
 let autoTimer = 0;
 function stopAuto() { clearTimeout(autoTimer); }
-function autoNext(advance, place) {
+function autoNext(go, place) {
   stopAuto();
   const bar = element('span', '', 'auto-next');
   bar.style.setProperty('--t', AUTO_MS + 'ms');
   bar.setAttribute('aria-hidden', 'true');
   bar.append(element('i'));
   place.after(bar);
-  autoTimer = setTimeout(() => { if (advance.isConnected && !advance.hidden) advance.click(); }, AUTO_MS);
+  autoTimer = setTimeout(() => { if (place.isConnected) go(); }, AUTO_MS);   /* 그사이 화면을 나갔으면 넘기지 않는다 */
 }
 
 function draw(focus = false) {
@@ -193,16 +193,13 @@ function showComparison() {
   heading(sections.compare[0], prompt);
   const status = messageLine();
   const choices = element('div', '', 'grid money-compare');
-  const advance = button('다음 문제', () => next(comparisons), 'primary');
-  advance.hidden = true;
+  const advance = () => next(comparisons);
   function check(choice) {
     if (choice === correct) {
       status.textContent = '맞아요. ' + won(sums[choice]) + '이 ' + won(sums[1 - choice]) + '보다 ' + (larger ? '커요.' : '작아요.');
       window.HaruRewards?.award('money');
       for (const control of choices.querySelectorAll('button')) control.disabled = true;
-      advance.hidden = false;
-      advance.focus();
-      autoNext(advance, advance.parentElement === app ? advance : advance.parentElement);
+      autoNext(advance, status);
     } else {
       status.textContent = '두 쪽에 적힌 금액을 다시 비교해 보세요. 지폐 장수만으로 금액을 알 수 없어요.';
     }
@@ -214,7 +211,7 @@ function showComparison() {
     option.append(photos, element('span', won(sums[side]), 'card-copy'));
     choices.append(option);
   }
-  app.append(choices, button('문제 다시 듣기', () => announce(prompt)), status, advance);
+  app.append(choices, button('문제 다시 듣기', () => announce(prompt)), status);
 }
 
 function showChange() {
@@ -230,12 +227,11 @@ function showChange() {
   scene.append(tag, element('span', '−', 'change-minus'), pay);
   const status = messageLine();
   const choices = element('div', '', 'grid money-change');
-  const advance = button('다음 문제', () => {
+  const advance = () => {
     navigation.push();
     question = changeQuestion(question);
     draw(true);
-  }, 'primary');
-  advance.hidden = true;
+  };
   for (const amount of changeChoices(question)) {
     const option = button('', () => {
       if (amount === answer) {
@@ -244,9 +240,7 @@ function showChange() {
         window.HaruRewards?.award('money');
         option.classList.add('right');
         for (const control of choices.querySelectorAll('button')) control.disabled = true;
-        advance.hidden = false;
-        advance.focus();
-        autoNext(advance, advance);
+        autoNext(advance, status);
       } else {
         status.textContent = '다시 생각해 볼까요? 낸 돈 ' + won(paid) + '에서 물건값 ' + won(price) + '을 빼 보세요.';
         announce(status.textContent);
@@ -260,7 +254,7 @@ function showChange() {
     option.append(photos, element('span', won(amount), 'card-copy'));
     choices.append(option);
   }
-  app.append(scene, choices, button('문제 다시 듣기', () => announce(prompt)), status, advance);
+  app.append(scene, choices, button('문제 다시 듣기', () => announce(prompt)), status);
 }
 
 function showWallet() {
@@ -272,8 +266,7 @@ function showWallet() {
   const sumLabel = element('p', '', 'money-total');
   sumLabel.setAttribute('aria-live', 'polite');
   const status = messageLine();
-  const advance = button('다음 문제', () => next(targets), 'primary');
-  advance.hidden = true;
+  const advance = () => next(targets);
   const reset = button('다시 선택', () => {
     wallet = [];
     status.textContent = '';
@@ -286,9 +279,7 @@ function showWallet() {
       status.textContent = '맞아요. ' + won(target) + '을 만들었어요!';
       window.HaruRewards?.award('money');
       for (const control of [...choices.querySelectorAll('button'), reset, check]) control.disabled = true;
-      advance.hidden = false;
-      advance.focus();
-      autoNext(advance, advance.parentElement === app ? advance : advance.parentElement);
+      autoNext(advance, status);
     } else {
       const hint = sum < target ? '지폐를 더 담아 볼까요?' : '‘다시 선택’을 눌러 다시 골라 보세요.';
       status.textContent = '지금은 ' + won(sum) + '이에요. ' + hint;
@@ -316,7 +307,7 @@ function showWallet() {
     choices.append(choice);
   }
   const controls = element('div', '', 'controls');
-  controls.append(check, button('문제 다시 듣기', () => announce(prompt)), advance);
+  controls.append(check, button('문제 다시 듣기', () => announce(prompt)));
   const selection = element('div', '', 'cash-selection');
   selection.append(sumLabel, reset);
   app.append(selection, choices, status, controls);

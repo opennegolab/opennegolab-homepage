@@ -159,6 +159,14 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
     .type b{ font-size:.92rem; }
     .type span i{ display:block; white-space:normal; word-break:keep-all; }
   }
+  /* 아주 좁은 휴대폰(380px 이하): 종류·단계 버튼을 한 줄에 하나씩 — 아이콘 옆에 이름과 설명이 한 줄로 들어간다 */
+  @media (max-width:380px){
+    .types{ grid-template-columns:1fr; gap:6px; }
+    .type{ display:grid; grid-template-columns:auto 1fr; grid-template-rows:auto auto; column-gap:10px; align-items:center; justify-items:start; text-align:left; min-height:0; padding:8px 12px; }
+    .type .ico{ grid-column:1; grid-row:1 / span 2; margin:0; }
+    .type b, .type > span:not(.ico){ grid-column:2; }
+    .type span i{ display:inline; }
+  }
   .seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:4px; background:#F5EFE6; padding:5px; border-radius:18px; }
   .seg button{ border-radius:14px; min-height:48px; font-weight:800; color:var(--ink-soft); display:flex; align-items:center; justify-content:center; gap:8px; transition:background .15s, color .15s, box-shadow .15s; }
   .seg button:hover{ color:var(--ink-2); }
@@ -227,6 +235,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   .progress .txt{ display:flex; justify-content:space-between; align-items:baseline; font-size:.9rem; font-weight:700; color:var(--ink-soft); margin-bottom:8px; }
   .progress .txt b{ color:var(--ink); font-size:1.15rem; font-weight:900; }
   .avg{ display:inline-flex; align-items:center; gap:6px; background:#fff; border-radius:999px; padding:4px 12px; box-shadow:var(--shadow-sm); font-size:.84rem; }
+  .progress .txt > span{ white-space:nowrap; }     /* '1 / 10 문제'·'평균 - 점'은 줄을 바꾸지 않는다 */
   .avg b{ font-size:1rem !important; color:var(--blue-d) !important; }
   .segs{ display:flex; gap:4px; height:10px; }
   .segs i{ flex:1; border-radius:999px; background:var(--blue-mid); opacity:.55; transition:background .3s, opacity .3s; }
@@ -380,6 +389,9 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
     .tiles{ grid-template-columns:repeat(2,1fr); }
     .actions{ grid-template-columns:1fr; }
     .topbar{ gap:8px; }
+    .progress .txt{ gap:6px; font-size:.8rem; }
+    .progress .txt b{ font-size:1rem; }
+    .avg{ padding:3px 8px; gap:4px; }
     .topbar .btn{ padding-inline:8px; font-size:.88rem; }
     .answer-box{ padding:6px 6px 6px 14px; border-radius:20px; }
     .answer-box > svg{ display:none; }
@@ -641,7 +653,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   const TYPES = [
     { id: "dictation", cls: "dictation", name: "받아쓰기", icon: "headphones" },
     { id: "qa", cls: "qa", name: "질문에 답하기", icon: "chat" },
-    { id: "copy", cls: "copy", name: "보고 쓰기", icon: "keyboard" },     /* 보고 쓰기 문장을 화면에 보여 주고 그대로 따라 쓴다 */
+    { id: "copy", cls: "copy", name: "보고\u00a0쓰기", icon: "keyboard" },     /* 보고 쓰기 문장을 화면에 보여 주고 그대로 따라 쓴다 */
   ];
   const LEVELS = [
     { id: "math1", cls: "math", level: 1, name: "1단계", desc: ["한 자리", "받아올림 없이"] },
@@ -945,13 +957,11 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
         (r.score === 100 ? "" :
           "<dl class='compare'><dt>정답</dt><dd>" + diffHtml(r.ops, "answer") + "</dd><dt>내 답</dt><dd>" + diffHtml(r.ops, "input") + "</dd></dl>" +
           "<div class='legend'><span><mark class='wrong'>가</mark> 틀린 글자</span><span><mark class='extra'>가</mark> 더 쓴 글자</span><span><mark class='miss'>가</mark> 빠진 글자</span></div>") +
-        "<div class='next-row'><button type='button' class='btn btn-soft' id='nextBtn'>" + (last ? "결과 보기" : "바로 다음 문제") + icon("arrow") + "</button>" +
+        /* '다음 문제' 버튼 없이 잠시 뒤 저절로 넘어간다 (막대가 차오름). 답 칸 옆 버튼·Enter 로 바로 넘길 수도 있다 */
+        "<div class='next-row'>" +
         "<div class='timer' aria-hidden='true'><i class='run' style='--t:" + FEEDBACK_MS + "ms'></i></div></div>" +
       "</div>" +
       (r.score === 100 ? "<div class='burst' aria-hidden='true'>" + stars() + "</div>" : "");
-    const nb = $("nextBtn");
-    nb.addEventListener("pointerdown", e => e.preventDefault());
-    nb.addEventListener("click", next);
     $("submitBtn").textContent = last ? "결과" : "다음";
     $("submitBtn").disabled = false;
     if (advance) S.timer = setTimeout(next, FEEDBACK_MS);
@@ -973,7 +983,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   /* 틀린 곳 표시 — 서버가 보낸 비교 결과(ops)를 그대로 그린다.
      띄어쓰기를 틀렸을 때는 빈칸이 보이지 않으므로 '␣' 로 보여 준다 */
   function ch(c, cls) {
-    if (c === " ") return "<mark class='" + cls + " sp' title='띄어쓰기'>␣</mark>";
+    if (c === " ") return "<mark class='" + cls + " sp' title='띄어쓰기'>␣</mark><wbr>";   /* 띄어쓰기 자리에서 줄을 바꿀 수 있게 */
     return "<mark class='" + cls + "'>" + esc(c) + "</mark>";
   }
   function diffHtml(ops, side) {

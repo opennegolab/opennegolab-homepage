@@ -1,3 +1,6 @@
+/* 한글은 낱말(띄어쓰기) 단위로만 줄을 바꾼다 — "문⏎제"처럼 낱말 가운데서 끊기지 않게.
+   너무 긴 낱말(주소 등)만 어쩔 수 없을 때 끊는다 */
+body { word-break: keep-all; overflow-wrap: break-word; }
 :root {
   --haru-cream: #fff8e9;
   --haru-ink: #26362c;

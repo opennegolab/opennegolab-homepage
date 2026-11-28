@@ -79,25 +79,25 @@ function scale(heavyLeft, a, b) {
 
 /* ---------- 문제 만들기 ---------- */
 const KINDS = {
-  length: { title: '길이', text: '더 긴 것, 더 짧은 것', more: '긴', less: '짧은', moreSay: '더 길어요', lessSay: '더 짧아요',
+  length: { title: '길이', text: '긴 것·짧은 것', more: '긴', less: '짧은', moreSay: '더 길어요', lessSay: '더 짧아요',
     hint: '왼쪽 끝을 맞춰 놓았어요. 오른쪽 끝이 어디까지 가는지 봐요.',
     make() {
       const [a, b] = twoValues(70, 200, 34), colors = twoColors();
       return [a, b].map((v, i) => ({ value: v, name: colors[i][0] + ' 연필', art: svg('0 0 220 62', pencil(v, colors[i]), colors[i][0] + ' 연필') }));
     } },
-  height: { title: '높이', text: '더 높은 것, 더 낮은 것', more: '높은', less: '낮은', moreSay: '더 높아요', lessSay: '더 낮아요',
+  height: { title: '높이', text: '높은 것·낮은 것', more: '높은', less: '낮은', moreSay: '더 높아요', lessSay: '더 낮아요',
     hint: '건물 꼭대기가 어디까지 올라가는지 봐요.',
     make() {
       const [a, b] = twoValues(46, 156, 30), colors = twoColors();
       return [a, b].map((v, i) => ({ value: v, name: colors[i][0] + ' 건물', art: svg('0 0 120 172', building(v, colors[i]), colors[i][0] + ' 건물') }));
     } },
-  size: { title: '크기', text: '더 큰 것, 더 작은 것', more: '큰', less: '작은', moreSay: '더 커요', lessSay: '더 작아요',
+  size: { title: '크기', text: '큰 것·작은 것', more: '큰', less: '작은', moreSay: '더 커요', lessSay: '더 작아요',
     hint: '두 공을 잘 비교해 봐요.',
     make() {
       const [a, b] = twoValues(20, 66, 14), colors = twoColors();
       return [a, b].map((v, i) => ({ value: v, name: colors[i][0] + ' 공', art: svg('0 0 160 160', ball(v, colors[i]), colors[i][0] + ' 공') }));
     } },
-  weight: { title: '무게', text: '저울로 무겁고 가벼운 것', more: '무거운', less: '가벼운', moreSay: '더 무거워요', lessSay: '더 가벼워요',
+  weight: { title: '무게', text: '무거운 것·가벼운 것', more: '무거운', less: '가벼운', moreSay: '더 무거워요', lessSay: '더 가벼워요',
     hint: '저울에서 아래로 내려간 쪽이 더 무거워요.',
     make() {
       /* 크기와 무게는 따로 정한다 — 큰 상자가 더 가벼울 때도 있다 */
@@ -107,14 +107,14 @@ const KINDS = {
       items.scene = svg('0 0 320 180', scale(heavy === 0, items[0], items[1]), '저울. ' + items[heavy].name + ' 쪽이 아래로 내려가 있어요.');
       return items;
     } },
-  count: { title: '개수', text: '더 많은 것, 더 적은 것', more: '많은', less: '적은', moreSay: '더 많아요', lessSay: '더 적어요',
+  count: { title: '개수', text: '많은 것·적은 것', more: '많은', less: '적은', moreSay: '더 많아요', lessSay: '더 적어요',
     hint: '하나씩 손가락으로 세어 봐요.',
     make() {
       const [a, b] = twoValues(1, 12, 2);
       const f1 = pick(FRUITS), f2 = pick(FRUITS.filter(f => f !== f1));
       return [[a, f1], [b, f2]].map(([n, f]) => ({ value: n, name: f[0], art: svg('0 0 160 124', fruits(n, f), f[0] + ' ' + n + '개') }));
     } },
-  number: { title: '수', text: '더 큰 수, 더 작은 수', more: '큰', less: '작은', moreSay: '더 커요', lessSay: '더 작아요',
+  number: { title: '수', text: '큰 수·작은 수', more: '큰', less: '작은', moreSay: '더 커요', lessSay: '더 작아요',
     hint: '1부터 세어 볼 때 뒤에 나오는 수가 더 커요.',
     make() {
       const [a, b] = twoValues(1, 20, 1);
@@ -176,19 +176,19 @@ function heading(title, prompt) {
   app.append(header);
 }
 
-/* 맞힌 뒤 잠시 기다렸다가 저절로 다음 문제로 ('다음 문제'를 누르면 바로).
+/* 맞힌 뒤 잠시 기다렸다가 저절로 다음 문제로 ('다음 문제' 버튼 없이).
    칭찬 말이 끝날 만큼 기다리고, 그동안 막대가 차오른다 */
 const AUTO_MS = 2500;
 let autoTimer = 0;
 function stopAuto() { clearTimeout(autoTimer); }
-function autoNext(advance, place) {
+function autoNext(go, place) {
   stopAuto();
   const bar = el('span', '', 'auto-next');
   bar.style.setProperty('--t', AUTO_MS + 'ms');
   bar.setAttribute('aria-hidden', 'true');
   bar.append(el('i'));
   place.after(bar);
-  autoTimer = setTimeout(() => { if (advance.isConnected && !advance.hidden) advance.click(); }, AUTO_MS);
+  autoTimer = setTimeout(() => { if (place.isConnected) go(); }, AUTO_MS);   /* 그사이 화면을 나갔으면 넘기지 않는다 */
 }
 
 function drawHome() {
@@ -242,11 +242,10 @@ function drawQuestion() {
   const status = el('p', '', 'problem-feedback');
   status.setAttribute('role', 'status');
   const last = round.i + 1 >= ROUND;
-  const advance = btn(last ? '다 했어요' : '다음 문제', () => {
+  const advance = () => {
     navigation.push();
     if (last) finish(); else { round.i++; drawQuestion(); }
-  }, 'primary compare-next');
-  advance.hidden = true;
+  };
   q.options.forEach((option, i) => {
     const card = btn('', () => {
       if (i === q.answer) {
@@ -257,8 +256,6 @@ function drawQuestion() {
         const say = '맞아요! ' + (q.kind === 'number' ? subject(option.name) + ' ' + other.name + '보다 ' : subject(option.name) + ' ') + (q.more ? k.moreSay : k.lessSay) + '.';
         status.textContent = say;
         announce(say);
-        advance.hidden = false;
-        advance.focus();
         q.advanceBar();
       } else {
         q.tries++;
@@ -274,9 +271,9 @@ function drawQuestion() {
     choices.append(card);
   });
   const controls = el('div', '', 'controls');
-  controls.append(btn('문제 다시 듣기', () => announce(q.prompt)), advance);
+  controls.append(btn('문제 다시 듣기', () => announce(q.prompt)));
   app.append(choices, status, controls);
-  q.advanceBar = () => autoNext(advance, controls);
+  q.advanceBar = () => autoNext(advance, status);
   app.querySelector('h1').focus();
   announce(q.prompt);
 }
