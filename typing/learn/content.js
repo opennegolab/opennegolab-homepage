@@ -55,16 +55,25 @@ export const shops = {
   })() },
   burger: { name: '패스트푸드', image: 'burger-2', ...order, groups: (() => {
     const menu = items('burger', [
-      ['샌드위치'], ['치즈버거'], ['치킨버거'], ['불고기버거'],
+      ['햄채소 샌드위치'], ['치즈버거'], ['치킨버거'], ['불고기버거'],
       ['감자튀김', '팩'], ['치킨 조각', '팩'],
       ['콜라', '잔'], ['레몬소다', '잔'], ['오렌지주스', '잔']
     ]);
-    const pizza = { name: '피자', unit: '판', image: 'food-8', price: prices.food[7] };
+    const sandwiches = [
+      menu[0],
+      { name: '햄치즈 샌드위치', unit: '개', image: 'ham-cheese-sandwich', price: 4500 },
+      { name: '에그 샌드위치', unit: '개', image: 'egg-sandwich', price: 4500 }
+    ];
+    const pizzas = [
+      { name: '치즈 피자', unit: '판', image: 'cheese-pizza', price: prices.food[7] },
+      { name: '페퍼로니 피자', unit: '판', image: 'food-8', price: 16000 },
+      { name: '고구마 피자', unit: '판', image: 'sweet-potato-pizza', price: 16000 }
+    ];
     const friedChicken = { name: '프라이드 치킨', unit: '팩', image: 'food-7', price: prices.food[6] };
     return [
       ['햄버거', [menu[2], menu[3], menu[1]]],
-      ['샌드위치', [menu[0]]],
-      ['피자', [pizza]],
+      ['샌드위치', sandwiches],
+      ['피자', pizzas],
       ['치킨', [menu[5], friedChicken]],
       ['사이드', [menu[4]]],
       ['음료', menu.slice(6)]
@@ -117,8 +126,10 @@ export const shopProblems = {
     { items: [['치즈버거', 1], ['감자튀김', 1], ['콜라', 1]] },
     { items: [['치킨버거', 1], ['치킨 조각', 1], ['레몬소다', 2]] },
     { items: [['불고기버거', 2], ['오렌지주스', 1]] },
-    { items: [['샌드위치', 1], ['감자튀김', 2], ['오렌지주스', 1]] },
-    { items: [['피자', 1], ['프라이드 치킨', 1], ['콜라', 2]] }
+    { items: [['햄채소 샌드위치', 1], ['감자튀김', 2], ['오렌지주스', 1]] },
+    { items: [['치즈 피자', 1], ['프라이드 치킨', 1], ['콜라', 2]] },
+    { items: [['햄치즈 샌드위치', 1], ['페퍼로니 피자', 1]] },
+    { items: [['에그 샌드위치', 1], ['고구마 피자', 1]] }
   ],
   food: [{ items: [['돈가스', 1]] }, { items: [['김밥', 2], ['우동', 1]] }]
 };
