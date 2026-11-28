@@ -146,6 +146,11 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   .set-card.math.open .set{ background:var(--mint-soft); color:var(--mint-d); }
   .type .ico em{ font-style:normal; font-weight:900; font-size:1.2rem; }
   .type span i{ font-style:normal; white-space:nowrap; }
+  .type.copy .ico{ background:var(--peach-soft); color:var(--peach-d); }
+  .type.copy[aria-pressed="true"]{ border-color:var(--peach); background:#FFF8F2; }
+  .type.copy[aria-pressed="true"]::after{ color:var(--peach); }
+  .qtag.copy{ background:var(--peach-soft); color:var(--peach-d); }
+  .question.copy-text{ letter-spacing:.02em; }
   .qtag.math{ background:var(--mint-soft, #E3F5EE); color:var(--mint-d, #23805F); }
   @media (max-width:430px){
     .types{ gap:6px; padding:10px 8px; }
@@ -635,6 +640,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   const TYPES = [
     { id: "dictation", cls: "dictation", name: "받아쓰기", icon: "headphones" },
     { id: "qa", cls: "qa", name: "질문에 답하기", icon: "chat" },
+    { id: "copy", cls: "copy", name: "보고 쓰기", icon: "keyboard" },     /* 받아쓰기 문장을 화면에 보여 주고 그대로 따라 쓴다 */
   ];
   const LEVELS = [
     { id: "math1", cls: "math", level: 1, name: "1단계", desc: ["한 자리", "받아올림 없이"] },
@@ -642,10 +648,10 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     { id: "math3", cls: "math", level: 3, name: "3단계", desc: ["두 자리와", "한 자리"] },
   ];
   const typesOf = card => card.math ? LEVELS : TYPES;
-  const MODE_NAME = { dictation: "받아쓰기", qa: "질문에 답하기", math1: "수학 1단계", math2: "수학 2단계", math3: "수학 3단계" };
+  const MODE_NAME = { dictation: "받아쓰기", qa: "질문에 답하기", copy: "보고 쓰기", math1: "수학 1단계", math2: "수학 2단계", math3: "수학 3단계" };
   function typeCount(set, type) {
     if (set.math) return 1;                      /* 수학은 언제나 풀 수 있다 */
-    return type === "dictation" ? set.counts.dictation : type === "qa" ? set.counts.qa : 0;
+    return type === "dictation" || type === "copy" ? set.counts.dictation : type === "qa" ? set.counts.qa : 0;
   }
   /* 고른 종류가 이 문제집에 없으면(또는 소리가 안 나는데 받아쓰기면) 풀 수 있는 첫 종류로 */
   function fixMode() {
@@ -802,7 +808,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
         /* 수학 — 새로 만든다. 다시 풀기(ids)는 방금 푼 문제 그대로 */
         const level = Number(String(req.mode).slice(4)) || 1;
         picked = Array.isArray(req.ids) ? T.shuffle(before.filter(x => req.ids.includes(x.id))) : T.makeMath(level, req.count);
-      } else picked = await T.store.pick(req.set, req.mode, req.count, req.ids);
+      } else picked = await T.store.pick(req.set, req.mode === "copy" ? "dictation" : req.mode, req.count, req.ids);   /* 보고 쓰기는 받아쓰기 문장을 쓴다 */
     }
     catch (e) {
       if (seq !== S.seq) return;
@@ -856,7 +862,11 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     $("submitBtn").textContent = "제출";
 
     const qa = item.mode === "qa";     /* 문제마다 자기 종류대로 */
-    $("stage").innerHTML = qa
+    $("stage").innerHTML = S.mode === "copy"
+      ? "<span class='qtag copy'>" + icon("keyboard") + "보고 쓰기</span>" +
+        "<div class='question copy-text'>" + esc(item.prompt) + "</div>" +
+        "<button type='button' class='listen listen-pill' id='listenBtn'>" + icon("speaker") + "소리로 듣기</button>"
+      : qa
       ? (T.isMath(item.prompt) ? "<span class='qtag math'>" + icon("math") + "수학</span>" : "<span class='qtag qa'>" + icon("chat") + "질문에 답하기</span>") +
         "<div class='question'>" + esc(item.question) + "</div>" +
         "<button type='button' class='listen listen-pill' id='listenBtn'>" + icon("speaker") + "질문 듣기</button>"
