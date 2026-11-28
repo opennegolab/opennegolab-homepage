@@ -110,13 +110,6 @@
   .setactions{ margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); }
   .setactions b{ color:var(--ink); }
 
-  /* 등록 방법 탭 — 위쪽 연습 종류 탭과 헷갈리지 않게 밑줄 모양 */
-  .subtabs{ display:flex; gap:22px; border-bottom:2px solid var(--line); margin:-4px 0 6px; }
-  .subtab{ display:flex; align-items:center; gap:7px; padding:6px 2px 12px; margin-bottom:-2px; border-bottom:3px solid transparent;
-    font-weight:800; font-size:.98rem; color:var(--ink-soft); transition:color .15s, border-color .15s; white-space:nowrap; }
-  .subtab svg{ width:17px; height:17px; }
-  .subtab:hover{ color:var(--ink-2); }
-  .subtab[aria-selected="true"]{ color:var(--blue-d); border-bottom-color:var(--blue); }
   .add-card .foot{ padding-top:14px; }
   .add-card textarea#bulkText{ min-height:170px; }
   label.f{ display:block; font-size:.82rem; font-weight:800; color:var(--ink-soft); margin:14px 0 6px; }
@@ -156,9 +149,6 @@
     .tabs{ display:grid; grid-template-columns:1fr 1fr; width:100%; }
     .tab{ justify-content:center; padding:10px 6px; white-space:nowrap; font-size:.9rem; gap:6px; }
     .tab svg{ display:none; }
-    .subtabs{ gap:14px; }
-    .subtab{ font-size:.9rem; }
-    .subtab svg{ display:none; }
     .brand .logo{ width:40px; height:40px; border-radius:13px; }
     h1{ font-size:1.15rem; }
     td.num, th.num{ display:none; }
@@ -173,6 +163,10 @@
   }
 </style>
 <style>
+details > summary { cursor:pointer; font-weight:800; }
+details[open] > summary { margin-bottom:.8rem; }
+.bulk-settings { margin-top:1rem; padding-top:.65rem; border-top:1px solid var(--line); }
+#curSetName { margin-inline-start:.35rem; }
 #practiceForm {display:grid; gap:.7rem; grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));}
 #practiceForm label {display:grid; gap:.25rem;}
 #practiceForm label:has(input[type=checkbox]) {display:flex;align-items:center}
@@ -210,40 +204,23 @@
     </header>
     <p class="warn hidden" id="storageWarn"></p>
 
-    <div class="card setcard">
+    <details class="card setcard" id="bookSettings">
+      <summary>문제집 <span class="note" id="curSetName"></span></summary>
       <div class="setcard-head">
-        <h2><svg class="i" aria-hidden="true"><use href="#i-book"/></svg>문제집</h2>
         <form class="newset" id="newSetForm">
-          <input type="text" id="newSetName" maxlength="30" placeholder="새 문제집 이름" autocomplete="off">
+          <input type="text" id="newSetName" maxlength="30" aria-label="새 문제집 이름" placeholder="내 문제집" autocomplete="off">
           <button class="btn primary small" id="newSetBtn"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>만들기</button>
         </form>
       </div>
       <div class="sets" id="sets" role="group" aria-label="문제집 고르기"><span class="note">불러오는 중…</span></div>
       <div class="row setactions" id="setActions">
-        <span class="note">고른 문제집: <b id="curSetName">-</b></span>
         <span class="grow"></span>
         <button class="btn small line" id="renameSet">이름 바꾸기</button>
         <button class="btn small danger" id="deleteSet">문제집 삭제</button>
       </div>
-      <p id="setMsg" class="note" style="margin-top:8px"></p>
-    </div>
+      <p id="setMsg" class="note" role="status" style="margin-top:8px"></p>
+    </details>
 
-    <section class="card" aria-labelledby="practiceTitle">
-      <h2 id="practiceTitle">맞춤 연습 링크</h2>
-      <p class="note">링크를 받은 사람은 로그인 없이 연습할 수 있어요. 이름은 보호자 화면에서만 보입니다.</p>
-      <form id="practiceForm">
-        <label>저장한 링크 <select id="practiceSaved"><option value="">새 링크</option></select></label>
-        <label>관리용 이름 <input id="practiceLabel" required maxlength="40" placeholder="예: A용"></label>
-        <label>문제집 <select id="practiceSet" required></select></label>
-        <label>연습 방식 <select id="practiceMode"><option value="dictation">받아쓰기</option><option value="qa">질문에 답하기</option></select></label>
-        <label>문항 수 <input id="practiceCount" type="number" min="1" max="100" value="10" required></label>
-        <label><input type="checkbox" id="practiceAll"> 전체 문제</label>
-        <label><input type="checkbox" id="practiceActive" checked> 링크 사용</label>
-        <button class="btn primary" type="submit">링크 설정 저장</button>
-      </form>
-      <p><input id="practiceUrl" readonly aria-label="공유 링크" hidden><button class="btn white" id="practiceCopy" hidden type="button">링크 복사</button></p>
-      <p id="practiceStatus" class="note" role="status"></p>
-    </section>
 
     <div id="setBody">
     <div class="tabs" role="tablist">
@@ -252,12 +229,7 @@
     </div>
 
     <div class="card add-card">
-      <div class="subtabs" role="tablist" aria-label="등록 방법">
-        <button type="button" class="subtab" role="tab" id="tabOne" aria-controls="paneOne" aria-selected="true"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>한 문제 등록</button>
-        <button type="button" class="subtab" role="tab" id="tabBulk" aria-controls="paneBulk" aria-selected="false"><svg class="i" aria-hidden="true"><use href="#i-stack"/></svg>여러 문제 등록</button>
-      </div>
-
-      <div class="pane" id="paneOne" role="tabpanel" aria-labelledby="tabOne">
+      <h2>문제 추가</h2>
         <form id="addForm">
           <label class="f" for="addPrompt" id="addPromptLabel">문장</label>
           <input type="text" id="addPrompt" maxlength="200" autocomplete="off">
@@ -267,12 +239,12 @@
           </div>
           <div class="row foot">
             <button class="btn primary"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>등록</button>
-            <span id="addMsg" class="note"></span>
+            <span id="addMsg" class="note" role="status"></span>
           </div>
         </form>
-      </div>
 
-      <div class="pane hidden" id="paneBulk" role="tabpanel" aria-labelledby="tabBulk">
+      <details class="bulk-settings">
+        <summary>여러 문제 한꺼번에 추가</summary>
         <p class="note" id="bulkHelp"></p>
         <textarea id="bulkText" style="margin-top:10px"></textarea>
         <div class="row foot" style="justify-content:space-between">
@@ -280,7 +252,7 @@
           <button class="btn primary" id="bulkBtn"><svg class="i" aria-hidden="true"><use href="#i-stack"/></svg>일괄 등록</button>
         </div>
         <p id="bulkMsg" class="note" style="margin-top:6px"></p>
-      </div>
+      </details>
     </div>
 
     <div class="card">
@@ -301,6 +273,23 @@
       <nav class="pager hidden" id="pager" aria-label="문제 목록 페이지"></nav>
     </div>
     </div>
+
+    <details class="card" id="shareSettings">
+      <summary>연습 링크 공유</summary>
+      <p class="note">링크를 받은 사람은 로그인 없이 연습할 수 있어요. 이름은 보호자 화면에서만 보입니다.</p>
+      <form id="practiceForm">
+        <label>저장한 링크 <select id="practiceSaved"><option value="">새 링크</option></select></label>
+        <label>관리용 이름 <input id="practiceLabel" required maxlength="40" placeholder="예: A용"></label>
+        <label>문제집 <select id="practiceSet" required></select></label>
+        <label>연습 방식 <select id="practiceMode"><option value="dictation">받아쓰기</option><option value="qa">질문에 답하기</option></select></label>
+        <label>문항 수 <input id="practiceCount" type="number" min="1" max="100" value="10" required></label>
+        <label><input type="checkbox" id="practiceAll"> 전체 문제</label>
+        <label><input type="checkbox" id="practiceActive" checked> 링크 사용</label>
+        <button class="btn primary" type="submit">링크 설정 저장</button>
+      </form>
+      <p><input id="practiceUrl" readonly aria-label="공유 링크" hidden><button class="btn white" id="practiceCopy" hidden type="button">링크 복사</button></p>
+      <p id="practiceStatus" class="note" role="status"></p>
+    </details>
 
   </section>
 </div>
@@ -360,13 +349,13 @@
       : "<span class='note'>아직 문제집이 없어요. 위에서 이름을 넣고 '만들기'를 눌러 주세요.</span>";
     $("setActions").classList.toggle("hidden", !cur);
     $("setBody").classList.toggle("hidden", !cur);
-    $("curSetName").textContent = cur ? cur.name : "-";
+    $("curSetName").textContent = cur ? cur.name : "만들기";
+    if (!cur) $("bookSettings").open = true;
     $("n-dictation").textContent = cur ? cur.counts.dictation : 0;
     $("n-qa").textContent = cur ? cur.counts.qa : 0;
     if (cur) {
       localSet("adminSet", cur.id);
       history.replaceState(null, "", "/typing/admin?set=" + cur.id);
-      document.querySelector('a[href^="/typing"].btn').href = "/typing?set=" + cur.id;
     }
   }
 
@@ -380,8 +369,7 @@
   });
   $("newSetForm").addEventListener("submit", async e => {
     e.preventDefault();
-    const name = $("newSetName").value.trim();
-    if (!name) { $("setMsg").textContent = "새 문제집 이름을 입력해 주세요."; $("newSetName").focus(); return; }
+    const name = $("newSetName").value.trim() || "내 문제집";
     try {
       const st = await store.createSet(name);
       $("newSetName").value = "";
@@ -389,6 +377,7 @@
       await refreshCounts();
       $("setMsg").textContent = "'" + st.name + "' 문제집을 만들었어요. 이제 문제를 넣어 보세요.";
       setMode(mode);
+      $("bookSettings").open = false;
       $("addPrompt").focus();
     } catch (err) { $("setMsg").textContent = err.message; }
   });
@@ -415,22 +404,6 @@
   });
   /* 다른 사람이 바꿨을 수 있으니, 이 창으로 돌아오면 새로 받는다 */
   document.addEventListener("visibilitychange", () => { if (!document.hidden && !editing) { refreshCounts(); load(); } });
-
-  /* ---------- 등록 방법 탭 ---------- */
-  function setPane(which) {
-    const one = which === "one";
-    $("tabOne").setAttribute("aria-selected", String(one));
-    $("tabBulk").setAttribute("aria-selected", String(!one));
-    $("paneOne").classList.toggle("hidden", !one);
-    $("paneBulk").classList.toggle("hidden", one);
-    (one ? $("addPrompt") : $("bulkText")).focus();
-  }
-  $("tabOne").addEventListener("click", () => setPane("one"));
-  $("tabBulk").addEventListener("click", () => setPane("bulk"));
-  /* 왼쪽·오른쪽 화살표로도 옮겨 다닌다 */
-  document.querySelector(".subtabs").addEventListener("keydown", e => {
-    if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); const b = $("tabOne").getAttribute("aria-selected") === "true"; setPane(b ? "bulk" : "one"); (b ? $("tabBulk") : $("tabOne")).focus(); }
-  });
 
   /* ---------- 탭 ---------- */
   function setMode(m) {
