@@ -224,7 +224,7 @@ function handle(req, res) {
       "X-Content-Type-Options": "nosniff" });
     return res.end(html);
   }
-  const learningTitles = { "/haru/kiosk": "키오스크", "/haru/burger": "햄버거 가게" };
+  const learningTitles = { "/haru/kiosk": "키오스크", "/haru/burger": "패스트푸드" };
   if (Object.hasOwn(learningTitles, haruPath)) {
     const template = fs.readFileSync(path.join(ROOT, "typing", "learn", "index.html"), "utf8");
     const title = learningTitles[haruPath];
