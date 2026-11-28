@@ -81,6 +81,28 @@ function haruTypingHeader() {
 </header>`;
 }
 
+/* 수학 › 덧셈·뺄셈 — 한글 공부와 같은 풀이 화면(typing/index.html)을 data-math 로 연다.
+   문제는 화면이 단계에 맞춰 만든다 (typing/store.js makeMath) */
+const HARU_CALC_META = `<title>덧셈·뺄셈 | 하루랑</title>
+${haruShareMeta("/haru/math/calc", "덧셈·뺄셈", "하루랑에서 단계별로 덧셈과 뺄셈을 연습해요.")}
+<meta name="theme-color" content="#fff8e9">
+<link rel="icon" href="/haru/assets/favicon.png">
+<link rel="manifest" href="/haru/manifest.webmanifest">
+<link rel="stylesheet" href="/haru/brand.css?v=4">
+<link rel="stylesheet" href="/haru/typing.css?v=1">`;
+const HARU_CALC_HEADER = `<header class="haru-top">
+  <nav class="haru-top-inner" aria-label="하루랑">
+    <a class="haru-return" href="/haru" aria-label="하루랑 처음으로">
+      <img src="/haru/assets/logo.png" width="123" height="44" alt="하루랑">
+    </a>
+    <a class="haru-return haru-top-action" href="/haru/math">수학으로</a>
+  </nav>
+</header>`;
+const HARU_CALC_HEADING = `<header class="haru-heading">
+  <div><h1>덧셈·뺄셈</h1><p>단계를 골라 차근차근 계산해 봐요.</p></div>
+  <img class="haru-pose" src="/haru/assets/haru-guide.webp" alt="">
+</header>`;
+
 const HARU_TYPING_HEADING = `<header class="haru-heading">
   <div><h1>한글 공부</h1><p>잘 듣고, 또박또박 써 봐요.</p></div>
   <img class="haru-pose" src="/haru/assets/haru-guide.webp" alt="">
@@ -215,14 +237,15 @@ function handle(req, res) {
     res.writeHead(302, { Location: "/haru/typing", "Cache-Control": "no-cache" });
     return res.end();
   }
-  if (haruPath === "/haru/typing") {
+  if (haruPath === "/haru/typing" || haruPath === "/haru/math/calc") {
+    const calc = haruPath === "/haru/math/calc";
     const template = fs.readFileSync(path.join(ROOT, "typing", "index.html"), "utf8");
     const html = template
-      .replace('<html lang="ko">', '<html lang="ko" data-haru>')
-      .replace(/<!-- 기존 학습 메타 시작 -->[\s\S]*?<!-- 기존 학습 메타 끝 -->/, HARU_TYPING_META)
+      .replace('<html lang="ko">', calc ? '<html lang="ko" data-haru data-math>' : '<html lang="ko" data-haru>')
+      .replace(/<!-- 기존 학습 메타 시작 -->[\s\S]*?<!-- 기존 학습 메타 끝 -->/, calc ? HARU_CALC_META : HARU_TYPING_META)
       .replace(/<!-- 기존 문제 설정 시작 -->[\s\S]*?<!-- 기존 문제 설정 끝 -->/, "")
-      .replace("<!-- 하루랑 타자 상단 -->", haruTypingHeader())
-      .replace(/<!-- 타자 제목 시작 -->[\s\S]*?<!-- 타자 제목 끝 -->/, HARU_TYPING_HEADING)
+      .replace("<!-- 하루랑 타자 상단 -->", calc ? HARU_CALC_HEADER : haruTypingHeader())
+      .replace(/<!-- 타자 제목 시작 -->[\s\S]*?<!-- 타자 제목 끝 -->/, calc ? HARU_CALC_HEADING : HARU_TYPING_HEADING)
       .replace(/@import url\('https:\/\/cdn\.jsdelivr\.net[^']*'\);/, "");
     res.writeHead(200, { "Content-Type": TYPES[".html"], "Cache-Control": "no-cache",
       "X-Content-Type-Options": "nosniff" });

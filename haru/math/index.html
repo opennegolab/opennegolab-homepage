@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko" data-haru>
+<head>
+  <meta charset="utf-8">
+  <script src="/haru/external-browser.js?v=2"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="하루와 함께 덧셈·뺄셈, 비교하기, 돈 계산을 연습해요.">
+  <link rel="canonical" href="https://www.opennegolab.com/haru/math">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="수학 | 하루랑">
+  <meta property="og:description" content="덧셈·뺄셈, 비교하기, 돈 계산을 하루와 함께 연습해요.">
+  <meta property="og:url" content="https://www.opennegolab.com/haru/math">
+  <meta property="og:image" content="https://www.opennegolab.com/haru/assets/share.png?v=2">
+  <meta name="theme-color" content="#fff8e9">
+  <title>수학 | 하루랑</title>
+  <link rel="icon" href="/haru/assets/favicon.png">
+  <link rel="manifest" href="/haru/manifest.webmanifest">
+  <link rel="stylesheet" href="/haru/brand.css?v=4">
+  <link rel="stylesheet" href="/typing/learn/style.css?v=25">
+  <style>
+    #math-menu { max-width: 960px; }
+    .math-menu .photo-card img { aspect-ratio: 16 / 9; object-fit: cover; }
+    .math-menu .card-copy { gap: .15rem; }
+    .math-menu .card-copy strong { font-size: clamp(1.05rem, 2.6vw, 1.3rem); }
+    .math-menu .card-copy small { font-size: clamp(.85rem, 2vw, 1rem); word-break: keep-all; }
+    .math-menu a.photo-card { text-decoration: none; color: inherit; }
+    @media (max-width: 640px) { .math-menu { grid-template-columns: 1fr; } .math-menu .photo-card img { aspect-ratio: auto; height: clamp(120px, 38vw, 190px); } }
+  </style>
+</head>
+<body>
+  <header class="haru-top">
+    <nav class="haru-top-inner" aria-label="하루랑">
+      <a class="haru-return" href="/haru" aria-label="하루랑 처음으로"><img src="/haru/assets/logo.png" width="123" height="44" alt="하루랑"></a>
+      <a class="haru-return haru-top-action" href="/haru">처음으로</a>
+    </nav>
+  </header>
+  <main id="math-menu">
+    <header class="heading haru-heading">
+      <div><h1>수학</h1><p class="prompt">무엇을 해 볼까요?</p></div>
+      <img class="haru-pose" src="/haru/assets/haru-guide.webp" alt="">
+    </header>
+    <nav class="grid math-menu" aria-label="수학 학습">
+      <a class="photo-card" href="/haru/math/calc">
+        <img src="/haru/math/assets/calc.svg" alt="" width="480" height="270">
+        <span class="card-copy"><strong>덧셈·뺄셈</strong><small>1·2·3단계로 계산하기</small></span>
+      </a>
+      <a class="photo-card" href="/haru/math/compare">
+        <img src="/haru/math/assets/compare.svg" alt="" width="480" height="270">
+        <span class="card-copy"><strong>비교하기</strong><small>길이·높이·크기·무게·개수·수</small></span>
+      </a>
+      <a class="photo-card" href="/haru/money">
+        <img src="/typing/learn/images/bank-6.webp" alt="" width="480" height="300">
+        <span class="card-copy"><strong>돈 계산</strong><small>지폐 금액 읽고, 비교하고, 만들기</small></span>
+      </a>
+    </nav>
+  </main>
+</body>
+</html>

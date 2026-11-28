@@ -514,7 +514,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
 </div>
 
 <script src="/typing/store.js?v=10"></script>
-<script src="/haru/rewards.js?v=3"></script>
+<script src="/haru/rewards.js?v=4"></script>
 <script type="module">
 import { screenHistory } from "/haru/navigation.js?v=1";
 import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } from "/typing/learn/speech.js?v=2";
@@ -526,7 +526,9 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
 
   /* ---------- 이 기기에만 남기는 값 ---------- */
   const shared = document.documentElement.hasAttribute("data-shared");
-  const settingsPrefix = document.documentElement.hasAttribute("data-haru") ? "haru.typing." : "typing.";
+  /* 수학 › 덧셈·뺄셈(/haru/math/calc)도 이 화면을 쓴다 — 문제집 대신 수학 단계만, 설정도 따로 기억 */
+  const mathOnly = document.documentElement.hasAttribute("data-math");
+  const settingsPrefix = mathOnly ? "haru.calc." : document.documentElement.hasAttribute("data-haru") ? "haru.typing." : "typing.";
   const local = {
     get(k, d) { try { const v = localStorage.getItem(settingsPrefix + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
     set(k, v) { try { localStorage.setItem(settingsPrefix + k, JSON.stringify(v)); } catch (e) {} },
@@ -603,9 +605,9 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   }
 
   let sets = null;
-  /* 수학 — 서버 문제집이 아니라 화면이 단계에 맞춰 문제를 만든다 (store.js makeMath). 문제집 목록 끝에 늘 있다 */
+  /* 수학 — 서버 문제집이 아니라 화면이 단계에 맞춰 문제를 만든다 (store.js makeMath). 덧셈·뺄셈 화면에서만 쓴다 */
   const MATH = { id: "math", name: "수학", math: true, counts: { dictation: 0, qa: 0 } };
-  const cards = () => sets ? (sets.length || !shared ? [...sets, MATH] : sets) : null;
+  const cards = () => mathOnly ? [MATH] : sets;
   const currentSet = () => (cards() || []).find(x => x.id === settings.set) || null;
 
   function renderSets() {
@@ -706,13 +708,18 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   }
 
   let loadError = "";
+  if (mathOnly) {
+    settings.set = "math";
+    const step = document.querySelector("#home .step");
+    if (step) step.lastChild.textContent = "몇 단계로 할까요?";
+  }
   /* 주소에 ?set=번호 가 있으면 그 문제집을 고른 채로 연다 (문제집별 링크) */
   const urlSet = Number(new URLSearchParams(location.search).get("set")) || 0;
   if (urlSet && !shared) { settings.set = urlSet; saveSettings(); }
 
   async function loadCounts() {
     try {
-      sets = await T.store.sets();
+      sets = mathOnly ? [] : await T.store.sets();     /* 덧셈·뺄셈은 서버 문제집이 필요 없다 */
       loadError = "";
       if (shared && sets.length) {
         const [practice] = sets;
@@ -1058,7 +1065,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   function finish() {
     S.phase = "idle";
     /* 하루랑 보상 — 한 판을 끝까지 하면 별 하나 (점수와 상관없이) */
-    if (window.HaruRewards && S.results.length) window.HaruRewards.award("typing");
+    if (window.HaruRewards && S.results.length) window.HaruRewards.award(mathOnly ? "math" : "typing");
     tts.stop();
     input.blur();
     const rs = S.results;

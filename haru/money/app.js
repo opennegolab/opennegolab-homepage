@@ -86,7 +86,7 @@ function draw(focus = false) {
   app.replaceChildren();
   back.hidden = false;
   if (page === 'home') {
-    heading('돈 공부', '돈의 금액을 읽고 비교해 볼까요?');
+    heading('돈 계산', '돈의 금액을 읽고, 비교하고, 만들어 볼까요?');
     const menu = element('div', '', 'grid money-menu');
     for (const [key, [title, text, value]] of Object.entries(sections)) {
       const card = button('', () => open(key), 'photo-card');

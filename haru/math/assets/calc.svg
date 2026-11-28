@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270">
+<rect width="480" height="270" fill="#eaf3fb"/>
+<g font-family="Pretendard, 'Noto Sans KR', sans-serif" font-weight="900" text-anchor="middle">
+<rect x="40" y="70" width="110" height="130" rx="24" fill="#fff" stroke="#5a8bea" stroke-width="6"/><text x="95" y="168" font-size="84" fill="#3d6cc9">7</text>
+<circle cx="185" cy="135" r="26" fill="#f2b33f"/><path d="M185 120v30M170 135h30" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+<rect x="220" y="70" width="110" height="130" rx="24" fill="#fff" stroke="#9b7fe6" stroke-width="6"/><text x="275" y="168" font-size="84" fill="#7a5fd0">6</text>
+<path d="M352 124h34M352 146h34" stroke="#38b48e" stroke-width="8" stroke-linecap="round"/>
+<text x="430" y="168" font-size="76" fill="#1d8766">?</text>
+</g></svg>
