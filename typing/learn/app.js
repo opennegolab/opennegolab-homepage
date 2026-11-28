@@ -147,7 +147,9 @@ function openShop(id, target = newShopTarget(id)) {
   const goal = target
     ? target.map(({ item, count }) => wording(item, count)).join(', ') + (menu ? ' 주문해 보세요.' : ' 사 보세요.')
     : menu ? '먹고 싶은 것을 선택해 주세요.' : '사고 싶은 것을 선택해 주세요.';
-  show({ view: 'problem', id, goal, target, category: 0, cart: [] });
+  const view = usesOrderScreen ? 'kiosk-order' : 'problem';
+  show({ view, id, goal, target, category: 0, cart: [] });
+  if (usesOrderScreen) readProblem();
 }
 
 function openAtm(target = randomQuestion(atmProblems)) {
@@ -166,7 +168,7 @@ function problemScreen() {
     }));
   }
   group('controls', button('문제 풀기', () => {
-    const view = state.id === 'atm' ? 'action' : usesOrderScreen ? 'kiosk-order' : 'entrance';
+    const view = state.id === 'atm' ? 'action' : 'entrance';
     show({ ...state, view });
   }, true), button('문제 다시 듣기', readProblem));
 }
