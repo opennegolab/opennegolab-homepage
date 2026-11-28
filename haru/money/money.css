@@ -10,3 +10,32 @@
 .money-menu .card-copy { padding: clamp(.4rem, 2vw, .75rem); gap: .15rem; }
 .money-menu .card-copy strong { font-size: clamp(1rem, 2.5vw, 1.25rem); }
 .money-menu .card-copy small { font-size: clamp(.825rem, 2vw, 1rem); word-break: keep-all; }
+
+/* 처음 화면 — 네 가지를 2×2 로 */
+.money-home { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* 거스름돈 계산 */
+.change-scene { display: flex; align-items: stretch; justify-content: center; gap: .6rem; margin-bottom: 1rem; }
+.change-tag, .change-paid { flex: 1 1 0; max-width: 260px; display: grid; justify-items: center; align-content: center; gap: .25rem; padding: .8rem; border-radius: 1rem; background: white; border: 2px solid var(--haru-line, #dce3d4); text-align: center; }
+.change-tag { border-style: dashed; border-color: #e3c37a; background: #fffbea; }
+.change-tag small, .change-paid small { font-weight: 800; color: var(--haru-muted, #526456); }
+.change-tag strong { font-size: clamp(1.05rem, 3vw, 1.35rem); word-break: keep-all; }
+.change-tag b, .change-paid b { font-size: clamp(1.15rem, 3.4vw, 1.5rem); color: #8a5e06; }
+.change-paid img { width: min(100%, 160px); aspect-ratio: 2 / 1; object-fit: contain; }
+.change-minus { align-self: center; font-size: 1.8rem; font-weight: 900; color: var(--haru-muted, #526456); }
+.money-change { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.money-change .card-copy { font-weight: 800; font-size: clamp(1rem, 2.6vw, 1.2rem); justify-content: center; text-align: center; }
+.money-change .money-pictures { justify-content: center; min-height: 5.5rem; }
+.money-change .money-pictures img { width: min(46%, 110px); }
+.money-option.right { border: 3px solid var(--haru-green, #24543c); }
+.money-option.wrong { border-color: #d98b8b; animation: money-shake .4s; }
+@keyframes money-shake { 0%, 100% { transform: none; } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { .money-option.wrong { animation: none; } }
+@media (max-width: 520px) {
+  .money-change { grid-template-columns: 1fr; }
+  .money-change .photo-card { flex-direction: row; align-items: center; }
+  .money-change .money-pictures { flex: 1; min-height: 0; justify-content: flex-start; }
+  .money-change .money-pictures { gap: .3rem; }
+  .money-change .money-pictures img { width: calc(50% - .3rem); max-width: 96px; }
+  .money-change .card-copy { flex: none; width: 5.6rem; }
+}

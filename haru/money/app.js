@@ -16,8 +16,34 @@ const targets = [2000, 5000, 6000, 10000, 15000];
 const sections = {
   learn: ['지폐 알아보기', '지폐 금액 듣기', 1000],
   compare: ['금액 비교하기', '큰 금액과 작은 금액', 10000],
-  build: ['금액 만들기', '지폐로 금액 맞추기', 5000]
+  build: ['금액 만들기', '지폐로 금액 맞추기', 5000],
+  change: ['거스름돈 계산', '얼마를 돌려받을까요?', 10000]
 };
+
+/* 거스름돈 문제 — 물건값과 낸 돈을 그때그때 정한다 (천 원 단위, 거스름돈은 지폐로 보여 줄 수 있게) */
+const goods = ['공책', '연필 세트', '우유', '빵', '과자', '주스', '아이스크림', '색연필', '김밥', '장난감 자동차'];
+function changeQuestion(previous) {
+  for (;;) {
+    const paid = Math.random() < .4 ? 5000 : 10000;
+    const price = 1000 * (1 + Math.floor(Math.random() * (paid / 1000 - 1)));
+    const item = goods[Math.floor(Math.random() * goods.length)];
+    if (!previous || previous.price !== price || previous.paid !== paid) return { item, price, paid };
+  }
+}
+/* 거스름돈을 지폐로 — 큰 지폐부터 */
+function breakdown(amount) {
+  const out = [];
+  for (const value of [...values].sort((a, b) => b - a)) while (amount >= value) { out.push(value); amount -= value; }
+  return out;
+}
+/* 보기 3개 — 정답, 천 원 차이, 물건값(자주 하는 실수) 가운데서 */
+function changeChoices({ price, paid }) {
+  const answer = paid - price;
+  const wrong = [answer - 1000, answer + 1000, price, answer + 2000]
+    .filter((v, i, list) => v > 0 && v < paid && v !== answer && list.indexOf(v) === i);
+  const picked = wrong.sort(() => Math.random() - .5).slice(0, 2);
+  return [answer, ...picked].sort(() => Math.random() - .5);
+}
 
 const app = document.querySelector('#money-app');
 const back = document.querySelector('#money-back');
@@ -78,7 +104,8 @@ function heading(title, prompt) {
 function open(next) {
   navigation.push();
   page = next;
-  question = next === 'compare' ? randomQuestion(comparisons) : next === 'build' ? randomQuestion(targets) : undefined;
+  question = next === 'compare' ? randomQuestion(comparisons) : next === 'build' ? randomQuestion(targets)
+    : next === 'change' ? changeQuestion() : undefined;
   draw(true);
 }
 
@@ -86,8 +113,8 @@ function draw(focus = false) {
   app.replaceChildren();
   back.hidden = false;
   if (page === 'home') {
-    heading('돈 계산', '돈의 금액을 읽고, 비교하고, 만들어 볼까요?');
-    const menu = element('div', '', 'grid money-menu');
+    heading('돈 계산', '돈을 읽고, 비교하고, 계산해 볼까요?');
+    const menu = element('div', '', 'grid money-menu money-home');
     for (const [key, [title, text, value]] of Object.entries(sections)) {
       const card = button('', () => open(key), 'photo-card');
       const copy = element('span', '', 'card-copy');
@@ -98,6 +125,7 @@ function draw(focus = false) {
     app.append(menu);
   } else if (page === 'learn') showNotes();
   else if (page === 'compare') showComparison();
+  else if (page === 'change') showChange();
   else showWallet();
   if (focus) {
     stopSpeech();
@@ -168,6 +196,51 @@ function showComparison() {
     choices.append(option);
   }
   app.append(choices, button('문제 다시 듣기', () => announce(prompt)), status, advance);
+}
+
+function showChange() {
+  const { item, price, paid } = question;
+  const answer = paid - price;
+  const prompt = item + ' ' + won(price) + '짜리를 사고 ' + won(paid) + '을 냈어요. 거스름돈은 얼마일까요?';
+  heading(sections.change[0], prompt);
+  const scene = element('div', '', 'change-scene');
+  const tag = element('div', '', 'change-tag');
+  tag.append(element('small', '산 물건'), element('strong', item), element('b', won(price)));
+  const pay = element('div', '', 'change-paid');
+  pay.append(element('small', '낸 돈'), picture(paid), element('b', won(paid)));
+  scene.append(tag, element('span', '−', 'change-minus'), pay);
+  const status = messageLine();
+  const choices = element('div', '', 'grid money-change');
+  const advance = button('다음 문제', () => {
+    navigation.push();
+    question = changeQuestion(question);
+    draw(true);
+  }, 'primary');
+  advance.hidden = true;
+  for (const amount of changeChoices(question)) {
+    const option = button('', () => {
+      if (amount === answer) {
+        status.textContent = '맞아요. ' + won(paid) + '에서 ' + won(price) + '을 빼면 ' + won(answer) + '이에요.';
+        announce(status.textContent);
+        window.HaruRewards?.award('money');
+        option.classList.add('right');
+        for (const control of choices.querySelectorAll('button')) control.disabled = true;
+        advance.hidden = false;
+        advance.focus();
+      } else {
+        status.textContent = '다시 생각해 볼까요? 낸 돈 ' + won(paid) + '에서 물건값 ' + won(price) + '을 빼 보세요.';
+        announce(status.textContent);
+        option.classList.remove('wrong'); void option.offsetWidth; option.classList.add('wrong');
+        option.blur();
+      }
+    }, 'photo-card money-option');
+    option.dataset.amount = amount;
+    const photos = element('span', '', 'money-pictures');
+    for (const value of breakdown(amount)) photos.append(picture(value));
+    option.append(photos, element('span', won(amount), 'card-copy'));
+    choices.append(option);
+  }
+  app.append(scene, choices, button('문제 다시 듣기', () => announce(prompt)), status, advance);
 }
 
 function showWallet() {
