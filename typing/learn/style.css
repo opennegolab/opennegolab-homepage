@@ -270,21 +270,24 @@ html[data-haru] {
 
 .atm-machine {
   max-width: 680px; margin-inline: auto; padding: clamp(.7rem, 2.5vw, 1.35rem);
-  border: 1px solid #315545; border-radius: 1.25rem; background: #e1e9e4;
+  border: 1px solid #315545; border-radius: 1.25rem; background: linear-gradient(135deg, #e0e7e3, #a9b7b1);
 }
 .atm-display {
   padding: clamp(.7rem, 2.5vw, 1.2rem); border: .45rem solid #25493a;
   border-radius: 1rem; background: #f8fcf8;
 }
-.atm-caption { margin: 0 0 .6rem; color: var(--green); font-weight: 800; }
 .atm-screen-message { font-size: clamp(1.2rem, 4vw, 1.65rem); font-weight: 850; margin: .6rem 0; }
-.atm-screen-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 125px), 1fr)); gap: .55rem; }
+.atm-screen-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 78px), 1fr)); gap: .55rem; }
 .atm-screen-action { color: var(--green); border-color: var(--green); background: #eaf3eb; }
+.atm-screen-action.photo-card img { aspect-ratio: 16 / 9; object-fit: cover; }
+.atm-screen-action.photo-card .card-copy { padding: .4rem .25rem; text-align: center; }
+.atm-screen-action.photo-card .card-copy strong { font-size: clamp(.8rem, 3vw, 1.1rem); }
 .atm-screen-action:active { color: white; background: var(--green); }
 .atm-slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; margin-top: .75rem; }
 .atm-slot { display: grid; gap: .5rem; align-content: start; text-align: left; padding: .65rem; background: #fff; }
 .atm-opening { display: block; min-height: .6rem; border-radius: .2rem; background: #344d40; }
-.atm-slot img { display: block; width: 100%; height: 4rem; object-fit: contain; }
+.atm-slot-active { border: 2px solid var(--green); background: #f5fff6; }
+.atm-slot img { display: block; width: 100%; aspect-ratio: 16 / 9; max-height: 8rem; object-fit: cover; border-radius: .45rem; }
 .atm-slot-action { font-weight: 800; color: var(--green); }
 
 .prompt, .problem-goal p, .problem-feedback, .kiosk-ticket-items span {
