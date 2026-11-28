@@ -177,9 +177,9 @@ html[data-haru] {
   margin-bottom: .55rem;
 }
 .cash-selection p { margin: 0; font-weight: 800; font-size: clamp(1rem, 3.5vw, 1.25rem); }
-.cash-selection button { white-space: nowrap; background: #ffe2a7; color: #573903; border-color: #a47426; }
-.cash-selection button:active:not(:disabled) { background: #ffce73; }
-.cash-selection button:disabled { color: #6c5831; background: #f8eed9; border-color: #d8c8a5; cursor: default; }
+.cash-selection button, .kiosk-basket-reset { white-space: nowrap; background: #ffe2a7; color: #573903; border-color: #a47426; }
+.cash-selection button:active:not(:disabled), .kiosk-basket-reset:active:not(:disabled) { background: #ffce73; }
+.cash-selection button:disabled, .kiosk-basket-reset:disabled { color: #6c5831; background: #f8eed9; border-color: #d8c8a5; cursor: default; }
 .pay-cash-summary { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; }
 .pay-cash-summary span { padding: .5rem; background: var(--haru-mint); border-radius: var(--haru-radius); }
 .receipt-price { font-weight: 750; margin-left: auto; }
@@ -255,7 +255,12 @@ html[data-haru] {
   background: var(--green); color: white; font-weight: 850; line-height: 1;
 }
 .kiosk-basket { padding: .65rem; }
-.kiosk-basket h2 { margin-bottom: .35rem; font-size: 1rem; }
+.kiosk-basket-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: .35rem; margin-bottom: .35rem;
+}
+.kiosk-basket-header h2 { margin: 0; font-size: 1rem; }
+.kiosk-basket-reset { padding-inline: .55rem; font-size: .875rem; }
 .kiosk-empty { padding: .45rem 0; font-size: .9rem; }
 .kiosk-line {
   grid-template-columns: 2rem minmax(0, 1fr) auto;
