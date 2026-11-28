@@ -37,7 +37,8 @@ function show(next, remember = true) {
 
 function readProblem() {
   voiceStatus.hidden = true;
-  speak(state.goal, () => showSpeechHelp(voiceStatus));
+  const spokenGoal = state.goal.replace(/([1-5])인분/g, (_, count) => ' 일이삼사오'[count] + '인분');
+  speak(spokenGoal, () => showSpeechHelp(voiceStatus));
 }
 
 function previous() {
@@ -215,7 +216,7 @@ function changeShop(view, patch = {}, remember = true) {
 }
 
 function wording(item, count) {
-  if (item.unit === '인분' && count === 1) return item.name + ' 하나';
+  if (item.unit === '인분') return item.name + ' ' + count + '인분';
   const number = ['', '한', '두', '세', '네', '다섯'][count];
   return item.name + ' ' + number + ' ' + item.unit;
 }
@@ -478,15 +479,28 @@ function receipt(cart, editable) {
   if (cart.length) app.append(node('p', 'pay-total', '합계 ' + won(orderTotal(cart))));
 }
 
-function servedTray(cart) {
-  const tray = node('ul', 'serving-tray');
-  tray.setAttribute('aria-label', '쟁반에 담긴 메뉴');
-  for (const { item, count } of cart) {
-    const dish = node('li', 'served-dish');
-    dish.append(photo(item.image), node('span', '', wording(item, count)));
-    tray.append(dish);
+function showPickup(cart, menu) {
+  const region = node('section', 'pickup');
+  region.setAttribute('aria-label', menu ? '쟁반에 담긴 메뉴' : '봉투에 담긴 상품');
+  const servedInBowl = ['food-5', 'food-9', 'food-11', 'food-12'];
+  const photos = cart.flatMap(({ item, count }) => {
+    const plated = state.id === 'food' && !servedInBowl.includes(item.image);
+    return Array.from({ length: count }, () => {
+      const serving = node('div', plated ? 'pickup-item pickup-plate' : 'pickup-item');
+      serving.append(photo('pickup/' + item.image));
+      return serving;
+    });
+  });
+  for (let offset = 0; offset < photos.length; offset += 6) {
+    const container = node('div', menu ? 'pickup-container' : 'pickup-container pickup-bag');
+    container.setAttribute('aria-hidden', 'true');
+    container.append(...photos.slice(offset, offset + 6));
+    region.append(container);
   }
-  app.append(tray);
+  const summary = node('ul', 'pickup-summary');
+  for (const { item, count } of cart) summary.append(node('li', '', wording(item, count)));
+  region.append(summary);
+  app.append(region);
 }
 
 function finishActions(repeat, other = reset, nextProblem) {
@@ -571,8 +585,7 @@ function shopScreen(shop) {
     return;
   }
   heading('문제를 해결했어요', shop.done, shop.name, 'cheer');
-  if (menu) servedTray(cart);
-  else receipt(cart, false);
+  showPickup(cart, menu);
   const isMarket = id === 'fruit' || id === 'vegetable';
   const other = !area && isMarket ? () => {
     trail = [];
@@ -640,7 +653,14 @@ function atmActivityScreen() {
   const nextStep = atm.steps[step];
   if (!nextStep) {
     heading('문제를 해결했어요', atm.done, atm.name, 'cheer');
-    group('scene', photo(atm.image));
+    const card = photo('bank-12');
+    card.alt = '돌려받은 카드';
+    group('scene', card);
+    if (!values.deposit) {
+      const cash = photo(notes[values.amount].image);
+      cash.alt = '받은 현금 ' + won(values.amount);
+      group('atm-pickup-cash', cash, node('p', '', cash.alt));
+    }
     const replay = problem => {
       resetActivity();
       openAtm(problem);
@@ -697,7 +717,7 @@ function render() {
     problemScreen();
     return;
   }
-  showProblemGoal();
+  if (view === 'kiosk-order') showProblemGoal();
   if (view === 'action') atmActivityScreen();
   else shopScreen(shops[id]);
 }
