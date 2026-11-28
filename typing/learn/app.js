@@ -467,9 +467,9 @@ function receipt(cart, editable) {
   if (cart.length) app.append(node('p', 'pay-total', '합계 ' + won(orderTotal(cart))));
 }
 
-function showGoodsPickup(cart) {
+function showPickup(cart, menu) {
   const list = node('ul', 'goods-pickup');
-  list.setAttribute('aria-label', '받은 상품');
+  list.setAttribute('aria-label', menu ? '받은 메뉴' : '받은 상품');
   const wholeProduce = { 'fruit-10': 'whole-kiwi', 'vegetable-5': 'whole-napa-cabbage' };
   for (const { item, count } of cart) {
     const line = node('li', 'goods-pickup-line');
@@ -480,34 +480,6 @@ function showGoodsPickup(cart) {
     list.append(line);
   }
   app.append(list);
-}
-
-function showPickup(cart, menu) {
-  if (!menu) {
-    showGoodsPickup(cart);
-    return;
-  }
-  const region = node('section', 'pickup');
-  region.setAttribute('aria-label', '쟁반에 담긴 메뉴');
-  const servedInBowl = ['food-5', 'food-9', 'food-11', 'food-12'];
-  const photos = cart.flatMap(({ item, count }) => {
-    const plated = state.id === 'food' && !servedInBowl.includes(item.image);
-    return Array.from({ length: count }, () => {
-      const serving = node('div', plated ? 'pickup-item pickup-plate' : 'pickup-item');
-      serving.append(photo('pickup/' + item.image));
-      return serving;
-    });
-  });
-  for (let offset = 0; offset < photos.length; offset += 6) {
-    const container = node('div', 'pickup-container');
-    container.setAttribute('aria-hidden', 'true');
-    container.append(...photos.slice(offset, offset + 6));
-    region.append(container);
-  }
-  const summary = node('ul', 'pickup-summary');
-  for (const { item, count } of cart) summary.append(node('li', '', wording(item, count)));
-  region.append(summary);
-  app.append(region);
 }
 
 function finishActions(repeat, other = reset, nextProblem) {
