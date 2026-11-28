@@ -698,7 +698,8 @@ const publicSets = publicSeeds.map((seed, index) => {
 
 /* 한글 공부(/haru/typing)가 읽는 문제
    - 누구나: 코드에 들어 있는 공개 기본 문제집 (번호 1, 2, 3 …)
-   - 보호자가 로그인한 브라우저: 그 보호자가 문제 설정에서 만든 문제집도 함께.
+   - 보호자가 로그인한 브라우저: 그 보호자가 문제 설정에서 만든 문제집.
+     보호자 문제집에 문제가 하나라도 있으면 기본 문제집은 빼고 보호자 문제집만 보여 준다.
      공개 문제집 번호와 겹치지 않게 '-DB 번호'(음수)로 내보낸다 */
 async function handlePublic(req, res, pathname) {
   if (req.method !== "GET") {
@@ -709,7 +710,10 @@ async function handlePublic(req, res, pathname) {
   try {
     if (pathname === "/haru/practice-data/sets") {
       const mine = owner ? (await store.sets(owner)).map(({ id, name, counts }) => ({ id: -id, name, counts })) : [];
-      const sets = [...mine, ...publicSets.map(({ id, name, counts }) => ({ id, name, counts }))];
+      /* 보호자가 문제를 하나라도 넣었으면 그 문제집만 보여 준다 (기본 문제집은 뺀다).
+         문제집만 만들고 문제가 없으면 연습할 것이 없으니 기본 문제집을 보여 준다 */
+      const hasOwn = mine.some(st => st.counts.dictation + st.counts.qa > 0);
+      const sets = hasOwn ? mine : [...mine, ...publicSets.map(({ id, name, counts }) => ({ id, name, counts }))];
       return send(res, 200, { ok: true, sets });
     }
     if (pathname === "/haru/practice-data/items") {
