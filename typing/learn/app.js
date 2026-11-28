@@ -1,3 +1,4 @@
+import { selectionCounter } from '/haru/selection-count.js?v=1';
 import { screenHistory } from '/haru/navigation.js?v=1';
 import { atm, atmProblems, places, shopProblems, shops } from './content.js?v=13';
 import { showSpeechHelp, speak, stopSpeech } from './speech.js?v=2';
@@ -261,7 +262,7 @@ function kioskOrder(shop) {
 
   const categories = node('div', 'categories kiosk-categories');
   const products = node('div', 'grid items');
-  const productBadges = new Map();
+  const productCounters = new Map();
   if (shop.groups.length > 1) {
     categories.classList.toggle('kiosk-categories-wide', shop.groups.length > 3);
     shop.groups.forEach(([label], category) => {
@@ -291,36 +292,21 @@ function kioskOrder(shop) {
     else cart[position] = { item, count };
     state = { ...state, cart };
     feedback('');
-    updateProductCount(item, count);
+    productCounters.get(item)?.(count);
     drawBasket(focusControl ? { item, delta } : undefined);
   }
 
   function drawProducts() {
     [...categories.children].forEach((tab, index) =>
       tab.setAttribute('aria-pressed', String(index === state.category)));
-    productBadges.clear();
+    productCounters.clear();
     products.replaceChildren(...shop.groups[state.category][1].map(item => {
       const product = card(item.name, item.image, () => adjust(item, 1), won(item.price));
-      const badge = node('span', 'kiosk-product-count');
-      badge.setAttribute('aria-hidden', 'true');
-      product.append(badge);
-      productBadges.set(item, { product, badge });
-      updateProductCount(item, state.cart.find(line => line.item === item)?.count ?? 0);
+      const update = selectionCounter(product, item.name + ' ' + won(item.price), item.unit);
+      productCounters.set(item, update);
+      update(state.cart.find(line => line.item === item)?.count ?? 0);
       return product;
     }));
-  }
-
-  function updateProductCount(item, count) {
-    const entry = productBadges.get(item);
-    if (!entry) return;
-    const { product, badge } = entry;
-    badge.textContent = count;
-    badge.hidden = count === 0;
-    if (count) {
-      product.setAttribute('aria-label', item.name + ' ' + won(item.price) + ', 선택 수량 ' + count + item.unit);
-    } else {
-      product.removeAttribute('aria-label');
-    }
   }
 
   function drawBasket(focusControl) {
@@ -410,8 +396,10 @@ function paymentScreen(shop) {
   const paidLabel = node('p', 'pay-total');
   paidLabel.setAttribute('aria-live', 'polite');
   const selected = node('div', 'pay-cash-summary');
-  const choices = group('grid actions pay-notes', ...noteValues.map(value =>
-    card(won(value) + ' 담기', notes[value].image, () => {
+  const counters = new Map();
+  const choices = group('grid actions pay-notes', ...noteValues.map(value => {
+    const label = won(value) + ' 담기';
+    const choice = card(label, notes[value].image, () => {
       if (state.cash.length >= 20) {
         feedback('담긴 지폐를 빼고 다시 골라 보세요.');
         return;
@@ -419,7 +407,10 @@ function paymentScreen(shop) {
       state = { ...state, cash: [...state.cash, value] };
       app.querySelector('.problem-feedback').textContent = '';
       updateCash();
-    })));
+    });
+    counters.set(value, selectionCounter(choice, label, '장'));
+    return choice;
+  }));
   app.append(paidLabel, selected);
   feedbackLine();
   group('controls', button('현금 내기', () => {
@@ -437,6 +428,7 @@ function paymentScreen(shop) {
     selected.replaceChildren();
     for (const value of noteValues) {
       const count = state.cash.filter(note => note === value).length;
+      counters.get(value)(count);
       if (!count) continue;
       const remove = button(won(value) + ' ' + count + '장 · 한 장 빼기', () => {
         const position = state.cash.indexOf(value);
@@ -531,10 +523,14 @@ function shopScreen(shop) {
       });
       group('categories', ...categories);
     }
-    group('grid items', ...shop.groups[category][1].map(product => card(product.name, product.image, () => {
-      const oldCount = cart.find(line => line.item === product)?.count;
-      changeShop('quantity', { item: product, count: oldCount ?? 1 });
-    }, won(product.price))));
+    group('grid items', ...shop.groups[category][1].map(product => {
+      const count = cart.find(line => line.item === product)?.count ?? 0;
+      const choice = card(product.name, product.image, () => {
+        changeShop('quantity', { item: product, count: count || 1 });
+      }, won(product.price));
+      selectionCounter(choice, product.name + ' ' + won(product.price), product.unit)(count);
+      return choice;
+    }));
     if (cart.length) group('controls', button(shop.container + ' 보기', () => changeShop('cart', { notice: '' })));
     return;
   }
