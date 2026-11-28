@@ -256,7 +256,7 @@ function kioskOrder(shop) {
   resetOrder.classList.add('kiosk-basket-reset');
   basket.append(rows);
   feedbackLine(basket);
-  const checkout = button('결제하기', submitCart, true);
+  const checkout = button('주문하기', submitCart, true);
   checkout.classList.add('kiosk-checkout');
   basket.append(checkout);
 
@@ -407,7 +407,7 @@ function paymentScreen(shop) {
   const selection = node('div', 'cash-selection');
   selection.append(paidLabel, resetCash);
   choices.before(selection);
-  const submitCash = button('현금 내기', () => {
+  const submitCash = button('결제하기', () => {
     const tendered = total(state.cash);
     if (tendered < due) {
       feedback(won(due - tendered) + '이 더 필요해요. 지폐를 더 담아 보세요.');
