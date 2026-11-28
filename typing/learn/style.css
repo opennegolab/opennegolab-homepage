@@ -155,6 +155,8 @@ html[data-haru] {
 @media (max-width: 430px) {
   .haru-top-inner:has(#problem-replay:not([hidden])) .haru-return img { width: 76px; }
   .haru-top-inner:has(#problem-replay:not([hidden])) button { padding-inline: .35rem; font-size: .84rem; }
+  /* 좁은 휴대폰: 로고가 이미 처음으로 가므로 '처음으로'는 빼서 한 줄에 들어가게 */
+  .haru-top-inner:has(#problem-replay:not([hidden])) #home { display: none; }
 }
 .problem-goal {
   margin-bottom: .6rem; padding: .35rem .65rem;

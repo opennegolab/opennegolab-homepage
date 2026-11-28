@@ -15,6 +15,8 @@
     * { box-sizing: border-box; }
     body { margin: 0; font-family: var(--haru-font); color: var(--haru-ink); background: var(--haru-background); }
     main { max-width: 760px; margin: auto; padding: clamp(.8rem, 3vw, 1.6rem) clamp(.75rem, 3vw, 1.5rem) 2.5rem; }
+    section { display: grid; gap: 1rem; }
+    .haru-heading p { margin: .35rem 0 0; color: var(--haru-muted); font-weight: 650; word-break: keep-all; line-height: 1.5; }
     .card { background: white; border: 1px solid var(--haru-line); border-radius: 1.2rem; padding: clamp(1rem, 3vw, 1.6rem); }
     .hello { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
     .hello img { width: clamp(76px, 18vw, 120px); height: auto; mix-blend-mode: multiply; flex: none; }
@@ -33,7 +35,7 @@
     .btn:focus-visible { outline: 3px solid var(--haru-green); outline-offset: 2px; }
     .status { min-height: 1.4em; margin: .3rem 0 0; color: #b33a3a; font-weight: 700; word-break: keep-all; }
     .switch { margin-top: .4rem; background: none; border: 0; color: var(--haru-green); font: inherit; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; justify-self: start; min-height: 44px; padding: 0; }
-    .guest { margin-top: 1rem; display: grid; gap: .4rem; background: var(--haru-cream); border-color: #e8ddc4; }
+    .guest { display: grid; gap: .4rem; background: var(--haru-cream); border-color: #e8ddc4; }
     .guest p { margin: 0; color: var(--haru-muted); font-weight: 650; word-break: keep-all; }
 
     /* 아이 고르기 */
@@ -76,14 +78,14 @@
 
     <!-- 1. 로그인 (또는 계정 만들기) -->
     <section id="login" hidden>
-      <div class="card">
-        <div class="hello">
-          <img src="/haru/assets/haru-wave.webp" width="360" height="440" alt="">
-          <div>
-            <h1 id="login-title">하루랑 시작하기</h1>
-            <p>보호자가 로그인하면 아이마다 별과 꾸미기가 저장돼요. 다른 기기에서 열어도 그대로예요.</p>
-          </div>
+      <header class="haru-heading">
+        <div>
+          <h1 id="login-title">하루랑 시작하기</h1>
+          <p>보호자가 로그인하면 아이마다 별과 꾸미기가 저장돼요. 다른 기기에서 열어도 그대로예요.</p>
         </div>
+        <img class="haru-pose" src="/haru/assets/haru-wave.webp" alt="">
+      </header>
+      <div class="card">
         <form class="login" id="login-form" novalidate>
           <label for="username">보호자 아이디</label>
           <input id="username" autocomplete="username" required minlength="4" maxlength="24" autocapitalize="none" spellcheck="false" placeholder="영문·숫자 4~24자">
@@ -102,14 +104,14 @@
 
     <!-- 2. 아이 고르기 -->
     <section id="pick" hidden>
-      <div class="card">
-        <div class="hello">
-          <img src="/haru/assets/haru-guide.webp" alt="">
-          <div>
-            <h1 id="pick-title">누가 공부할까요?</h1>
-            <p class="who" id="who"></p>
-          </div>
+      <header class="haru-heading">
+        <div>
+          <h1 id="pick-title">누가 공부할까요?</h1>
+          <p class="who" id="who"></p>
         </div>
+        <img class="haru-pose" src="/haru/assets/haru-guide.webp" alt="">
+      </header>
+      <div class="card">
         <div class="kids" id="kids" role="group" aria-label="아이 고르기"></div>
         <form class="add" id="add-form" novalidate>
           <label for="child-name" id="add-label">아이 추가하기</label>

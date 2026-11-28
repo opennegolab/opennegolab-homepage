@@ -8,19 +8,43 @@
 <title>보호자 로그인 | 하루랑</title>
 <link rel="stylesheet" href="/haru/brand.css?v=4">
 <style>
-body { font: 1rem system-ui,sans-serif; color:#26362c; background:#fff8e9; padding:1rem; }
-main { max-width:28rem; margin:3rem auto; }
-form { display:grid; gap:.75rem; margin-bottom:1rem; }
-input, button { font:inherit; padding:.75rem; }
-input, button { border:1px solid #c7d2c9; border-radius:.7rem; background:white; color:inherit; }
-#loginSubmit { background:#215742; color:white; font-weight:750; }
-.login-options { display:flex; flex-wrap:wrap; gap:.5rem; margin-block:1rem; }
-#newPinFields:not([hidden]) { display:grid; gap:.5rem; }
+/* 하루랑 화면과 같은 톤 — 시작 화면(/haru/start)의 로그인과 같은 모양 */
+* { box-sizing:border-box; }
+body { margin:0; font-family:var(--haru-font); color:var(--haru-ink); background:var(--haru-background); }
+main { max-width:32rem; margin:auto; padding:clamp(.8rem,3vw,1.6rem) clamp(.75rem,3vw,1.5rem) 2.5rem; display:grid; gap:1rem; }
+.haru-heading h1 { font-size:clamp(1.7rem,5.5vw,2.3rem); word-break:keep-all; }
+.haru-heading p { margin:.35rem 0 0; color:var(--haru-muted); font-weight:650; word-break:keep-all; line-height:1.5; }
+.card { background:white; border:1px solid var(--haru-line); border-radius:1.2rem; padding:clamp(1rem,3vw,1.6rem); }
+form { display:grid; gap:.45rem; }
+label { font-weight:800; margin-top:.35rem; }
+input { font:inherit; font-size:1.1rem; min-height:52px; padding:.6rem .8rem; border:2px solid var(--haru-line); border-radius:.8rem; background:white; color:inherit; width:100%; }
+input:focus { outline:none; border-color:var(--haru-green); }
+button { font:inherit; font-weight:800; min-height:48px; padding:.55rem 1rem; border:2px solid var(--haru-line); border-radius:.9rem; background:white; color:var(--haru-green); cursor:pointer; }
+button:focus-visible, a:focus-visible { outline:3px solid var(--haru-green); outline-offset:2px; }
+#loginSubmit { margin-top:.4rem; min-height:52px; font-size:1.05rem; background:var(--haru-green); border-color:var(--haru-green); color:white; }
+button:disabled { opacity:.6; cursor:default; }
+#loginStatus { min-height:1.4em; margin:.3rem 0 0; color:#b33a3a; font-weight:700; word-break:keep-all; }
+#loginStatus:empty { margin:0; min-height:0; }
+.login-options { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.8rem; }
+#newPinFields:not([hidden]) { display:grid; gap:.45rem; }
+.back-link { color:var(--haru-green); font-weight:800; text-underline-offset:3px; justify-self:start; display:inline-flex; align-items:center; min-height:44px; }
+[hidden] { display:none !important; }
 </style>
 <script defer src="/typing/login.js?v=3"></script>
 </head>
-<body><main>
-<h1 id="loginTitle">보호자 로그인</h1>
+<body>
+<header class="haru-top">
+  <nav class="haru-top-inner" aria-label="하루랑">
+    <a class="haru-return" href="/haru" aria-label="하루랑 처음으로"><img src="/haru/assets/logo.png" width="123" height="44" alt="하루랑"></a>
+    <a class="haru-return haru-top-action" href="/haru/typing">한글 공부</a>
+  </nav>
+</header>
+<main>
+<header class="haru-heading">
+  <div><h1 id="loginTitle">보호자 로그인</h1><p>로그인하면 우리 아이가 풀 문제를 직접 만들 수 있어요.</p></div>
+  <img class="haru-pose" src="/haru/assets/haru-guide.webp" alt="">
+</header>
+<div class="card">
 <form id="guardianLogin">
 <label for="username">아이디</label>
 <input id="username" autocomplete="username" required minlength="4" maxlength="24" pattern="[a-zA-Z0-9_]{4,24}" autocapitalize="none" spellcheck="false">
@@ -37,6 +61,7 @@ input, button { border:1px solid #c7d2c9; border-radius:.7rem; background:white;
 <button type="button" id="loginSwitch">계정 만들기</button>
 <button type="button" id="loginUpgrade">기존 비밀번호 바꾸기</button>
 </div>
-<a href="/haru/typing">한글 공부로 돌아가기</a>
+</div>
+<a class="back-link" href="/haru/typing">한글 공부로 돌아가기</a>
 </main></body>
 </html>
