@@ -424,6 +424,7 @@ function limiter(max, windowMs) {
 }
 const limitLogin = limiter(8, 60000);
 const limitLoginProxy = limiter(40, 60000);
+const limitGuardianLogin = limiter(5, 15 * 60000);
 const limitRead = limiter(300, 60000);     /* 문제 읽기 */
 const limitWrite = limiter(60, 60000);     /* 문제 등록·수정·삭제 */
 
@@ -558,6 +559,22 @@ async function guardianHash(username) {
   return result.rows[0]?.password_hash;
 }
 
+async function replaceGuardianPassword(username, previousHash, pin) {
+  const hash = await auth.hashPassword(pin);
+  if (!usingDb()) {
+    if (guardianAccounts.get(username) !== previousHash) return false;
+    guardianAccounts.set(username, hash);
+    return true;
+  }
+  const result = await (await db()).query(
+    "UPDATE typing_guardians SET password_hash=$1 WHERE username=$2 AND password_hash=$3",
+    [hash, username, previousHash]
+  );
+  return result.rowCount === 1;
+}
+
+const isPin = value => typeof value === "string" && /^[0-9]{4}$/.test(value);
+
 async function route(req, res, urlPath) {
   const url = new URL(req.url, "http://x");
   const sub = urlPath.replace(/^\/api\/typing/, "").replace(/\/+$/, "") || "/";
@@ -571,16 +588,28 @@ async function route(req, res, urlPath) {
     const body = await readJson(req);
     const username = typeof body?.username === "string" ? body.username.trim().toLowerCase() : "";
     const password = body?.password;
-    if (!/^[a-z0-9_]{4,24}$/.test(username) || typeof password !== "string" || password.length < 12 || password.length > 128) {
-      throw new BadRequest("아이디는 영문, 숫자, 밑줄 4~24자, 비밀번호는 12~128자로 입력해 주세요.");
+    const newPin = body?.newPin;
+    const legacy = sub === "/session" && typeof password === "string" &&
+      password.length >= 12 && password.length <= 128 && isPin(newPin);
+    if (!/^[a-z0-9_]{4,24}$/.test(username)) {
+      throw new BadRequest("아이디는 영문, 숫자, 밑줄 4~24자로 입력해 주세요.");
     }
+    if (!legacy && !isPin(password)) throw new BadRequest("비밀번호는 숫자 4자리로 입력해 주세요.");
     if (sub === "/register") {
       if (!await registerGuardian(username, password)) {
         return send(res, 409, { ok: false, message: "사용할 수 없는 아이디입니다." });
       }
     } else {
-      const valid = await auth.checkPassword(password, await guardianHash(username));
-      if (!valid) return send(res, 401, { ok: false, message: "아이디와 비밀번호를 확인해 주세요." });
+      if (limitGuardianLogin(username)) {
+        return send(res, 429, { ok: false, message: "로그인 시도가 많아요. 15분 뒤에 다시 시도해 주세요." });
+      }
+      const hash = await guardianHash(username);
+      if (!await auth.checkPassword(password, hash)) {
+        return send(res, 401, { ok: false, message: "아이디와 비밀번호를 확인해 주세요." });
+      }
+      if (legacy && !await replaceGuardianPassword(username, hash, newPin)) {
+        return send(res, 409, { ok: false, message: "비밀번호가 이미 바뀌었어요. 다시 로그인해 주세요." });
+      }
     }
     return send(res, 200, { ok: true }, { "Set-Cookie": auth.signIn(req, username) });
   }

@@ -12,20 +12,31 @@ body { font: 1rem system-ui,sans-serif; color:#26362c; background:#fff8e9; paddi
 main { max-width:28rem; margin:3rem auto; }
 form { display:grid; gap:.75rem; margin-bottom:1rem; }
 input, button { font:inherit; padding:.75rem; }
+input, button { border:1px solid #c7d2c9; border-radius:.7rem; background:white; color:inherit; }
+#loginSubmit { background:#215742; color:white; font-weight:750; }
+.login-options { display:flex; flex-wrap:wrap; gap:.5rem; margin-block:1rem; }
+#newPinFields:not([hidden]) { display:grid; gap:.5rem; }
 </style>
-<script defer src="/typing/login.js?v=2"></script>
+<script defer src="/typing/login.js?v=3"></script>
 </head>
 <body><main>
 <h1 id="loginTitle">보호자 로그인</h1>
 <form id="guardianLogin">
 <label for="username">아이디</label>
 <input id="username" autocomplete="username" required minlength="4" maxlength="24" pattern="[a-zA-Z0-9_]{4,24}" autocapitalize="none" spellcheck="false">
-<label for="password">비밀번호</label>
-<input type="password" id="password" autocomplete="current-password" required minlength="12" maxlength="128">
+<label for="password" id="passwordLabel">비밀번호 (숫자 4자리)</label>
+<input type="password" id="password" autocomplete="current-password" required inputmode="numeric" pattern="[0-9]{4}" maxlength="4">
+<div id="newPinFields" hidden>
+<label for="newPin">새 비밀번호 (숫자 4자리)</label>
+<input type="password" id="newPin" autocomplete="new-password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" disabled>
+</div>
 <button type="submit" id="loginSubmit">로그인</button>
 </form>
 <p id="loginStatus" role="status"></p>
-<p><button type="button" id="loginSwitch">보호자 계정 만들기</button></p>
+<div class="login-options">
+<button type="button" id="loginSwitch">계정 만들기</button>
+<button type="button" id="loginUpgrade">기존 비밀번호 바꾸기</button>
+</div>
 <a href="/haru/typing">한글 공부로 돌아가기</a>
 </main></body>
 </html>
