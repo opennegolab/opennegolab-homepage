@@ -118,6 +118,36 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   .set small{ font-size:.76rem; font-weight:800; color:var(--ink-soft); background:#F5EFE6; border-radius:999px; padding:1px 8px; }
   .set[aria-pressed="true"]{ border-color:var(--blue); background:var(--blue-soft); color:var(--blue-d); }
   .set[aria-pressed="true"] small{ background:#fff; color:var(--blue-d); }
+  /* 문제집을 누르면 그 아래로 문제 종류 버튼 3개(받아쓰기·질문에 답하기·산수)가 펼쳐진다 */
+  .sets.list{ display:grid; gap:10px; }
+  .set-card{ border:2px solid var(--line); border-radius:20px; background:#fff; overflow:hidden; transition:border-color .15s; }
+  .set-card.open{ border-color:var(--blue); }
+  .set-card .set{ width:100%; border:0; border-radius:0; justify-content:flex-start; padding:12px 16px; min-height:56px; font-size:1.05rem; }
+  .set-card .set .chev{ margin-left:auto; width:20px; height:20px; transition:transform .2s; }
+  .set-card.open .set .chev{ transform:rotate(90deg); }
+  .set-card.open .set{ background:var(--blue-soft); }
+  .types{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:12px; }
+  .type{ position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:2px; text-align:left; padding:12px; border-radius:16px; border:2px solid var(--line); background:#fff; color:inherit; min-height:96px; transition:border-color .15s, background .15s; }
+  .type .ico{ width:40px; height:40px; border-radius:12px; display:grid; place-items:center; background:var(--blue-soft); color:var(--blue); margin-bottom:6px; }
+  .type .ico svg{ width:22px; height:22px; }
+  .type.qa .ico{ background:var(--lav-soft); color:var(--lav); }
+  .type.math .ico{ background:var(--mint-soft, #E3F5EE); color:var(--mint, #38B48E); }
+  .type b{ font-size:1rem; font-weight:900; word-break:keep-all; }
+  .type span{ font-size:.8rem; font-weight:700; color:var(--ink-soft); }
+  .type[aria-pressed="true"]{ border-color:var(--blue); background:#F5F8FE; }
+  .type.qa[aria-pressed="true"]{ border-color:var(--lav); background:#FAF7FF; }
+  .type.math[aria-pressed="true"]{ border-color:var(--mint, #38B48E); background:#F2FBF7; }
+  .type[aria-pressed="true"]::after{ content:""; position:absolute; top:10px; right:10px; width:12px; height:12px; border-radius:50%; background:currentColor; color:var(--blue); }
+  .type.qa[aria-pressed="true"]::after{ color:var(--lav); }
+  .type.math[aria-pressed="true"]::after{ color:var(--mint, #38B48E); }
+  .type:disabled{ opacity:.45; cursor:default; }
+  .qtag.math{ background:var(--mint-soft, #E3F5EE); color:var(--mint-d, #23805F); }
+  @media (max-width:430px){
+    .types{ gap:6px; padding:10px 8px; }
+    .type{ padding:10px 6px; min-height:88px; align-items:center; text-align:center; }
+    .type .ico{ width:34px; height:34px; }
+    .type b{ font-size:.92rem; }
+  }
   .seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:4px; background:#F5EFE6; padding:5px; border-radius:18px; }
   .seg button{ border-radius:14px; min-height:48px; font-weight:800; color:var(--ink-soft); display:flex; align-items:center; justify-content:center; gap:8px; transition:background .15s, color .15s, box-shadow .15s; }
   .seg button:hover{ color:var(--ink-2); }
@@ -372,6 +402,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-headphones" viewBox="0 0 24 24"><path d="M3 15v-3a9 9 0 0 1 18 0v3"/><path d="M3 15a2 2 0 0 1 2-2h1.5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2z"/><path d="M21 15a2 2 0 0 0-2-2h-1.5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1H19a2 2 0 0 0 2-2z"/></symbol>
   <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4a8 8 0 1 1 15.3-3.9z"/><path d="M9 11.5h.01M12.5 11.5h.01M16 11.5h.01" stroke-width="2.8"/></symbol>
+  <symbol id="i-math" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 8.5h4M10 6.5v4M14 9h3M7.5 15h4M14 14h3M14 16.5h3"/></symbol>
   <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M11 5 6.5 9H3.5v6h3L11 19z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6"/><path d="M18.5 6a8.5 8.5 0 0 1 0 12"/></symbol>
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
@@ -404,8 +435,8 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
     <!-- 타자 제목 끝 -->
 
     <div class="card">
-      <div class="step"><span class="n">1</span>어떤 문제집으로 할까요?</div>
-      <div class="sets" id="sets" role="group" aria-label="문제집"><span class="note">불러오는 중…</span></div>
+      <div class="step"><span class="n">1</span>어떤 문제를 풀까요?</div>
+      <div class="sets list" id="sets" role="group" aria-label="문제집"><span class="note">불러오는 중…</span></div>
 
 
       <div class="step" style="margin-top:26px"><span class="n">2</span>몇 문제 풀까요?</div>
@@ -476,7 +507,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   </section>
 </div>
 
-<script src="/typing/store.js?v=9"></script>
+<script src="/typing/store.js?v=10"></script>
 <script src="/haru/rewards.js?v=3"></script>
 <script type="module">
 import { screenHistory } from "/haru/navigation.js?v=1";
@@ -572,14 +603,49 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     const el = $("sets");
     if (!sets) return;
     if (!sets.length) { el.textContent = shared ? "사용할 수 있는 연습이 없어요." : "아직 문제집이 없어요. 문제 설정에서 만들어 주세요."; return; }
-    el.innerHTML = sets.map(x =>
-      "<button type='button' class='set' data-set='" + x.id + "' aria-pressed='" + (x.id === settings.set) + "'>" + esc(x.name) +
-      "<small>" + (x.counts.dictation + x.counts.qa) + "</small></button>").join("");
+    /* 고른 문제집만 펼쳐서 그 아래 문제 종류 3개를 보여 준다 */
+    el.innerHTML = sets.map(x => {
+      const open = x.id === settings.set;
+      return "<div class='set-card" + (open ? " open" : "") + "'>" +
+        "<button type='button' class='set' data-set='" + x.id + "' aria-expanded='" + open + "' aria-pressed='" + open + "'>" + esc(x.name) +
+        "<small>" + (x.counts.dictation + x.counts.qa) + "</small>" + icon("arrow").replace("class='i'", "class='i chev'") + "</button>" +
+        (open ? "<div class='types' role='group' aria-label='" + esc(x.name) + " 문제 종류'>" + TYPES.map(t => {
+          const n = typeCount(x, t.id);
+          const off = !n || (t.id === "dictation" && !tts.ok);
+          return "<button type='button' class='type " + t.id + "' data-type='" + t.id + "' aria-pressed='" + (settings.mode === t.id) + "'" + (off ? " disabled" : "") + ">" +
+            "<span class='ico' aria-hidden='true'>" + icon(t.icon) + "</span><b>" + t.name + "</b><span>" + (n ? n + "문제" : "문제 없음") + "</span></button>";
+        }).join("") + "</div>" : "") +
+        "</div>";
+    }).join("");
+  }
+  /* 문제 종류 — 산수는 '9 + 6 = ?' 처럼 쓴 질문 (store.js isMath). 질문에 답하기는 산수를 뺀 질문 */
+  const TYPES = [
+    { id: "dictation", name: "받아쓰기", icon: "headphones" },
+    { id: "qa", name: "질문에 답하기", icon: "chat" },
+    { id: "math", name: "산수", icon: "math" },
+  ];
+  const MODE_NAME = { dictation: "받아쓰기", qa: "질문에 답하기", math: "산수" };
+  function typeCount(set, type) {
+    const c = set.counts, math = c.math || 0;
+    return type === "dictation" ? c.dictation : type === "math" ? math : c.qa - math;
+  }
+  /* 고른 종류가 이 문제집에 없으면(또는 소리가 안 나는데 받아쓰기면) 풀 수 있는 첫 종류로 */
+  function fixMode() {
+    const cur = currentSet();
+    if (!cur) return;
+    const can = t => typeCount(cur, t) > 0 && (t !== "dictation" || tts.ok);
+    if (!MODE_NAME[settings.mode] || !can(settings.mode)) {
+      const first = TYPES.find(t => can(t.id));
+      if (first) { settings.mode = first.id; saveSettings(); }
+    }
   }
   $("sets").addEventListener("click", e => {
+    const type = e.target.closest("[data-type]");
+    if (type) { settings.mode = type.dataset.type; saveSettings(); renderHome(); return; }
     const b = e.target.closest("[data-set]");
     if (!b) return;
     settings.set = Number(b.dataset.set); saveSettings();
+    fixMode();
     renderHome();
   });
 
@@ -595,7 +661,6 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     if (counts) {
       if (sets && !sets.length) w = "";
       else if (!counts.dictation && !counts.qa) w = "이 문제집에는 문제가 없어요. '문제 설정'에서 넣어 주세요.";
-      else if (!tts.ok && !counts.qa) w = "이 문제집은 받아쓰기만 있어서 소리가 있어야 해요.";
     }
     if (loadError) w = loadError;
     warn.textContent = w;
@@ -607,7 +672,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
         ? (/KAKAOTALK/i.test(navigator.userAgent)
             ? "카카오톡 안에서는 소리가 나지 않아요. 크롬에서 열리지 않았다면 아래 버튼을 눌러 주세요."
             : "카카오톡·네이버 같은 앱 안에서 열면 문제를 소리 내어 읽지 못할 수 있어요. 크롬이나 삼성 인터넷으로 열어 주세요.")
-        : "이 화면에서는 소리 내어 읽기를 쓸 수 없어요 (받아쓰기는 빼고 질문만 나와요). 크롬이나 삼성 인터넷으로 열어 주세요.";
+        : "이 화면에서는 소리 내어 읽기를 쓸 수 없어요 (받아쓰기는 소리가 있어야 해요). 크롬이나 삼성 인터넷으로 열어 주세요.";
       if (w) p.style.marginTop = "8px";
       warn.appendChild(p);
       const href = externalUrl();
@@ -619,7 +684,8 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
       w = w || "app";
     }
     warn.classList.toggle("hidden", !w);
-    $("startBtn").disabled = !counts || !(counts.qa + (tts.ok ? counts.dictation : 0));
+    const cur2 = currentSet();
+    $("startBtn").disabled = !cur2 || !typeCount(cur2, settings.mode) || (settings.mode === "dictation" && !tts.ok);
   }
 
   let loadError = "";
@@ -641,6 +707,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
         });
       }
       if (!currentSet() && sets.length) { settings.set = sets[0].id; saveSettings(); }
+      fixMode();
     } catch (e) {
       if (!sets) $("sets").innerHTML = "";
       if (shared) sets = [];
@@ -652,9 +719,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   document.addEventListener("visibilitychange", () => { if (!document.hidden && S.phase === "idle" && !$("home").classList.contains("hidden")) loadCounts(); });
 
   document.querySelectorAll("[data-count]").forEach(b => b.addEventListener("click", () => { settings.count = b.dataset.count; saveSettings(); renderHome(); }));
-  $("startBtn").addEventListener("click", () => { prepareSpeech(); begin({ set: settings.set, mode: practiceMode(), count: settings.count }); });
-  /* 받아쓰기·질문을 섞어서 낸다. 소리를 못 내는 곳에서는 질문만 */
-  const practiceMode = () => tts.ok ? "all" : "qa";
+  $("startBtn").addEventListener("click", () => { prepareSpeech(); begin({ set: settings.set, mode: settings.mode, count: settings.count }); });
 
   /* ============================================================
      문제 풀기
@@ -662,7 +727,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
      한 단계에서만 다음으로 넘어가게 해서 Enter 를 여러 번 눌러도
      두 번 채점하거나 두 문제를 건너뛰지 않는다
      ============================================================ */
-  const S = { set: 0, setName: "", mode: "all", items: [], i: 0, results: [], phase: "idle", seq: 0, timer: 0, fbAt: 0, last: null };
+  const S = { set: 0, setName: "", mode: "dictation", items: [], i: 0, results: [], phase: "idle", seq: 0, timer: 0, fbAt: 0, last: null };
   const input = $("answer");
   const navigation = screenHistory(
     () => ({ screen, practice: { ...S, results: [...S.results] }, answer: input.value }),
@@ -761,7 +826,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
 
     const qa = item.mode === "qa";     /* 문제마다 자기 종류대로 */
     $("stage").innerHTML = qa
-      ? "<span class='qtag qa'>" + icon("chat") + "질문에 답하기</span>" +
+      ? (T.isMath(item.prompt) ? "<span class='qtag math'>" + icon("math") + "산수</span>" : "<span class='qtag qa'>" + icon("chat") + "질문에 답하기</span>") +
         "<div class='question'>" + esc(item.question) + "</div>" +
         "<button type='button' class='listen listen-pill' id='listenBtn'>" + icon("speaker") + "질문 듣기</button>"
       : "<span class='qtag'>" + icon("headphones") + "받아쓰기</span>" +
@@ -985,7 +1050,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
       "<div class='medal'>" + medal + "</div>" +
       ring(avg, 168) +
       "<div class='say'>" + say + "</div>" +
-      "<div class='mode-name'>" + (S.setName ? esc(S.setName) + " · " : "") + "평균 점수</div>" +
+      "<div class='mode-name'>" + (S.setName ? esc(S.setName) + " · " : "") + (MODE_NAME[S.mode] ? MODE_NAME[S.mode] + " " : "") + "평균 점수</div>" +
       "<div class='tiles'>" +
         "<div class='tile'><b>" + total + "</b><span>전체 문제</span></div>" +
         "<div class='tile t100'><b>" + perfect + "</b><span>100점</span></div>" +
@@ -1021,7 +1086,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     if (ids.length) begin({ set: S.set, mode: S.mode, ids, count: "all" });
   });
   $("retryAll").addEventListener("click", () => begin({ set: S.set, mode: S.mode, ids: S.results.map(r => r.id), count: "all" }));
-  $("newRandom").addEventListener("click", () => begin({ set: S.set, mode: practiceMode(), count: settings.count }));
+  $("newRandom").addEventListener("click", () => begin({ set: S.set, mode: S.mode, count: settings.count }));
   $("toHome").addEventListener("click", goHome);
   for (const id of ["playBack", "resultBack"]) $(id).addEventListener("click", () => navigation.back());
 

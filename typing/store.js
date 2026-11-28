@@ -117,10 +117,12 @@
     async update(id, raw) { return (await call("/items/" + id, { prompt: raw.prompt, answers: raw.answers || [] }, "PUT")).item; },
     async remove(ids) { return (await call("/delete", { ids })).removed; },
     /* 출제 — 섞어서 고른다. ids 를 주면(오답 복습·다시 풀기) 그 문제들만 다시 섞는다 */
+    /* mode: 'dictation' 받아쓰기, 'qa' 질문에 답하기(산수 빼고), 'math' 산수, 'all' 모두 섞어서 */
     async pick(setId, mode, count, ids) {
-      /* mode 가 'all' 이면 받아쓰기·질문을 섞어서 낸다 — 문제마다 자기 종류대로 나온다 */
-      const modes = mode === "all" ? ["dictation", "qa"] : [mode];
+      const modes = mode === "all" ? ["dictation", "qa"] : mode === "math" ? ["qa"] : [mode];
       let pool = (await Promise.all(modes.map(m => this.list(setId, m)))).flat();
+      if (mode === "math") pool = pool.filter(x => isMath(x.prompt));
+      if (mode === "qa") pool = pool.filter(x => !isMath(x.prompt));
       if (Array.isArray(ids)) { const want = new Set(ids); pool = pool.filter(x => want.has(x.id)); }
       let picked = shuffle(pool);
       const n = count === "all" ? Infinity : Number(count);
@@ -129,7 +131,10 @@
     },
   };
 
-  const api = { clean, compare, grade, feedback, shuffle, store };
+  /* 산수 문제 — '9 + 6 = ?' 처럼 숫자와 기호로 쓴 질문 (typing-api.js 의 isMath 와 같은 규칙) */
+  function isMath(prompt) { return /^\s*\d+\s*[-+×x*÷/]\s*\d+\s*=\s*\?\s*$/.test(prompt || ""); }
+
+  const api = { clean, compare, grade, feedback, shuffle, isMath, store };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.TypingStore = api;
 })(typeof window !== "undefined" ? window : globalThis);
