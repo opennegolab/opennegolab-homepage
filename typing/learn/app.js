@@ -346,7 +346,7 @@ function kioskOrder(shop) {
       rows.append(row);
       if (focusControl?.item === item) focused = focusControl.delta < 0 ? decrease : increase;
     }
-    jump.textContent = '주문 목록 · ' + won(orderTotal(state.cart));
+    jump.textContent = '주문 금액 · ' + won(orderTotal(state.cart));
     checkout.disabled = resetOrder.disabled = state.cart.length === 0;
     if (focusControl) (focused || rows.querySelector('button') || products.querySelector('button'))?.focus();
   }
