@@ -51,6 +51,12 @@ const voiceStatus = document.querySelector('#voice-status');
 let page = 'home';
 let question;
 let wallet = [];
+/* '문제 다시 듣기'는 위쪽 줄 오른쪽에 (키오스크와 같은 자리). 문제 화면에서만 보인다 */
+const replay = document.querySelector('#problem-replay');
+let replayText = '';
+function setReplay(text) { replayText = text || ''; replay.hidden = !replayText; }
+replay.addEventListener('click', () => announce(replayText));
+
 const navigation = screenHistory(
   () => ({ page, question, wallet, contents: [...app.childNodes] }),
   screen => {
@@ -60,6 +66,7 @@ const navigation = screenHistory(
     app.querySelectorAll('.auto-next').forEach(bar => bar.remove());   /* 돌아온 화면에서는 저절로 넘어가지 않는다 */
     stopSpeech();
     voiceStatus.hidden = true;
+    setReplay(['compare', 'change', 'build'].includes(page) ? app.querySelector('.prompt')?.textContent : '');
     app.querySelector('h1').focus();
   }
 );
@@ -140,6 +147,7 @@ function markWrong(target) {
 
 function draw(focus = false) {
   stopAuto();
+  setReplay('');
   app.replaceChildren();
   back.hidden = false;
   if (page === 'home') {
@@ -222,7 +230,8 @@ function showComparison() {
     option.append(photos, element('span', won(sums[side]), 'card-copy'));
     choices.append(option);
   }
-  app.append(choices, button('문제 다시 듣기', () => announce(prompt)), status);
+  app.append(choices, status);
+  setReplay(prompt);
 }
 
 function showChange() {
@@ -257,7 +266,8 @@ function showChange() {
     option.append(photos, element('span', won(amount), 'card-copy'));
     choices.append(option);
   }
-  app.append(scene, choices, button('문제 다시 듣기', () => announce(prompt)), status);
+  app.append(scene, choices, status);
+  setReplay(prompt);
 }
 
 function showWallet() {
@@ -308,7 +318,8 @@ function showWallet() {
     choices.append(choice);
   }
   const controls = element('div', '', 'controls');
-  controls.append(check, button('문제 다시 듣기', () => announce(prompt)));
+  controls.append(check);
+  setReplay(prompt);
   const selection = element('div', '', 'cash-selection');
   selection.append(sumLabel, reset);
   app.append(selection, choices, status, controls);

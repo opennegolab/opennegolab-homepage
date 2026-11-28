@@ -135,6 +135,12 @@ function makeQuestion(kind) {
 
 /* ---------- 화면 ---------- */
 let page = 'home', kind = null, round = null;
+/* '문제 다시 듣기'는 위쪽 줄 오른쪽에 (키오스크와 같은 자리). 문제 화면에서만 보인다 */
+const replay = document.querySelector('#problem-replay');
+let replayText = '';
+function setReplay(text) { replayText = text || ''; replay.hidden = !replayText; }
+replay.addEventListener('click', () => announce(replayText));
+
 const navigation = screenHistory(
   () => ({ page, kind, round: round && { ...round, list: [...round.list] }, contents: [...app.childNodes] }),
   screen => {
@@ -146,6 +152,7 @@ const navigation = screenHistory(
     stopSpeech();
     voiceStatus.hidden = true;
     back.hidden = page === 'home';
+    setReplay(page === 'question' ? app.querySelector('.heading .prompt')?.textContent : '');
     app.querySelector('h1')?.focus();
   }
 );
@@ -192,6 +199,7 @@ function autoNext(go, place) {
 }
 
 function drawHome() {
+  setReplay('');
   stopAuto();
   page = 'home';
   back.hidden = true;
@@ -269,16 +277,16 @@ function drawQuestion() {
     card.append(pic, el('span', q.kind === 'number' ? '' : option.name, 'card-copy'));
     choices.append(card);
   });
-  const controls = el('div', '', 'controls');
-  controls.append(btn('문제 다시 듣기', () => announce(q.prompt)));
-  app.append(choices, status, controls);
+  app.append(choices, status);
   q.advanceBar = () => autoNext(advance, status);
+  setReplay(q.prompt);
   app.querySelector('h1').focus();
   announce(q.prompt);
 }
 
 function finish() {
   stopAuto();
+  setReplay('');
   page = 'done';
   stopSpeech();
   app.replaceChildren();

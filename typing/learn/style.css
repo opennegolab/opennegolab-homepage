@@ -157,7 +157,11 @@ html[data-haru] {
   .haru-top-inner:has(#problem-replay:not([hidden])) button { padding-inline: .35rem; font-size: .84rem; }
   /* 좁은 휴대폰: 로고가 이미 처음으로 가므로 '처음으로'는 빼서 한 줄에 들어가게 */
   .haru-top-inner:has(#problem-replay:not([hidden])) #home { display: none; }
+  /* 수학(비교하기·돈 계산): 좁을 때는 '수학으로'를 빼서 한 줄에 (이전 단계·로고로 돌아갈 수 있다) */
+  .haru-top-inner:has(#problem-replay:not([hidden])) .haru-top-action { display: none; }
 }
+/* 수학(비교하기·돈 계산) 위쪽 줄: 이전 단계 … 문제 다시 듣기 · 수학으로 */
+.haru-top-inner:has(#problem-replay:not([hidden])) .haru-top-action { margin-inline-start: .4rem; }
 .problem-goal {
   margin-bottom: .6rem; padding: .35rem .65rem;
   border: 1px solid var(--line); border-radius: .7rem; background: #fff8e9;
