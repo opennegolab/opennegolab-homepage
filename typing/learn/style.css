@@ -37,7 +37,7 @@ h1:focus { outline: none; }
 .prompt { margin: .55rem 0 0; font-size: clamp(1.08rem, 2.5vw, 1.35rem); line-height: 1.45; color: #46584f; }
 .grid { display: grid; gap: clamp(.65rem, 2vw, 1.1rem); grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .items { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-.photo-card { display: flex; flex-direction: column; padding: 0; overflow: hidden; text-align: left; min-width: 0; }
+.photo-card { position: relative; display: flex; flex-direction: column; padding: 0; overflow: hidden; text-align: left; min-width: 0; }
 .photo-card img { width: 100%; display: block; object-fit: cover; aspect-ratio: 16 / 9; background: #e9ece5; }
 .items .photo-card img { aspect-ratio: 1; }
 .card-copy { display: grid; gap: .3rem; width: 100%; padding: .7rem .85rem; }
@@ -237,12 +237,11 @@ html[data-haru] {
 .kiosk-products .kiosk-categories button {
   padding-inline: .4rem; font-size: clamp(.875rem, 2.3vw, 1rem); white-space: nowrap;
 }
-.kiosk-products .photo-card { position: relative; }
 .kiosk-products .photo-card img { aspect-ratio: 4 / 3; object-fit: contain; }
 .kiosk-products .card-copy { gap: .12rem; padding: .35rem .45rem; }
 .kiosk-products .card-copy strong { font-size: clamp(.875rem, 2.25vw, 1.05rem); word-break: keep-all; }
 .kiosk-products .card-copy small { font-size: .9rem; white-space: nowrap; }
-.kiosk-product-count {
+.selection-count {
   position: absolute; top: .3rem; right: .3rem;
   min-width: 1.75rem; min-height: 1.75rem; padding: .15rem .3rem;
   display: grid; place-items: center;

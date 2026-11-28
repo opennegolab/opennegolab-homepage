@@ -1,3 +1,4 @@
+import { selectionCounter } from '/haru/selection-count.js?v=1';
 import { screenHistory } from '/haru/navigation.js?v=1';
 import { showSpeechHelp, speak, stopSpeech } from '/typing/learn/speech.js?v=2';
 
@@ -192,21 +193,27 @@ function showWallet() {
       status.textContent = '지금은 ' + won(sum) + '이에요. ' + hint;
     }
   }, 'primary');
+  const counters = new Map();
   function update() {
     selected.replaceChildren();
     if (!wallet.length) selected.append(element('p', '담은 지폐가 없어요.'));
-    for (const [position, value] of wallet.entries()) {
-      selected.append(button(won(value) + ' 빼기', () => {
-        wallet.splice(position, 1);
+    for (const value of values) {
+      const count = wallet.filter(note => note === value).length;
+      counters.get(value)(count);
+      if (!count) continue;
+      const remove = button(won(value) + ' ' + count + '장 · 한 장 빼기', () => {
+        wallet.splice(wallet.indexOf(value), 1);
         status.textContent = '';
         update();
-        (selected.querySelectorAll('button')[Math.min(position, wallet.length - 1)] || choices.querySelector('button')).focus();
-      }));
+        (selected.querySelector('[data-note="' + value + '"]') || choices.querySelector('[data-note="' + value + '"]')).focus();
+      });
+      remove.dataset.note = value;
+      selected.append(remove);
     }
     sumLabel.textContent = '담은 금액 ' + won(total(wallet));
   }
   for (const value of values) {
-    choices.append(noteCard(value, () => {
+    const choice = noteCard(value, () => {
       if (wallet.length >= 15) {
         status.textContent = '담긴 지폐를 빼고 다시 골라 보세요.';
         return;
@@ -214,7 +221,10 @@ function showWallet() {
       wallet.push(value);
       status.textContent = '';
       update();
-    }, '담기 · '));
+    }, '담기 · ');
+    choice.dataset.note = value;
+    counters.set(value, selectionCounter(choice, '담기 · ' + won(value), '장'));
+    choices.append(choice);
   }
   const controls = element('div', '', 'controls');
   controls.append(check, button('문제 다시 듣기', () => announce(prompt)), advance);
