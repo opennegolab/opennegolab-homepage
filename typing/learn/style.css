@@ -60,6 +60,37 @@ h1:focus { outline: none; }
 .quantity-photo .repeated { justify-content: flex-start; }
 .quantity-photo img { width: clamp(3.1rem, 13vw, 7rem); }
 .receipt { padding: 0; margin: 0; list-style: none; display: grid; gap: .6rem; }
+.serving-tray {
+  box-sizing: border-box;
+  width: min(100%, 46rem);
+  min-height: min(55vw, 28rem);
+  margin: 0 auto;
+  padding: clamp(1.25rem, 7%, 3.5rem);
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  gap: .75rem;
+  background: #efe2cd url('/typing/learn/images/serving-tray.webp') center / 100% 100% no-repeat;
+  border-radius: var(--haru-radius);
+  isolation: isolate;
+}
+.served-dish {
+  flex: 0 1 clamp(6rem, 25%, 11rem);
+  display: grid;
+  align-content: start;
+  text-align: center;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+.served-dish img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  mask-image: radial-gradient(ellipse closest-side, #000 90%, transparent 125%);
+}
 .receipt-row { border: 1px solid var(--line); border-radius: var(--haru-radius); background: white; padding: .65rem; display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
 .receipt-row .repeated { justify-content: flex-start; }
 #voice-status { max-width: 1100px; padding: 0 1rem; margin: 0 auto 1rem; color: #584714; }

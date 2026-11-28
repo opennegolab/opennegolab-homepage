@@ -480,6 +480,17 @@ function receipt(cart, editable) {
   if (cart.length) app.append(node('p', 'pay-total', '합계 ' + won(orderTotal(cart))));
 }
 
+function servedTray(cart) {
+  const tray = node('ul', 'serving-tray');
+  tray.setAttribute('aria-label', '쟁반에 담긴 메뉴');
+  for (const { item, count } of cart) {
+    const dish = node('li', 'served-dish');
+    dish.append(photo(item.image), node('span', '', wording(item, count)));
+    tray.append(dish);
+  }
+  app.append(tray);
+}
+
 function finishActions(repeat, other = reset, nextProblem) {
   const actions = [button('같은 문제 다시 풀기', repeat), button('다른 활동 하기', other)];
   if (nextProblem) actions.unshift(button('새 문제 풀기', nextProblem, true));
@@ -562,7 +573,8 @@ function shopScreen(shop) {
     return;
   }
   heading('문제를 해결했어요', shop.done, shop.name, 'cheer');
-  receipt(cart, false);
+  if (menu) servedTray(cart);
+  else receipt(cart, false);
   const isMarket = id === 'fruit' || id === 'vegetable';
   const other = !area && isMarket ? () => {
     trail = [];
