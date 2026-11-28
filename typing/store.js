@@ -117,12 +117,10 @@
     async update(id, raw) { return (await call("/items/" + id, { prompt: raw.prompt, answers: raw.answers || [] }, "PUT")).item; },
     async remove(ids) { return (await call("/delete", { ids })).removed; },
     /* 출제 — 섞어서 고른다. ids 를 주면(오답 복습·다시 풀기) 그 문제들만 다시 섞는다 */
-    /* mode: 'dictation' 받아쓰기, 'qa' 질문에 답하기(산수 빼고), 'math' 산수, 'all' 모두 섞어서 */
+    /* mode: 'dictation' 받아쓰기, 'qa' 질문에 답하기, 'all' 둘을 섞어서 */
     async pick(setId, mode, count, ids) {
-      const modes = mode === "all" ? ["dictation", "qa"] : mode === "math" ? ["qa"] : [mode];
+      const modes = mode === "all" ? ["dictation", "qa"] : [mode];
       let pool = (await Promise.all(modes.map(m => this.list(setId, m)))).flat();
-      if (mode === "math") pool = pool.filter(x => isMath(x.prompt));
-      if (mode === "qa") pool = pool.filter(x => !isMath(x.prompt));
       if (Array.isArray(ids)) { const want = new Set(ids); pool = pool.filter(x => want.has(x.id)); }
       let picked = shuffle(pool);
       const n = count === "all" ? Infinity : Number(count);
@@ -131,10 +129,47 @@
     },
   };
 
-  /* 산수 문제 — '9 + 6 = ?' 처럼 숫자와 기호로 쓴 질문 (typing-api.js 의 isMath 와 같은 규칙) */
+  /* 계산 문제인지 — '9 + 6 = ?' 처럼 숫자와 기호로 쓴 질문 (화면 위 표시를 '수학'으로) */
   function isMath(prompt) { return /^\s*\d+\s*[-+×x*÷/]\s*\d+\s*=\s*\?\s*$/.test(prompt || ""); }
 
-  const api = { clean, compare, grade, feedback, shuffle, isMath, store };
+  /* ---------- 수학 — 단계에 맞춰 덧셈·뺄셈 문제를 그때그때 만든다 (보호자가 넣을 필요 없음) ----------
+     1단계: 한 자리끼리, 받아올림·받아내림 없이      3 + 4, 8 - 5   (답 0~9)
+     2단계: 받아올림·받아내림                        7 + 6, 13 - 5
+     3단계: 두 자리와 한 자리 (반쯤은 받아올림·받아내림) 47 + 8, 52 - 7, 34 + 5 */
+  const between = (a, b) => a + randInt(b - a + 1);
+  function mathOne(level) {
+    const plus = randInt(2) === 0;
+    if (level === 1) {
+      if (plus) { const a = between(1, 8); return [a, "+", between(1, 9 - a)]; }
+      const a = between(2, 9); return [a, "-", between(1, a)];
+    }
+    if (level === 2) {
+      if (plus) { const a = between(2, 9); return [a, "+", between(10 - a, 9)]; }   /* 합이 10 이상 */
+      const b = between(2, 9); return [10 + randInt(b), "-", b];                  /* 십몇 - 한 자리, 일의 자리가 모자람 */
+    }
+    const carry = randInt(2) === 0;
+    if (plus) {
+      if (carry) { const u = between(1, 9); return [between(1, 8) * 10 + u, "+", between(10 - u, 9)]; }
+      const u = between(0, 8); return [between(1, 9) * 10 + u, "+", between(1, 9 - u)];
+    }
+    if (carry) { const u = between(0, 8); return [between(2, 9) * 10 + u, "-", between(u + 1, 9)]; }
+    const u = between(1, 9); return [between(1, 9) * 10 + u, "-", between(1, u)];
+  }
+  /* count: 10·20, 'all' 이면 30문제. 같은 문제는 되도록 겹치지 않게 */
+  function makeMath(level, count) {
+    const n = count === "all" ? 30 : Math.max(1, Math.floor(Number(count)) || 10);
+    const seen = new Set(), out = [];
+    for (let tries = 0; out.length < n && tries < 3000; tries++) {
+      const [a, op, b] = mathOne(level);
+      const prompt = a + " " + op + " " + b + " = ?";
+      if (seen.has(prompt) && tries < 2000) continue;
+      seen.add(prompt);
+      out.push({ id: out.length + 1, mode: "qa", prompt, answers: [String(op === "+" ? a + b : a - b)] });
+    }
+    return out;
+  }
+
+  const api = { clean, compare, grade, feedback, shuffle, isMath, makeMath, store };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.TypingStore = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -141,12 +141,18 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   .type.qa[aria-pressed="true"]::after{ color:var(--lav); }
   .type.math[aria-pressed="true"]::after{ color:var(--mint, #38B48E); }
   .type:disabled{ opacity:.45; cursor:default; }
+  .set-card .set > .i:first-child{ width:22px; height:22px; color:var(--mint); }
+  .set-card.math.open{ border-color:var(--mint); }
+  .set-card.math.open .set{ background:var(--mint-soft); color:var(--mint-d); }
+  .type .ico em{ font-style:normal; font-weight:900; font-size:1.2rem; }
+  .type span i{ font-style:normal; white-space:nowrap; }
   .qtag.math{ background:var(--mint-soft, #E3F5EE); color:var(--mint-d, #23805F); }
   @media (max-width:430px){
     .types{ gap:6px; padding:10px 8px; }
     .type{ padding:10px 6px; min-height:88px; align-items:center; text-align:center; }
     .type .ico{ width:34px; height:34px; }
     .type b{ font-size:.92rem; }
+    .type span i{ display:block; white-space:normal; word-break:keep-all; }
   }
   .seg{ display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:4px; background:#F5EFE6; padding:5px; border-radius:18px; }
   .seg button{ border-radius:14px; min-height:48px; font-weight:800; color:var(--ink-soft); display:flex; align-items:center; justify-content:center; gap:8px; transition:background .15s, color .15s, box-shadow .15s; }
@@ -597,46 +603,57 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   }
 
   let sets = null;
-  const currentSet = () => (sets || []).find(x => x.id === settings.set) || null;
+  /* 수학 — 서버 문제집이 아니라 화면이 단계에 맞춰 문제를 만든다 (store.js makeMath). 문제집 목록 끝에 늘 있다 */
+  const MATH = { id: "math", name: "수학", math: true, counts: { dictation: 0, qa: 0 } };
+  const cards = () => sets ? (sets.length || !shared ? [...sets, MATH] : sets) : null;
+  const currentSet = () => (cards() || []).find(x => x.id === settings.set) || null;
 
   function renderSets() {
     const el = $("sets");
     if (!sets) return;
-    if (!sets.length) { el.textContent = shared ? "사용할 수 있는 연습이 없어요." : "아직 문제집이 없어요. 문제 설정에서 만들어 주세요."; return; }
-    /* 고른 문제집만 펼쳐서 그 아래 문제 종류 3개를 보여 준다 */
-    el.innerHTML = sets.map(x => {
+    if (!sets.length && shared) { el.textContent = "사용할 수 있는 연습이 없어요."; return; }
+    /* 고른 문제집만 펼쳐서 그 아래 문제 종류(수학은 단계) 버튼을 보여 준다 */
+    el.innerHTML = cards().map(x => {
       const open = x.id === settings.set;
-      return "<div class='set-card" + (open ? " open" : "") + "'>" +
-        "<button type='button' class='set' data-set='" + x.id + "' aria-expanded='" + open + "' aria-pressed='" + open + "'>" + esc(x.name) +
-        "<small>" + (x.counts.dictation + x.counts.qa) + "</small>" + icon("arrow").replace("class='i'", "class='i chev'") + "</button>" +
-        (open ? "<div class='types' role='group' aria-label='" + esc(x.name) + " 문제 종류'>" + TYPES.map(t => {
+      return "<div class='set-card" + (x.math ? " math" : "") + (open ? " open" : "") + "'>" +
+        "<button type='button' class='set' data-set='" + x.id + "' aria-expanded='" + open + "' aria-pressed='" + open + "'>" +
+        (x.math ? icon("math") : "") + esc(x.name) +
+        "<small>" + (x.math ? "덧셈·뺄셈" : x.counts.dictation + x.counts.qa) + "</small>" + icon("arrow").replace("class='i'", "class='i chev'") + "</button>" +
+        (open ? "<div class='types' role='group' aria-label='" + esc(x.name) + (x.math ? " 단계" : " 문제 종류") + "'>" + typesOf(x).map(t => {
           const n = typeCount(x, t.id);
           const off = !n || (t.id === "dictation" && !tts.ok);
-          return "<button type='button' class='type " + t.id + "' data-type='" + t.id + "' aria-pressed='" + (settings.mode === t.id) + "'" + (off ? " disabled" : "") + ">" +
-            "<span class='ico' aria-hidden='true'>" + icon(t.icon) + "</span><b>" + t.name + "</b><span>" + (n ? n + "문제" : "문제 없음") + "</span></button>";
+          return "<button type='button' class='type " + t.cls + "' data-type='" + t.id + "' aria-pressed='" + (settings.mode === t.id) + "'" + (off ? " disabled" : "") + ">" +
+            "<span class='ico' aria-hidden='true'>" + (t.level ? "<em>" + t.level + "</em>" : icon(t.icon)) + "</span><b>" + t.name + "</b><span>" +
+            (t.desc ? t.desc.map(x => "<i>" + x + "</i>").join(" ") : (n ? n + "문제" : "문제 없음")) + "</span></button>";
         }).join("") + "</div>" : "") +
         "</div>";
     }).join("");
   }
-  /* 문제 종류 — 산수는 '9 + 6 = ?' 처럼 쓴 질문 (store.js isMath). 질문에 답하기는 산수를 뺀 질문 */
+  /* 문제 종류 — 문제집은 받아쓰기·질문에 답하기, 수학은 1~3단계 */
   const TYPES = [
-    { id: "dictation", name: "받아쓰기", icon: "headphones" },
-    { id: "qa", name: "질문에 답하기", icon: "chat" },
-    { id: "math", name: "산수", icon: "math" },
+    { id: "dictation", cls: "dictation", name: "받아쓰기", icon: "headphones" },
+    { id: "qa", cls: "qa", name: "질문에 답하기", icon: "chat" },
   ];
-  const MODE_NAME = { dictation: "받아쓰기", qa: "질문에 답하기", math: "산수" };
+  const LEVELS = [
+    { id: "math1", cls: "math", level: 1, name: "1단계", desc: ["한 자리", "받아올림 없이"] },
+    { id: "math2", cls: "math", level: 2, name: "2단계", desc: ["받아올림", "받아내림"] },
+    { id: "math3", cls: "math", level: 3, name: "3단계", desc: ["두 자리와", "한 자리"] },
+  ];
+  const typesOf = card => card.math ? LEVELS : TYPES;
+  const MODE_NAME = { dictation: "받아쓰기", qa: "질문에 답하기", math1: "수학 1단계", math2: "수학 2단계", math3: "수학 3단계" };
   function typeCount(set, type) {
-    const c = set.counts, math = c.math || 0;
-    return type === "dictation" ? c.dictation : type === "math" ? math : c.qa - math;
+    if (set.math) return 1;                      /* 수학은 언제나 풀 수 있다 */
+    return type === "dictation" ? set.counts.dictation : type === "qa" ? set.counts.qa : 0;
   }
   /* 고른 종류가 이 문제집에 없으면(또는 소리가 안 나는데 받아쓰기면) 풀 수 있는 첫 종류로 */
   function fixMode() {
     const cur = currentSet();
     if (!cur) return;
-    const can = t => typeCount(cur, t) > 0 && (t !== "dictation" || tts.ok);
-    if (!MODE_NAME[settings.mode] || !can(settings.mode)) {
-      const first = TYPES.find(t => can(t.id));
-      if (first) { settings.mode = first.id; saveSettings(); }
+    const list = typesOf(cur).map(t => t.id);
+    const can = t => list.includes(t) && typeCount(cur, t) > 0 && (t !== "dictation" || tts.ok);
+    if (!can(settings.mode)) {
+      const first = list.find(can);
+      if (first) { settings.mode = first; saveSettings(); }
     }
   }
   $("sets").addEventListener("click", e => {
@@ -644,7 +661,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     if (type) { settings.mode = type.dataset.type; saveSettings(); renderHome(); return; }
     const b = e.target.closest("[data-set]");
     if (!b) return;
-    settings.set = Number(b.dataset.set); saveSettings();
+    settings.set = b.dataset.set === "math" ? "math" : Number(b.dataset.set); saveSettings();
     fixMode();
     renderHome();
   });
@@ -660,7 +677,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     let w = "";
     if (counts) {
       if (sets && !sets.length) w = "";
-      else if (!counts.dictation && !counts.qa) w = "이 문제집에는 문제가 없어요. '문제 설정'에서 넣어 주세요.";
+      else if (cur && !cur.math && !counts.dictation && !counts.qa) w = "이 문제집에는 문제가 없어요. '문제 설정'에서 넣어 주세요.";
     }
     if (loadError) w = loadError;
     warn.textContent = w;
@@ -706,7 +723,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
           button.disabled = true;
         });
       }
-      if (!currentSet() && sets.length) { settings.set = sets[0].id; saveSettings(); }
+      if (!currentSet() && cards().length) { settings.set = cards()[0].id; saveSettings(); }
       fixMode();
     } catch (e) {
       if (!sets) $("sets").innerHTML = "";
@@ -772,7 +789,14 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     $("stage").innerHTML = "<div class='loading'><div class='spinner'></div>문제를 준비하고 있어요</div>";
     /* 시작할 때 서버에서 문제를 받아 그대로 들고 간다 — 푸는 중에 누가 문제를 고쳐도 흔들리지 않게 */
     let picked;
-    try { picked = await T.store.pick(req.set, req.mode, req.count, req.ids); }
+    const before = S.items;
+    try {
+      if (req.set === "math") {
+        /* 수학 — 새로 만든다. 다시 풀기(ids)는 방금 푼 문제 그대로 */
+        const level = Number(String(req.mode).slice(4)) || 1;
+        picked = Array.isArray(req.ids) ? T.shuffle(before.filter(x => req.ids.includes(x.id))) : T.makeMath(level, req.count);
+      } else picked = await T.store.pick(req.set, req.mode, req.count, req.ids);
+    }
     catch (e) {
       if (seq !== S.seq) return;
       $("stage").innerHTML = "<div class='loading'>" + esc("문제를 불러오지 못했어요. " + e.message) + "<br><br><button type='button' class='btn btn-soft' id='backHome'>처음 화면으로</button></div>";
@@ -826,7 +850,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
 
     const qa = item.mode === "qa";     /* 문제마다 자기 종류대로 */
     $("stage").innerHTML = qa
-      ? (T.isMath(item.prompt) ? "<span class='qtag math'>" + icon("math") + "산수</span>" : "<span class='qtag qa'>" + icon("chat") + "질문에 답하기</span>") +
+      ? (T.isMath(item.prompt) ? "<span class='qtag math'>" + icon("math") + "수학</span>" : "<span class='qtag qa'>" + icon("chat") + "질문에 답하기</span>") +
         "<div class='question'>" + esc(item.question) + "</div>" +
         "<button type='button' class='listen listen-pill' id='listenBtn'>" + icon("speaker") + "질문 듣기</button>"
       : "<span class='qtag'>" + icon("headphones") + "받아쓰기</span>" +

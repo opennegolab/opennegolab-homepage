@@ -60,41 +60,6 @@ const SAMPLES = {
 /* 공개 연습에 제공하는 기본 문제집입니다. */
 const DEFAULT_EXERCISES = [
   {
-    name: "한자리 산수",
-    qa: [
-      ["1 + 8 = ?", ["9"]],
-      ["7 - 3 = ?", ["4"]],
-      ["3 - 1 = ?", ["2"]],
-      ["4 - 2 = ?", ["2"]],
-      ["6 - 4 = ?", ["2"]],
-      ["6 + 5 = ?", ["11"]],
-      ["6 + 7 = ?", ["13"]],
-      ["7 - 4 = ?", ["3"]],
-      ["4 + 3 = ?", ["7"]],
-      ["8 - 3 = ?", ["5"]],
-      ["5 + 6 = ?", ["11"]],
-      ["9 - 3 = ?", ["6"]],
-      ["6 + 2 = ?", ["8"]],
-      ["3 + 4 = ?", ["7"]],
-      ["7 + 5 = ?", ["12"]],
-      ["5 + 9 = ?", ["14"]],
-      ["9 + 8 = ?", ["17"]],
-      ["8 - 1 = ?", ["7"]],
-      ["4 + 1 = ?", ["5"]],
-      ["4 + 2 = ?", ["6"]],
-      ["1 + 7 = ?", ["8"]],
-      ["2 + 7 = ?", ["9"]],
-      ["8 - 7 = ?", ["1"]],
-      ["9 - 5 = ?", ["4"]],
-      ["5 + 8 = ?", ["13"]],
-      ["6 + 1 = ?", ["7"]],
-      ["9 + 6 = ?", ["15"]],
-      ["6 - 5 = ?", ["1"]],
-      ["6 + 8 = ?", ["14"]],
-      ["7 - 7 = ?", ["0"]],
-    ],
-  },
-  {
     name: "낱말 받아쓰기",
     /* 과일·채소·탈것 이름 50개 (무작위 순서) */
     dictation: [
@@ -276,11 +241,6 @@ function rowOut(r) {
 }
 const copy = x => ({ ...x, answers: [...x.answers] });
 
-/* 산수 문제 — '9 + 6 = ?' 처럼 숫자와 기호로 쓴 질문. 한글 공부에서 '산수'로 따로 고를 수 있다.
-   (typing/store.js 의 isMath 와 같은 규칙. counts.qa 는 산수를 포함한 질문 전체 수) */
-const isMath = prompt => /^\s*\d+\s*[-+×x*÷/]\s*\d+\s*=\s*\?\s*$/.test(prompt);
-const MATH_SQL = "^\\s*[0-9]+\\s*[-+×x*÷/]\\s*[0-9]+\\s*=\\s*\\?\\s*$";
-
 class Conflict extends Error {}
 
 const store = {
@@ -292,19 +252,17 @@ const store = {
         counts: {
           dictation: memory.items.filter(x => x.set_id === st.id && x.mode === "dictation").length,
           qa: memory.items.filter(x => x.set_id === st.id && x.mode === "qa").length,
-          math: memory.items.filter(x => x.set_id === st.id && x.mode === "qa" && isMath(x.prompt)).length,
         },
       }));
     }
     const r = await (await db()).query(`
       SELECT s.id, s.name,
              count(i.id) FILTER (WHERE i.mode = 'dictation')::int AS d,
-             count(i.id) FILTER (WHERE i.mode = 'qa')::int AS q,
-             count(i.id) FILTER (WHERE i.mode = 'qa' AND i.prompt ~ $2)::int AS m
+             count(i.id) FILTER (WHERE i.mode = 'qa')::int AS q
         FROM typing_sets s LEFT JOIN typing_items i ON i.set_id = s.id
        WHERE s.owner IS NOT DISTINCT FROM $1::text
-       GROUP BY s.id ORDER BY s.id`, [owner, MATH_SQL]);
-    return r.rows.map(x => ({ id: Number(x.id), name: x.name, counts: { dictation: x.d, qa: x.q, math: x.m } }));
+       GROUP BY s.id ORDER BY s.id`, [owner]);
+    return r.rows.map(x => ({ id: Number(x.id), name: x.name, counts: { dictation: x.d, qa: x.q } }));
   },
   async getSet(id) {
     if (!usingDb()) { const st = memory.sets.find(x => x.id === id); return st ? { ...st } : null; }
@@ -853,8 +811,8 @@ function warmUp() {
 }
 
 /* 공개 기본 문제집 — 코드에 들어 있는 읽기 전용 문제.
-   받아쓰기·질문에 답하기·산수를 '기본 문제' 한 세트로 묶는다 (2026-11 운영자 요청).
-   연습할 때 문제마다 종류에 맞게 나온다 */
+   받아쓰기·질문에 답하기를 '기본 문제' 한 세트로 묶는다 (2026-11 운영자 요청).
+   수학(덧셈·뺄셈)은 여기 두지 않는다 — 한글 공부 화면이 단계에 맞춰 스스로 만든다 (typing/store.js makeMath) */
 const DEFAULT_SET = "기본 문제";
 const publicSeeds = [{
   name: DEFAULT_SET,
@@ -864,8 +822,8 @@ const publicSeeds = [{
 const publicSets = publicSeeds.map((seed, index) => {
   const id = index + 1;
   const items = seedItems(seed).map((item, position) => ({ ...item, id: position + 1 }));
-  const counts = { dictation: 0, qa: 0, math: 0 };
-  for (const item of items) { counts[item.mode]++; if (item.mode === "qa" && isMath(item.prompt)) counts.math++; }
+  const counts = { dictation: 0, qa: 0 };
+  for (const item of items) counts[item.mode]++;
   return { id, name: seed.name, counts, items };
 });
 
