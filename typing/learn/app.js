@@ -73,6 +73,7 @@ function heading(title, prompt, detail, pose) {
     header.append(mascot);
   }
   app.append(header);
+  return header;
 }
 
 function button(label, callback, primary = false) {
@@ -250,7 +251,7 @@ function kioskProgress(view) {
 }
 
 function kioskOrder(shop) {
-  heading(shop.name, '상품을 누르면 주문 목록에 담겨요.');
+  const orderHeading = heading(shop.name, '상품을 누르면 주문 목록에 담겨요.');
   const menu = node('section', 'kiosk-products');
   menu.setAttribute('aria-label', '상품');
   const basket = node('aside', 'kiosk-basket');
@@ -265,6 +266,7 @@ function kioskOrder(shop) {
     jump.focus({ preventScroll: true });
   });
   resetOrder.classList.add('kiosk-basket-reset');
+  orderHeading.append(resetOrder);
   basket.append(rows);
   feedbackLine(basket);
   const checkout = button('결제하기', submitCart, true);
@@ -293,7 +295,7 @@ function kioskOrder(shop) {
   jump.classList.add('kiosk-order-jump');
   jump.setAttribute('aria-live', 'polite');
   const orderBar = node('div', 'kiosk-order-bar');
-  orderBar.append(jump, resetOrder);
+  orderBar.append(jump);
   group('kiosk-layout', orderBar, menu, basket);
 
   function adjust(item, delta, focusControl = false) {
