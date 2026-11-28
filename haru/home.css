@@ -56,3 +56,6 @@ main { padding-bottom: 1.5rem; }
   .home-header button { padding: .55rem .7rem; }
   .home-header button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 }
+/* 누가 공부하는지 — 아이 바꾸기·로그인 */
+.who-line { margin: .6rem 0 0; font-size: .95rem; font-weight: 700; color: var(--haru-muted, #526456); word-break: keep-all; }
+.who-line a { color: var(--haru-green, #24543c); font-weight: 800; text-underline-offset: 3px; display: inline-flex; align-items: center; min-height: 44px; }

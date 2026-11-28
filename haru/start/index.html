@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ko" data-haru>
+<head>
+  <meta charset="utf-8">
+  <script src="/haru/external-browser.js?v=2"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#fff8e9">
+  <title>하루랑 시작하기</title>
+  <link rel="icon" href="/haru/assets/favicon.png" type="image/png">
+  <link rel="manifest" href="/haru/manifest.webmanifest">
+  <link rel="stylesheet" href="/haru/brand.css?v=4">
+  <script src="/haru/rewards.js?v=3"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--haru-font); color: var(--haru-ink); background: var(--haru-background); }
+    main { max-width: 760px; margin: auto; padding: clamp(.8rem, 3vw, 1.6rem) clamp(.75rem, 3vw, 1.5rem) 2.5rem; }
+    .card { background: white; border: 1px solid var(--haru-line); border-radius: 1.2rem; padding: clamp(1rem, 3vw, 1.6rem); }
+    .hello { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+    .hello img { width: clamp(76px, 18vw, 120px); height: auto; mix-blend-mode: multiply; flex: none; }
+    h1 { margin: 0; font-size: clamp(1.55rem, 5.5vw, 2.4rem); letter-spacing: -.03em; line-height: 1.25; word-break: keep-all; }
+    .hello p { margin: .35rem 0 0; color: var(--haru-muted); font-weight: 650; word-break: keep-all; line-height: 1.5; }
+    [hidden] { display: none !important; }
+
+    /* 로그인 */
+    form.login { display: grid; gap: .45rem; }
+    label { font-weight: 800; margin-top: .35rem; }
+    input { font: inherit; font-size: 1.1rem; min-height: 52px; padding: .6rem .8rem; border: 2px solid var(--haru-line); border-radius: .8rem; background: white; color: inherit; width: 100%; }
+    input:focus { outline: none; border-color: var(--haru-green); }
+    .btn { font: inherit; font-weight: 800; font-size: 1.05rem; min-height: 52px; padding: .6rem 1.1rem; border-radius: .9rem; border: 2px solid var(--haru-line); background: white; color: var(--haru-green); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: .4rem; }
+    .btn.main { background: var(--haru-green); border-color: var(--haru-green); color: white; }
+    .btn:disabled { opacity: .6; cursor: default; }
+    .btn:focus-visible { outline: 3px solid var(--haru-green); outline-offset: 2px; }
+    .status { min-height: 1.4em; margin: .3rem 0 0; color: #b33a3a; font-weight: 700; word-break: keep-all; }
+    .switch { margin-top: .4rem; background: none; border: 0; color: var(--haru-green); font: inherit; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; justify-self: start; min-height: 44px; padding: 0; }
+    .guest { margin-top: 1rem; display: grid; gap: .4rem; background: var(--haru-cream); border-color: #e8ddc4; }
+    .guest p { margin: 0; color: var(--haru-muted); font-weight: 650; word-break: keep-all; }
+
+    /* 아이 고르기 */
+    .kids { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .7rem; }
+    .kid { position: relative; display: grid; justify-items: center; gap: .25rem; padding: .7rem .5rem .8rem; border: 2px solid var(--haru-line); border-radius: 1.1rem; background: white; font: inherit; color: inherit; cursor: pointer; text-align: center; }
+    .kid:hover { border-color: #b9cdb9; }
+    .kid:focus-visible { outline: 3px solid var(--haru-green); outline-offset: 2px; }
+    .kid.on { border-color: var(--haru-green); background: var(--haru-mint); }
+    .kid b { font-size: 1.25rem; word-break: keep-all; }
+    .kid span { font-weight: 800; color: #8a5e06; display: inline-flex; align-items: center; gap: .2rem; }
+    .kid span svg { width: 1.2em; height: 1.2em; }
+    .haru-dressed { position: relative; width: 100%; max-width: 120px; aspect-ratio: 420 / 508; border-radius: .9rem; background: var(--haru-cream); overflow: hidden; }
+    .haru-dressed img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+    .haru-dressed svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .edit-row { display: flex; gap: .35rem; margin-top: .3rem; }
+    .edit-row button { font: inherit; font-size: .88rem; font-weight: 800; min-height: 40px; padding: .3rem .6rem; border-radius: .7rem; border: 1px solid var(--haru-line); background: white; color: var(--haru-green); cursor: pointer; }
+    .edit-row button.del { color: #b33a3a; border-color: #ecc7c7; }
+    .add { margin-top: 1rem; display: grid; gap: .45rem; }
+    .add-row { display: flex; gap: .5rem; }
+    .add-row input { flex: 1; min-width: 0; }
+    .add .note { margin: 0; color: var(--haru-muted); font-weight: 650; font-size: .92rem; word-break: keep-all; }
+    .tools { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.1rem; padding-top: 1rem; border-top: 1px dashed var(--haru-line); }
+    .tools .btn { font-size: .95rem; min-height: 46px; }
+    .who { margin: .35rem 0 0; color: var(--haru-muted); font-weight: 700; }
+    .loading { text-align: center; color: var(--haru-muted); font-weight: 700; padding: 2rem 0; }
+    @media (max-width: 430px) {
+      .kids { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .add-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header class="haru-top">
+    <nav class="haru-top-inner" aria-label="하루랑">
+      <a class="haru-return" href="/haru" aria-label="하루랑 처음으로"><img src="/haru/assets/logo.png" width="123" height="44" alt="하루랑"></a>
+    </nav>
+  </header>
+  <main>
+    <p class="loading" id="loading">잠깐만요…</p>
+
+    <!-- 1. 로그인 (또는 계정 만들기) -->
+    <section id="login" hidden>
+      <div class="card">
+        <div class="hello">
+          <img src="/haru/assets/haru-wave.webp" width="360" height="440" alt="">
+          <div>
+            <h1 id="login-title">하루랑 시작하기</h1>
+            <p>보호자가 로그인하면 아이마다 별과 꾸미기가 저장돼요. 다른 기기에서 열어도 그대로예요.</p>
+          </div>
+        </div>
+        <form class="login" id="login-form" novalidate>
+          <label for="username">보호자 아이디</label>
+          <input id="username" autocomplete="username" required minlength="4" maxlength="24" autocapitalize="none" spellcheck="false" placeholder="영문·숫자 4~24자">
+          <label for="password">비밀번호 (숫자 4자리)</label>
+          <input id="password" type="password" autocomplete="current-password" required inputmode="numeric" maxlength="4" placeholder="••••">
+          <p class="status" id="login-status" role="status"></p>
+          <button class="btn main" type="submit" id="login-submit">로그인</button>
+          <button class="switch" type="button" id="login-switch">처음이에요 · 보호자 계정 만들기</button>
+        </form>
+      </div>
+      <div class="card guest">
+        <button class="btn" type="button" id="guest">로그인 없이 둘러보기</button>
+        <p>둘러보기에서 모은 별은 이 기기에만 남아요. 나중에 로그인해서 아이를 만들면 그 아이에게 옮겨 줘요.</p>
+      </div>
+    </section>
+
+    <!-- 2. 아이 고르기 -->
+    <section id="pick" hidden>
+      <div class="card">
+        <div class="hello">
+          <img src="/haru/assets/haru-guide.webp" alt="">
+          <div>
+            <h1 id="pick-title">누가 공부할까요?</h1>
+            <p class="who" id="who"></p>
+          </div>
+        </div>
+        <div class="kids" id="kids" role="group" aria-label="아이 고르기"></div>
+        <form class="add" id="add-form" novalidate>
+          <label for="child-name" id="add-label">아이 추가하기</label>
+          <div class="add-row">
+            <input id="child-name" maxlength="12" autocomplete="off" placeholder="아이 이름이나 별명">
+            <button class="btn main" type="submit" id="add-submit">추가</button>
+          </div>
+          <p class="note" id="move-note" hidden></p>
+          <p class="status" id="add-status" role="status"></p>
+        </form>
+        <div class="tools">
+          <button class="btn" type="button" id="edit" aria-pressed="false">아이 목록 고치기</button>
+          <a class="btn" href="/typing/admin">보호자 문제 설정</a>
+          <button class="btn" type="button" id="logout">로그아웃</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script>
+  (function () {
+    "use strict";
+    const R = window.HaruRewards;
+    const $ = id => document.getElementById(id);
+    const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.6 2.9 6 6.5.9-4.7 4.6 1.1 6.5L12 17.5l-5.8 3.1 1.1-6.5L2.6 9.5l6.5-.9z" fill="#f7c948" stroke="#b07d12" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+    /* 다 고르면 돌아갈 곳 — 하루랑 안의 주소만 */
+    const nextParam = new URLSearchParams(location.search).get("next") || "";
+    const next = /^\/haru(\/[a-z\/-]*)?$/.test(nextParam) ? nextParam : "/haru";
+    let me = null, registering = false, editing = false;
+
+    async function api(path, method, body) {
+      const r = await fetch("/api/typing" + path, {
+        method, credentials: "same-origin", cache: "no-store",
+        headers: body ? { "Content-Type": "application/json" } : {},
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok || data.ok === false) throw new Error(data.message || "잠시 후 다시 해 주세요.");
+      return data;
+    }
+    async function loadMe() {
+      me = await api("/me", "GET");
+      R.setProfile(me);
+      render();
+    }
+
+    function render() {
+      $("loading").hidden = true;
+      $("login").hidden = !!me.guardian;
+      $("pick").hidden = !me.guardian;
+      if (!me.guardian) return;
+      $("who").textContent = "보호자 " + me.guardian;
+      const kids = me.children;
+      $("pick-title").textContent = kids.length ? "누가 공부할까요?" : "공부할 아이를 추가해 주세요";
+      $("add-label").textContent = kids.length ? "아이 추가하기" : "아이 이름";
+      $("kids").hidden = !kids.length;
+      $("edit").hidden = !kids.length;
+      $("kids").replaceChildren(...kids.map(kid => {
+        const box = document.createElement(editing ? "div" : "button");
+        box.className = "kid" + (me.child && me.child.id === kid.id ? " on" : "");
+        if (!editing) { box.type = "button"; box.addEventListener("click", () => choose(kid.id, box)); }
+        box.innerHTML = R.figure({ wear: kid.wear || {} }, "") + "<b></b><span>" + STAR + "별 " + kid.stars + "개</span>";
+        box.querySelector("img").alt = "";
+        box.querySelector("b").textContent = kid.name;
+        if (editing) {
+          const row = document.createElement("div");
+          row.className = "edit-row";
+          row.innerHTML = '<button type="button">이름 바꾸기</button><button type="button" class="del">지우기</button>';
+          row.children[0].addEventListener("click", () => rename(kid));
+          row.children[1].addEventListener("click", () => remove(kid));
+          box.appendChild(row);
+        }
+        return box;
+      }));
+      /* 둘러보기로 이 기기에 모은 별 — 새 아이에게 옮겨 준다 */
+      const local = R.readLocal();
+      $("move-note").hidden = !local.stars;
+      $("move-note").textContent = "이 기기에서 둘러보기로 모은 별 " + local.stars + "개를 새로 만드는 아이에게 옮겨 줄게요.";
+    }
+
+    async function choose(id, box) {
+      box.disabled = true;
+      try {
+        await api("/child", "POST", { id });
+        try { sessionStorage.removeItem("haru.guest"); } catch (e) {}
+        await R.refresh();
+        location.href = next;
+      } catch (e) { box.disabled = false; $("add-status").textContent = e.message; }
+    }
+    async function rename(kid) {
+      const name = prompt("새 이름을 적어 주세요.", kid.name);
+      if (name == null || !name.trim() || name.trim() === kid.name) return;
+      try { await api("/children/" + kid.id, "PUT", { name }); await loadMe(); }
+      catch (e) { $("add-status").textContent = e.message; }
+    }
+    async function remove(kid) {
+      if (!confirm("'" + kid.name + "'을(를) 지울까요?\n모은 별 " + kid.stars + "개와 꾸미기, 도장도 함께 지워져요.")) return;
+      try { await api("/children/" + kid.id, "DELETE"); await loadMe(); }
+      catch (e) { $("add-status").textContent = e.message; }
+    }
+
+    $("add-form").addEventListener("submit", async event => {
+      event.preventDefault();
+      const name = $("child-name").value.trim();
+      if (!name) { $("add-status").textContent = "아이 이름을 적어 주세요."; $("child-name").focus(); return; }
+      $("add-submit").disabled = true;
+      $("add-status").textContent = "";
+      try {
+        const local = R.readLocal();
+        const r = await api("/children", "POST", { name, rewards: local.stars ? local : undefined });
+        if (local.stars) R.clearLocal();
+        $("child-name").value = "";
+        await loadMe();
+        /* 처음 만든 아이는 바로 골라 준다 */
+        if (me.children.length === 1) {
+          const box = $("kids").querySelector(".kid");
+          await choose(r.child.id, box || document.createElement("button"));
+        }
+      } catch (e) { $("add-status").textContent = e.message; }
+      finally { $("add-submit").disabled = false; }
+    });
+
+    $("edit").addEventListener("click", () => {
+      editing = !editing;
+      $("edit").setAttribute("aria-pressed", String(editing));
+      $("edit").textContent = editing ? "다 고쳤어요" : "아이 목록 고치기";
+      render();
+    });
+
+    $("logout").addEventListener("click", async () => {
+      try { await api("/session", "DELETE"); } catch (e) {}
+      await loadMe().catch(() => {});
+      $("username").focus();
+    });
+
+    $("login-switch").addEventListener("click", () => {
+      registering = !registering;
+      $("login-title").textContent = registering ? "보호자 계정 만들기" : "하루랑 시작하기";
+      $("login-submit").textContent = registering ? "계정 만들고 시작하기" : "로그인";
+      $("login-switch").textContent = registering ? "이미 계정이 있어요 · 로그인" : "처음이에요 · 보호자 계정 만들기";
+      $("password").autocomplete = registering ? "new-password" : "current-password";
+      $("login-status").textContent = "";
+      $("username").focus();
+    });
+
+    $("login-form").addEventListener("submit", async event => {
+      event.preventDefault();
+      const username = $("username").value.trim().toLowerCase();
+      const password = $("password").value;
+      if (!/^[a-z0-9_]{4,24}$/.test(username)) { $("login-status").textContent = "아이디는 영문, 숫자, 밑줄 4~24자로 적어 주세요."; $("username").focus(); return; }
+      if (!/^[0-9]{4}$/.test(password)) { $("login-status").textContent = "비밀번호는 숫자 4자리로 적어 주세요."; $("password").focus(); return; }
+      $("login-submit").disabled = true;
+      $("login-status").textContent = "";
+      try {
+        await api(registering ? "/register" : "/session", "POST", { username, password });
+        $("password").value = "";
+        await loadMe();
+        (me.children.length ? $("kids").querySelector(".kid") : $("child-name")).focus();
+      } catch (e) {
+        $("login-status").textContent = e.message;
+        $("password").value = "";
+        $("password").focus();
+      } finally { $("login-submit").disabled = false; }
+    });
+
+    $("guest").addEventListener("click", () => {
+      try { sessionStorage.setItem("haru.guest", "1"); } catch (e) {}
+      location.href = next;
+    });
+
+    loadMe().catch(() => {
+      $("loading").textContent = "연결이 잠깐 끊겼어요. 잠시 후 다시 열어 주세요.";
+    });
+  })();
+  </script>
+</body>
+</html>

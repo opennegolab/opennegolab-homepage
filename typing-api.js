@@ -154,6 +154,23 @@ async function prepare(p) {
     username TEXT PRIMARY KEY, password_hash TEXT NOT NULL
   )`);
   await p.query(`ALTER TABLE typing_sets ADD COLUMN IF NOT EXISTS owner TEXT REFERENCES typing_guardians(username)`);
+  /* 하루랑 아이 프로필 — 보호자 계정 하나에 아이 여럿. 별·도장·꾸미기(rewards)를 아이마다 저장한다 */
+  await p.query(`CREATE TABLE IF NOT EXISTS haru_children (
+    id         BIGSERIAL PRIMARY KEY,
+    guardian   TEXT NOT NULL REFERENCES typing_guardians(username) ON DELETE CASCADE,
+    name       TEXT NOT NULL,
+    rewards    JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`);
+  await p.query(`CREATE INDEX IF NOT EXISTS haru_children_guardian_idx ON haru_children (guardian, id)`);
+  /* 보호자 로그인 세션 (30일) — 서버가 다시 켜져도 로그인이 유지되게. key 는 쿠키 값의 SHA-256 */
+  await p.query(`CREATE TABLE IF NOT EXISTS typing_sessions (
+    key        TEXT PRIMARY KEY,
+    username   TEXT NOT NULL REFERENCES typing_guardians(username) ON DELETE CASCADE,
+    child_id   BIGINT REFERENCES haru_children(id) ON DELETE SET NULL,
+    expires_at TIMESTAMPTZ NOT NULL
+  )`);
+  await p.query(`DELETE FROM typing_sessions WHERE expires_at < now()`);
   await p.query(`CREATE UNIQUE INDEX IF NOT EXISTS typing_sets_owner_name_idx ON typing_sets (coalesce(owner, ''), lower(name))`);
   await p.query(`DROP INDEX IF EXISTS typing_sets_name_idx`);
   await p.query(`
@@ -389,8 +406,98 @@ const store = {
   },
 };
 
+/* ---------- 로그인 세션 저장 (typing-auth.js 가 쓴다) ---------- */
+if (usingDb()) auth.useStore({
+  async load(key) {
+    const r = await (await db()).query(`SELECT username, child_id, expires_at FROM typing_sessions WHERE key = $1`, [key]);
+    const x = r.rows[0];
+    return x ? { username: x.username, child: x.child_id == null ? null : Number(x.child_id), expiry: new Date(x.expires_at).getTime() } : null;
+  },
+  async save(key, s) {
+    await (await db()).query(`INSERT INTO typing_sessions (key, username, child_id, expires_at) VALUES ($1, $2, $3, $4)`,
+      [key, s.username, s.child, new Date(s.expiry)]);
+  },
+  async remove(key) { await (await db()).query(`DELETE FROM typing_sessions WHERE key = $1`, [key]); },
+  async setChild(key, child) { await (await db()).query(`UPDATE typing_sessions SET child_id = $2 WHERE key = $1`, [key, child]); },
+});
+
+/* ---------- 하루랑 아이 프로필 ---------- */
+const rules = require("./haru/rewards.js");
+const MAX_CHILDREN = 8;
+const MAX_CHILD_NAME = 12;
+const kidMemory = { list: [], seq: 0 };
+const kidOut = x => ({ id: Number(x.id), name: x.name, rewards: rules.normalize(x.rewards) });
+/* 오늘 날짜 (한국 시간) — 도장에 적는다 */
+const todayKst = () => new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+
+const kids = {
+  async list(guardian) {
+    if (!usingDb()) return kidMemory.list.filter(x => x.guardian === guardian).map(kidOut);
+    const r = await (await db()).query(`SELECT id, name, rewards FROM haru_children WHERE guardian = $1 ORDER BY id`, [guardian]);
+    return r.rows.map(kidOut);
+  },
+  async create(guardian, name, rewards) {
+    if ((await kids.list(guardian)).length >= MAX_CHILDREN) throw new BadRequest(`아이는 ${MAX_CHILDREN}명까지 만들 수 있어요.`);
+    if (!usingDb()) {
+      const x = { id: ++kidMemory.seq, guardian, name, rewards };
+      kidMemory.list.push(x);
+      return kidOut(x);
+    }
+    const r = await (await db()).query(`INSERT INTO haru_children (guardian, name, rewards) VALUES ($1, $2, $3) RETURNING id, name, rewards`,
+      [guardian, name, JSON.stringify(rewards)]);
+    return kidOut(r.rows[0]);
+  },
+  async rename(guardian, id, name) {
+    if (!usingDb()) {
+      const x = kidMemory.list.find(x => x.guardian === guardian && x.id === id);
+      if (x) x.name = name;
+      return x ? kidOut(x) : null;
+    }
+    const r = await (await db()).query(`UPDATE haru_children SET name = $3 WHERE guardian = $1 AND id = $2 RETURNING id, name, rewards`, [guardian, id, name]);
+    return r.rows[0] ? kidOut(r.rows[0]) : null;
+  },
+  async remove(guardian, id) {
+    if (!usingDb()) {
+      const before = kidMemory.list.length;
+      kidMemory.list = kidMemory.list.filter(x => !(x.guardian === guardian && x.id === id));
+      return before - kidMemory.list.length;
+    }
+    return (await (await db()).query(`DELETE FROM haru_children WHERE guardian = $1 AND id = $2`, [guardian, id])).rowCount;
+  },
+  /* 별 바꾸기 — 같은 아이에게 두 기기에서 동시에 별을 줘도 하나가 사라지지 않게 줄을 세운다 */
+  async change(guardian, id, fn) {
+    if (!usingDb()) {
+      const x = kidMemory.list.find(x => x.guardian === guardian && x.id === id);
+      if (!x) return null;
+      const out = fn(x.rewards);
+      x.rewards = out.rewards;
+      return out;
+    }
+    const client = await (await db()).connect();
+    try {
+      await client.query("BEGIN");
+      const r = await client.query(`SELECT rewards FROM haru_children WHERE guardian = $1 AND id = $2 FOR UPDATE`, [guardian, id]);
+      if (!r.rows[0]) { await client.query("ROLLBACK"); return null; }
+      const out = fn(r.rows[0].rewards);
+      await client.query(`UPDATE haru_children SET rewards = $3 WHERE guardian = $1 AND id = $2`, [guardian, id, JSON.stringify(out.rewards)]);
+      await client.query("COMMIT");
+      return out;
+    } catch (e) {
+      try { await client.query("ROLLBACK"); } catch {}
+      throw e;
+    } finally { client.release(); }
+  },
+};
+
 /* ---------- 입력 검사 ---------- */
 class BadRequest extends Error {}
+
+function checkChildName(raw) {
+  const name = clean(raw);
+  if (!name) throw new BadRequest("아이 이름을 적어 주세요.");
+  if (chars(name).length > MAX_CHILD_NAME) throw new BadRequest(`이름은 ${MAX_CHILD_NAME}글자까지 쓸 수 있어요.`);
+  return name;
+}
 
 function checkItem(mode, raw) {
   const prompt = clean(raw && raw.prompt);
@@ -577,12 +684,23 @@ async function route(req, res, urlPath) {
         return send(res, 409, { ok: false, message: "비밀번호가 이미 바뀌었어요. 다시 로그인해 주세요." });
       }
     }
-    return send(res, 200, { ok: true }, { "Set-Cookie": auth.signIn(req, username) });
+    return send(res, 200, { ok: true }, { "Set-Cookie": await auth.signIn(req, username) });
   }
   if (sub === "/session" && method === "DELETE" && sameOrigin(req)) {
-    return send(res, 200, { ok: true }, { "Set-Cookie": auth.signOut(req) });
+    return send(res, 200, { ok: true }, { "Set-Cookie": await auth.signOut(req) });
   }
-  const owner = auth.user(req);
+  /* 하루랑이 묻는 '지금 누가 쓰나' — 로그인 안 했으면 guardian: null (둘러보기) */
+  if (sub === "/me" && method === "GET") {
+    if (limitRead(ip)) return send(res, 429, { ok: false, message: "잠시 후 다시 해 주세요." });
+    const s = await auth.session(req);
+    if (!s) return send(res, 200, { ok: true, guardian: null, child: null, children: [] });
+    const children = await kids.list(s.username);
+    const child = children.find(x => x.id === s.child) || null;
+    return send(res, 200, { ok: true, guardian: s.username, child,
+      children: children.map(x => ({ id: x.id, name: x.name, stars: x.rewards.stars, wear: x.rewards.wear })) });
+  }
+  const session = await auth.session(req);
+  const owner = session?.username;
   if (!owner) return send(res, 401, { ok: false, message: "보호자 로그인이 필요해요." });
 
   const mustSet = async v => {
@@ -615,6 +733,51 @@ async function route(req, res, urlPath) {
   /* ----- 바꾸기 (보호자) ----- */
   if (!sameOrigin(req)) return send(res, 403, { ok: false, message: "허용되지 않은 요청입니다." });
   if (limitWrite(ip)) return send(res, 429, { ok: false, message: "너무 빠르게 바꾸고 있어요. 1분 뒤에 다시 해 주세요." });
+
+  /* ----- 하루랑 아이 프로필 ----- */
+  if (sub === "/children" && method === "POST") {
+    const body = await readJson(req);
+    /* 둘러보기로 이 기기에 모은 별이 있으면 함께 옮겨 온다 */
+    const child = await kids.create(owner, checkChildName(body.name), rules.normalize(body.rewards));
+    return send(res, 200, { ok: true, child: { id: child.id, name: child.name, stars: child.rewards.stars } });
+  }
+  const childOne = /^\/children\/(\d+)$/.exec(sub);
+  if (childOne && method === "PUT") {
+    const body = await readJson(req);
+    const child = await kids.rename(owner, toId(childOne[1]), checkChildName(body.name));
+    if (!child) return send(res, 404, { ok: false, message: "없는 아이예요." });
+    return send(res, 200, { ok: true, child: { id: child.id, name: child.name } });
+  }
+  if (childOne && method === "DELETE") {
+    const id = toId(childOne[1]);
+    const n = await kids.remove(owner, id);
+    if (n && session.child === id) await auth.setChild(req, null);
+    return send(res, n ? 200 : 404, { ok: !!n, removed: n });
+  }
+  /* 이 기기에서 공부할 아이 고르기 (id: null 이면 고르지 않음) */
+  if (sub === "/child" && method === "POST") {
+    const body = await readJson(req);
+    if (body.id == null) { await auth.setChild(req, null); return send(res, 200, { ok: true, child: null }); }
+    const child = (await kids.list(owner)).find(x => x.id === toId(body.id));
+    if (!child) return send(res, 404, { ok: false, message: "없는 아이예요." });
+    await auth.setChild(req, child.id);
+    return send(res, 200, { ok: true, child });
+  }
+  /* 별 받기·꾸미기 — 규칙은 haru/rewards.js 와 같다 */
+  if (sub === "/rewards" && method === "POST") {
+    const body = await readJson(req);
+    if (session.child == null) return send(res, 409, { ok: false, message: "공부할 아이를 먼저 골라 주세요." });
+    let out;
+    if (body.action === "award") {
+      if (typeof body.place !== "string" || !rules.PLACES.some(([key]) => key === body.place)) throw new BadRequest("모르는 장소예요.");
+      out = await kids.change(owner, session.child, r => rules.applyAward(r, body.place, todayKst()));
+    } else if (body.action === "wear") {
+      if (!rules.ITEMS.some(x => x.id === body.item)) throw new BadRequest("모르는 꾸미기예요.");
+      out = await kids.change(owner, session.child, r => ({ rewards: rules.applyWear(r, body.item) }));
+    } else throw new BadRequest("모르는 요청이에요.");
+    if (!out) { await auth.setChild(req, null); return send(res, 409, { ok: false, message: "공부할 아이를 먼저 골라 주세요." }); }
+    return send(res, 200, { ok: true, ...out });
+  }
 
   if (sub === "/sets" && method === "POST") {
     const body = await readJson(req);
@@ -706,7 +869,7 @@ async function handlePublic(req, res, pathname) {
     return send(res, 405, { ok: false, message: "읽기만 할 수 있어요." }, { Allow: "GET" });
   }
   if (limitRead(clientIp(req))) return send(res, 429, { ok: false, message: "잠시 후 다시 해 주세요." });
-  const owner = auth.user(req);
+  const owner = await auth.user(req);
   try {
     if (pathname === "/haru/practice-data/sets") {
       const mine = owner ? (await store.sets(owner)).map(({ id, name, counts }) => ({ id: -id, name, counts })) : [];

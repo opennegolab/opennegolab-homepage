@@ -253,15 +253,18 @@ function handle(req, res) {
     return res.end();
   }
   if (normalizedPath === "/typing/admin" || normalizedPath === "/typing/admin.html") {
-    res.writeHead(200, {
-      "Content-Type": TYPES[".html"],
-      "Cache-Control": "no-store",
-      "X-Content-Type-Options": "nosniff",
-      "X-Robots-Tag": "noindex, nofollow",
-      "Referrer-Policy": "same-origin",
-      "X-Frame-Options": "DENY",
+    /* 로그인 세션은 DB 에서 확인할 수 있어 기다린다 */
+    return typingAuth.authorized(req).then(ok => {
+      res.writeHead(200, {
+        "Content-Type": TYPES[".html"],
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
+        "X-Robots-Tag": "noindex, nofollow",
+        "Referrer-Policy": "same-origin",
+        "X-Frame-Options": "DENY",
+      });
+      fs.createReadStream(path.join(ROOT, "typing", ok ? "admin.html" : "login.html")).pipe(res);
     });
-    return fs.createReadStream(path.join(ROOT, "typing", typingAuth.authorized(req) ? "admin.html" : "login.html")).pipe(res);
   }
 
   let file = path.join(ROOT, urlPath);

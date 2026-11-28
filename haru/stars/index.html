@@ -8,7 +8,7 @@
   <title>내 별 | 하루랑</title>
   <link rel="icon" href="/haru/assets/favicon.png" type="image/png">
   <link rel="stylesheet" href="/haru/brand.css?v=4">
-  <script src="/haru/rewards.js?v=2"></script>
+  <script src="/haru/rewards.js?v=3"></script>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; font-family: var(--haru-font); color: var(--haru-ink); background: var(--haru-background); }
@@ -25,14 +25,19 @@
     .star { width: 1.4em; height: 1.4em; flex: none; }
 
     /* 하루 꾸미기 */
-    .dress { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 1rem; align-items: center; }
+    .dress { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.4fr); gap: 1rem; align-items: start; }
+    .dress-figure { position: sticky; top: .8rem; }
     .haru-dressed { position: relative; width: min(100%, 300px); margin: auto; aspect-ratio: 420 / 508; border-radius: 1rem; background: var(--haru-cream); overflow: hidden; }
     .haru-dressed img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
     .haru-dressed svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-    .items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
-    .item { display: grid; gap: .15rem; text-align: left; min-height: 64px; padding: .6rem .75rem; border: 2px solid var(--haru-line); border-radius: .9rem; background: white; font: inherit; color: inherit; cursor: pointer; }
-    .item b { font-size: 1.02rem; }
-    .item span { font-size: .82rem; color: var(--haru-muted); font-weight: 650; }
+    .slots { display: grid; gap: .8rem; }
+    .slot-group h3 { margin: 0 0 .4rem; font-size: 1rem; color: var(--haru-muted); }
+    .items { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .55rem; }
+    .item { display: grid; grid-template-columns: 52px 1fr; grid-template-rows: auto auto; column-gap: .6rem; align-items: center; text-align: left; min-height: 64px; padding: .45rem .6rem; border: 2px solid var(--haru-line); border-radius: .9rem; background: white; font: inherit; color: inherit; cursor: pointer; }
+    .item .haru-item-preview { grid-row: 1 / span 2; width: 52px; height: 52px; border-radius: .6rem; background: var(--haru-cream); }
+    .item:disabled .haru-item-preview { filter: grayscale(1); opacity: .45; }
+    .item b { font-size: 1rem; align-self: end; word-break: keep-all; }
+    .item span { font-size: .8rem; color: var(--haru-muted); font-weight: 650; align-self: start; word-break: keep-all; }
     .item[aria-pressed="true"] { border-color: var(--haru-green); background: var(--haru-mint); }
     .item:disabled { cursor: default; color: #8b958c; background: #f6f6f1; border-style: dashed; }
     .item:focus-visible { outline: 3px solid var(--haru-green); outline-offset: 2px; }
@@ -55,7 +60,15 @@
 
     @media (max-width: 640px) {
       .dress { grid-template-columns: 1fr; }
-      .haru-dressed { width: min(70%, 240px); }
+      .haru-dressed { width: min(60%, 220px); }
+      .dress-figure { position: static; }
+    }
+    @media (max-width: 430px) {
+      .items { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; }
+      .item { grid-template-columns: 40px 1fr; column-gap: .45rem; padding: .4rem .45rem; }
+      .item .haru-item-preview { width: 40px; height: 40px; }
+      .item b { font-size: .92rem; }
+      .item span { font-size: .74rem; }
     }
   </style>
 </head>
@@ -78,8 +91,8 @@
     <section class="card" aria-labelledby="dress-title">
       <h2 id="dress-title">하루 꾸미기 <small>별을 모으면 열려요</small></h2>
       <div class="dress">
-        <div id="figure"></div>
-        <div class="items" id="items" role="group" aria-label="꾸미기"></div>
+        <div class="dress-figure" id="figure"></div>
+        <div class="slots" id="items"></div>
       </div>
     </section>
 
@@ -103,25 +116,39 @@
 
     function render() {
       const d = R.load();
+      const p = R.profile();
+      const name = p.guardian && p.child ? p.child.name : "";
+      $("title").textContent = name ? name + "의 별" : "내 별";
+      document.title = $("title").textContent + " | 하루랑";
       $("total").textContent = d.stars;
       const next = R.ITEMS.find(item => d.stars < item.need);
       $("cheer").textContent = !d.stars ? "연습을 끝까지 하면 별을 하나 받아요."
         : next ? "다음 꾸미기 '" + next.name + "'까지 별 " + (next.need - d.stars) + "개!"
         : "모든 꾸미기를 열었어요. 정말 멋져요!";
 
-      /* 꾸미기 */
-      $("figure").innerHTML = R.figure(d);
-      $("items").replaceChildren(...R.ITEMS.map(item => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = "item";
-        const open = R.unlocked(d, item);
-        b.disabled = !open;
-        b.setAttribute("aria-pressed", String(open && d.wear[item.slot] === item.id));
-        b.innerHTML = "<b>" + item.name + "</b><span>" +
-          (open ? (d.wear[item.slot] === item.id ? "입었어요 · 누르면 벗기" : "누르면 입기") : "별 " + item.need + "개 모으면") + "</span>";
-        b.addEventListener("click", () => { R.wear(item.id); render(); $("items").querySelector("button:nth-child(" + (R.ITEMS.indexOf(item) + 1) + ")").focus(); });
-        return b;
+      /* 꾸미기 — 자리(모자·안경·목도리·옷·신발·배경)별로 묶는다 */
+      $("figure").innerHTML = R.figure(d, "꾸민 하루");
+      const order = ["head", "face", "neck", "body", "feet", "bg"];
+      const slotName = Object.fromEntries(R.SLOTS);
+      $("items").replaceChildren(...order.map(slot => {
+        const group = document.createElement("div");
+        group.className = "slot-group";
+        group.innerHTML = '<h3 id="slot-' + slot + '">' + slotName[slot] + '</h3><div class="items" role="group" aria-labelledby="slot-' + slot + '"></div>';
+        group.lastChild.append(...R.ITEMS.filter(item => item.slot === slot).map(item => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "item";
+          b.dataset.item = item.id;
+          const open = R.unlocked(d, item);
+          const on = open && d.wear[item.slot] === item.id;
+          b.disabled = !open;
+          b.setAttribute("aria-pressed", String(on));
+          b.innerHTML = R.preview(item.id) + "<b>" + item.name + "</b><span>" +
+            (open ? (on ? "입었어요 · 누르면 벗기" : "누르면 입기") : "별 " + item.need + "개 모으면") + "</span>";
+          b.addEventListener("click", () => R.wear(item.id));   /* 다시 그리기는 'haru-rewards' 알림이 한다 */
+          return b;
+        }));
+        return group;
       }));
 
       /* 스티커판 — 지금 채우는 판. 10칸을 다 채우면 새 판 */
@@ -152,9 +179,14 @@
       }));
     }
     render();
-    /* 다른 창에서 별을 받고 돌아오면 다시 그린다 */
-    window.addEventListener("pageshow", render);
-    document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
+    /* 서버에서 아이의 별을 받아 오면, 다른 창에서 별을 받고 돌아오면 다시 그린다 */
+    window.addEventListener("haru-rewards", () => {
+      const focused = document.activeElement && document.activeElement.dataset.item;
+      render();
+      if (focused) $("items").querySelector('[data-item="' + focused + '"]').focus();
+    });
+    window.addEventListener("pageshow", e => { if (e.persisted) R.refresh(); });
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) R.refresh(); });
   })();
   </script>
 </body>

@@ -3,6 +3,15 @@
 <head>
   <meta charset="utf-8">
   <script src="/haru/external-browser.js?v=2"></script>
+  <script>
+    /* 기본은 로그인해서 아이를 고르고 시작한다. 아이를 고르지 않았고 '둘러보기'도 누르지 않았으면 시작 화면으로 */
+    (function () {
+      try {
+        var p = JSON.parse(localStorage.getItem("haru.profile.v1") || "{}");
+        if (!(p.guardian && p.child) && !sessionStorage.getItem("haru.guest")) location.replace("/haru/start");
+      } catch (e) {}
+    })();
+  </script>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="우리 아이의 성장을 돕는 일상 생활 학습 앱, 하루랑. 한글 공부, 돈 공부, 키오스크, 패스트푸드 주문을 하루와 함께 차근차근 연습해요.">
   <meta name="theme-color" content="#fff8e9">
@@ -23,8 +32,8 @@
   <link rel="apple-touch-icon" href="/haru/assets/icon-192.png">
   <link rel="manifest" href="/haru/manifest.webmanifest">
   <link rel="stylesheet" href="/haru/brand.css?v=4">
-  <link rel="stylesheet" href="/haru/home.css?v=6">
-  <script src="/haru/rewards.js?v=2"></script>
+  <link rel="stylesheet" href="/haru/home.css?v=7">
+  <script src="/haru/rewards.js?v=3"></script>
   <script type="module" src="/haru/home.js?v=5"></script>
   <title>하루랑 HARURANG | 하루와 함께 세상 배우기</title>
 </head>
@@ -33,7 +42,7 @@
     <img src="/haru/assets/logo.png" width="180" height="64" alt="하루랑 HARURANG">
     <a class="stars-link" href="/haru/stars">
       <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="m12 2.6 2.9 6 6.5.9-4.7 4.6 1.1 6.5L12 17.5l-5.8 3.1 1.1-6.5L2.6 9.5l6.5-.9z" fill="#f7c948" stroke="#b07d12" stroke-width="1.4" stroke-linejoin="round"/></svg>
-      <span><span class="word">내 별 </span><b id="star-count">0</b><span class="word">개</span></span>
+      <span><span class="word" id="star-owner">내 별 </span><b id="star-count">0</b><span class="word">개</span></span>
     </a>
     <button id="greeting-audio" type="button" hidden>
       <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3zM16 9a4 4 0 0 1 0 6m2-9a8 8 0 0 1 0 12"/></svg>
@@ -46,6 +55,7 @@
         <h1 id="headline">하루와 함께 세상 배우기</h1>
         <p class="description">우리 아이의 성장을 돕는 일상 생활 학습 앱</p>
         <p id="greeting">안녕하세요! 저는 하루예요. 오늘은 무엇을 해볼까요?</p>
+        <p class="who-line" id="who-line" hidden><span id="who-text"></span> <a href="/haru/start" id="who-link"></a></p>
         <p id="speech-message" role="status" hidden></p>
       </div>
       <img class="mascot" src="/haru/assets/haru-wave.webp" width="360" height="440" alt="손을 흔들며 인사하는 하루">
@@ -70,11 +80,29 @@
     </nav>
   </main>
   <script>
-    /* 모은 별 수 — 이 기기에 저장된 것 (haru/rewards.js) */
+    /* 누가 공부하는지와 모은 별 수 (haru/rewards.js) */
     (function () {
-      const show = () => { if (window.HaruRewards) document.getElementById("star-count").textContent = window.HaruRewards.load().stars; };
+      const R = window.HaruRewards;
+      if (!R) return;
+      const $ = id => document.getElementById(id);
+      const show = () => {
+        const p = R.profile();
+        const child = p.guardian && p.child;
+        /* 로그인이 끝났거나 다른 곳에서 아이 선택이 풀렸으면 시작 화면으로 */
+        let guest = false;
+        try { guest = !!sessionStorage.getItem("haru.guest"); } catch (e) {}
+        if (!child && !guest) { location.replace("/haru/start"); return; }
+        $("star-count").textContent = R.load().stars;
+        $("star-owner").textContent = child ? p.child.name + " 별 " : "내 별 ";
+        $("greeting").textContent = (child ? "안녕, " + p.child.name + "! " : "안녕하세요! ") + "저는 하루예요. 오늘은 무엇을 해볼까요?";
+        $("who-line").hidden = false;
+        $("who-text").textContent = child ? "" : "둘러보기 중이에요.";
+        $("who-link").textContent = child ? "다른 아이로 바꾸기" : "보호자 로그인하고 별 저장하기";
+      };
       show();
-      window.addEventListener("pageshow", show);
+      R.ready.then(show);
+      window.addEventListener("haru-rewards", show);
+      window.addEventListener("pageshow", e => { if (e.persisted) R.refresh(); });   /* 뒤로가기로 돌아왔을 때 */
     })();
   </script>
 </body>

@@ -28,6 +28,8 @@
 | 주소 | 내용 |
 |---|---|
 | https://www.opennegolab.com/typing | 하루랑 타자 연습으로 이동 |
+| https://www.opennegolab.com/haru/start | 하루랑 시작 화면 — 보호자 로그인 → 공부할 아이 고르기 (또는 둘러보기) |
+| https://www.opennegolab.com/haru/stars | 아이의 별·꾸미기·도장 |
 | https://www.opennegolab.com/haru/typing | 하루랑 한글 공부 — 공개 기본 문제집 + 로그인한 보호자의 문제집 |
 | https://www.opennegolab.com/typing/admin | **문제 설정** — 보호자 로그인 후 내 문제집·문제 관리 |
 | https://www.opennegolab.com/api/typing/… | 타자연습 서버 API (아래 6번) |
@@ -123,7 +125,8 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
   나옵니다 (`/haru/practice-data/*`, 보호자 문제집 번호는 음수 `-DB번호`). 보호자 문제집에 문제가 하나라도 있으면
   공개 기본 문제집은 빼고 보호자 문제집만 보여 줍니다.
   로그인하지 않은 사람에게는 공개 기본 문제집만 보입니다
-- 로그인 세션은 서버 메모리에 8시간 — 서버가 다시 켜지면(배포) 다시 로그인해야 합니다
+- 로그인 세션은 **30일**, DB 표 `typing_sessions` 에 쿠키 값의 SHA-256 만 저장 — 배포해도 로그인이 유지됩니다
+  (`typing-auth.js`, DB 가 없으면 서버 메모리). 세션에는 지금 고른 아이(`child_id`)도 적습니다
 
 ### 6-3. 서버 `typing-api.js`
 
@@ -131,6 +134,8 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
   - `typing_sets(id, name, created_at)` — 문제집, 이름 중복 불가(대소문자 무시)
   - `typing_items(id, set_id, mode, prompt, answers JSONB, created_at, updated_at)` — 문제. 문제집 삭제 시 함께 삭제
   - `typing_guardians` — 보호자 계정 및 비밀번호 해시
+  - `typing_sessions(key, username, child_id, expires_at)` — 로그인 세션 (30일)
+  - `haru_children(id, guardian, name, rewards JSONB, created_at)` — 하루랑 아이 프로필. 별·도장·꾸미기를 아이마다 저장. 보호자 한 명당 8명까지
   - `typing_meta` — 한 번만 하는 일의 기록 (`reset:guardian-data-2026-11`: 보호자 문제집·공유 링크 삭제, `reset:guardian-accounts-2026-11`: 보호자 계정 전부 삭제)
   - (`typing_practice_links` 는 공유 기능 제거 때 삭제됨)
 - **API** (`/api/typing/…`, JSON)
@@ -143,6 +148,10 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
   | `POST /sets` `{name}` / `PUT /sets/:id` / `DELETE /sets/:id` | 문제집 만들기·이름 바꾸기·삭제 |
   | `POST /items` `{set, mode, items, skipDuplicates}` | 문제 등록 (하나라도 잘못되면 전부 취소) |
   | `PUT /items/:id` / `POST /delete {ids}` | 문제 수정·삭제 |
+  | `GET /me` | 지금 누가 쓰나 — 보호자·고른 아이(별 포함)·아이 목록. 로그인 안 했으면 `guardian: null` |
+  | `POST /children {name, rewards?}` / `PUT /children/:id` / `DELETE /children/:id` | 아이 만들기(둘러보기 별 옮겨 오기)·이름 바꾸기·지우기 |
+  | `POST /child {id}` | 이 세션에서 공부할 아이 고르기 |
+  | `POST /rewards {action:"award", place}` / `{action:"wear", item}` | 고른 아이에게 별 주기·꾸미기 입고 벗기 (규칙은 `haru/rewards.js`) |
 
 - 변경 요청 보호: 다른 사이트 Origin 거절, JSON 만 받음, IP 당 1분 60회 제한, 보호자 세션 필요
 - `DATABASE_URL` 이 없으면 **메모리 모드**(재시작하면 사라짐, 문제 설정 화면에 경고)
@@ -153,12 +162,21 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
 
 - 학습을 끝까지 하면 별 1개 (점수와 상관없이): 한글 공부 한 판, 돈 공부 한 문제 정답, 키오스크·패스트푸드·ATM '문제를 해결했어요'
 - 장소(한글 공부·돈 공부·마트·카페·음식점·ATM·패스트푸드)에서 처음 성공하면 도장
-- 별이 모이면 하루 꾸미기가 열림: 리본 1·꽃 3·안경 5·왕관 10·반짝이 배경 15·무지개 배경 20
+- 별이 모이면 하루 꾸미기가 열림 (별을 쓰지 않고, 모은 수로 열림). 자리마다 하나씩 입음:
+  모자(리본 1·꽃 3·야구 모자 8·왕관 10·털모자 22), 안경(안경 5·선글라스 13), 목도리(빨간 4·하늘색 18),
+  옷(멜빵바지 6·꽃무늬 치마 16), 신발(빨간 운동화 2·초록 장화 12), 배경(반짝이 15·무지개 20)
 - 별을 받으면 화면 아래에 알림, '내 별 보기'로 `/haru/stars` (꾸미기·10칸 스티커판·도장 수첩)
-- **이 기기의 브라우저에만 저장** (`localStorage` `haru.rewards.v1`). 로그인·서버 저장 없음
+- **하루랑은 로그인으로 시작** — `/haru` 를 열면 아이를 고르지 않았고 둘러보기도 누르지 않은 경우 `/haru/start` 로 감.
+  보호자 로그인(아이디 + 숫자 4자리) → 아이 고르기·추가·이름 바꾸기·지우기. 학습 화면 주소로 바로 들어오면 막지 않음
+- 저장: 아이를 골랐으면 **서버**(`haru_children.rewards`) — 다른 기기에서도 같은 별.
+  둘러보기(로그인 없음)는 **이 기기에만** (`localStorage` `haru.rewards.v1`, 둘러보기 표시는 `sessionStorage` `haru.guest`).
+  둘러보기 별은 보호자가 새 아이를 만들 때 그 아이에게 옮겨짐
+- `haru/rewards.js` 는 브라우저와 서버(`typing-api.js`)가 같이 씀 — 별·도장·꾸미기 규칙(`applyAward`, `applyWear`, `normalize`)을 한곳에 둠.
+  화면용 기억: `haru.profile.v1`(누가 쓰나), `haru.child-rewards.v1`(고른 아이 별의 사본). `/api/typing/me` 로 늘 바로잡음
 - 각 학습 화면은 `<script src="/haru/rewards.js?v=N">` 를 불러 `HaruRewards.award('장소')` 를 부른다.
   키오스크는 `rewardOnce()` 로 같은 완료 화면이 다시 그려져도 한 번만 준다
-- 꾸미기 그림은 하루 그림(`haru-base.webp`, 420×508) 위에 얹는 SVG — 좌표는 `rewards.js` 의 `ART`
+- 꾸미기 그림은 하루 그림(`haru-base.webp`, 420×508) 위에 얹는 SVG 도형 — 좌표는 `rewards.js` 의 `ART`
+  (눈 (165,196)·(262,196), 머리 꼭대기 (220,50), 목도리 y 260~330, 발 (162,440)·(259,440)). 새 아이템은 `ITEMS` 와 `ART` 에 함께 추가
 
 ## 7. 로컬 실행·확인
 
