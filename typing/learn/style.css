@@ -165,7 +165,7 @@ html[data-haru] {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: .35rem .65rem;
   margin-bottom: .55rem;
 }
