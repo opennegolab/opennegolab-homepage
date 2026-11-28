@@ -44,6 +44,12 @@ html[data-haru] .listen-big { background: var(--haru-green); box-shadow: none; c
 html[data-haru] .btn-primary:hover:not(:disabled) { background: #173e30; }
 html[data-haru] .btn-primary:disabled { background: #e1e6de; color: #526456; }
 html[data-haru] .answer-box:focus-within { border-color: var(--haru-green); box-shadow: 0 0 0 3px var(--haru-mint); }
+/* 답 적는 칸 — 테두리는 바깥 상자 하나만. 안쪽 입력칸의 초점 테두리는 그리지 않는다 (바깥 상자가 초록으로 바뀜).
+   제출 버튼의 둥근 모서리는 바깥 상자 모서리에서 안쪽 여백만큼 줄여 나란히 보이게 한다 */
+html[data-haru] .answer-box { --box-r: 1.2rem; --box-pad: 6px; border-width: 2px; border-radius: var(--box-r); padding: var(--box-pad) var(--box-pad) var(--box-pad) 16px; }
+html[data-haru] .answer:focus,
+html[data-haru] .answer:focus-visible { outline: none; }
+html[data-haru] .answer-box .submit { border-radius: calc(var(--box-r) - var(--box-pad)); min-height: 56px; }
 html[data-haru] .btn-lav,
 html[data-haru] .btn-mint,
 html[data-haru] .listen-pill { background: var(--haru-mint); color: var(--haru-green); }

@@ -68,7 +68,7 @@ ${haruShareMeta("/haru/typing", "한글 공부", "하루랑에서 받아쓰기�
 <link rel="icon" href="/haru/assets/favicon.png">
 <link rel="manifest" href="/haru/manifest.webmanifest">
 <link rel="stylesheet" href="/haru/brand.css?v=4">
-<link rel="stylesheet" href="/haru/typing.css?v=1">`;
+<link rel="stylesheet" href="/haru/typing.css?v=2">`;
 
 function haruTypingHeader() {
   return `<header class="haru-top">
@@ -89,7 +89,7 @@ ${haruShareMeta("/haru/math/calc", "덧셈·뺄셈", "하루랑에서 단계별�
 <link rel="icon" href="/haru/assets/favicon.png">
 <link rel="manifest" href="/haru/manifest.webmanifest">
 <link rel="stylesheet" href="/haru/brand.css?v=4">
-<link rel="stylesheet" href="/haru/typing.css?v=1">`;
+<link rel="stylesheet" href="/haru/typing.css?v=2">`;
 const HARU_CALC_HEADER = `<header class="haru-top">
   <nav class="haru-top-inner" aria-label="하루랑">
     <a class="haru-return" href="/haru" aria-label="하루랑 처음으로">

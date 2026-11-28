@@ -271,6 +271,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
     flex:1; min-width:0; font:inherit; font-size:clamp(1.35rem, 4.6vw, 1.85rem); font-weight:700; letter-spacing:.01em;
     padding:12px 4px; border:none; background:transparent; color:var(--ink); outline:none; min-height:60px;
   }
+  .answer:focus-visible{ outline:none; }     /* 초점은 바깥 상자(.answer-box:focus-within)가 보여 준다 */
   .answer::placeholder{ color:#BFB6A8; font-weight:600; }
   .submit{ flex:none; min-width:104px; border-radius:18px; min-height:60px; }
   .submit svg{ width:18px; height:18px; }
