@@ -13,9 +13,9 @@ const comparisons = [
 ];
 const targets = [2000, 5000, 6000, 10000, 15000];
 const sections = {
-  learn: ['지폐 알아보기', '사진을 눌러 얼마인지 들어 보세요.', 1000],
-  compare: ['금액 비교하기', '어느 쪽이 더 큰지, 더 작은지 골라 보세요.', 10000],
-  build: ['금액 만들기', '지폐를 골라 문제와 같은 금액을 만들어 보세요.', 5000]
+  learn: ['지폐 알아보기', '지폐 금액 듣기', 1000],
+  compare: ['금액 비교하기', '큰 금액과 작은 금액', 10000],
+  build: ['금액 만들기', '지폐로 금액 맞추기', 5000]
 };
 
 const app = document.querySelector('#money-app');
@@ -120,7 +120,7 @@ function noteCard(value, action, prefix = '') {
 }
 
 function showNotes() {
-  heading(sections.learn[0], sections.learn[1]);
+  heading(sections.learn[0], '사진을 눌러 얼마인지 들어 보세요.');
   const grid = element('div', '', 'grid money-menu');
   const status = messageLine();
   for (const value of values) {

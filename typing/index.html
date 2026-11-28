@@ -291,6 +291,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   .tile.t0{ background:var(--lav-soft); } .tile.t0 b{ color:var(--lav-d); }
   .actions{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .actions .btn{ width:100%; justify-content:flex-start; padding:14px 18px; }
+  .actions .btn, .topbar .btn, .seg button{ white-space:nowrap; }
   .actions .btn svg{ width:20px; height:20px; }
   .actions .btn.wide{ grid-column:1 / -1; justify-content:center; }
   .list-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
@@ -336,6 +337,8 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
     .listen-big svg{ width:42px; height:42px; }
     .tiles{ grid-template-columns:repeat(2,1fr); }
     .actions{ grid-template-columns:1fr; }
+    .topbar{ gap:8px; }
+    .topbar .btn{ padding-inline:8px; font-size:.88rem; }
     .answer-box{ padding:6px 6px 6px 14px; border-radius:20px; }
     .answer-box > svg{ display:none; }
     .submit{ min-width:80px; padding:0 14px; min-height:56px; }
@@ -410,14 +413,14 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
           <span class="tick" aria-hidden="true"><svg class="i"><use href="#i-check"/></svg></span>
           <span class="ico" aria-hidden="true"><svg class="i"><use href="#i-headphones"/></svg></span>
           <span class="name">받아쓰기</span>
-          <span class="desc">듣고 그대로 써요</span>
+          <span class="desc">듣고 써요</span>
           <span class="cnt" id="cnt-dictation">불러오는 중…</span>
         </button>
         <button type="button" class="mode qa" data-mode="qa" aria-pressed="false">
           <span class="tick" aria-hidden="true"><svg class="i"><use href="#i-check"/></svg></span>
           <span class="ico" aria-hidden="true"><svg class="i"><use href="#i-chat"/></svg></span>
           <span class="name">질문에 답하기</span>
-          <span class="desc">질문을 보고 답을 써요</span>
+          <span class="desc">답을 써요</span>
           <span class="cnt" id="cnt-qa">불러오는 중…</span>
         </button>
         <!-- 기존 문제 설정 시작 -->
@@ -479,8 +482,8 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
     <div class="actions" id="actions">
       <button type="button" class="btn btn-soft wide" id="resultBack">이전 단계</button>
       <button type="button" class="btn btn-yellow wide" id="retryWrong">100점 아닌 문제만 다시</button>
-      <button type="button" class="btn btn-mint" id="retryAll"><svg class="i" aria-hidden="true"><use href="#i-redo"/></svg>같은 문제 전체 다시</button>
-      <button type="button" class="btn btn-lav" id="newRandom"><svg class="i" aria-hidden="true"><use href="#i-shuffle"/></svg>새로운 문제로 시작</button>
+      <button type="button" class="btn btn-mint" id="retryAll"><svg class="i" aria-hidden="true"><use href="#i-redo"/></svg>같은 문제 다시</button>
+      <button type="button" class="btn btn-lav" id="newRandom"><svg class="i" aria-hidden="true"><use href="#i-shuffle"/></svg>새 문제 시작</button>
       <button type="button" class="btn btn-white wide" id="toHome"><svg class="i" aria-hidden="true"><use href="#i-home"/></svg>처음 화면</button>
     </div>
     <div class="card">

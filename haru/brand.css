@@ -47,7 +47,12 @@
   object-fit: contain; mix-blend-mode: multiply;
 }
 @media (max-width: 520px) {
-  .haru-top-inner { flex-wrap: wrap; }
+  .haru-top-inner { flex-wrap: wrap; gap: .35rem; padding-inline: .65rem; }
+  .haru-top .haru-return, .haru-top button {
+    padding-inline: .5rem;
+    font-size: .9rem;
+    white-space: nowrap;
+  }
 }
 
 .haru-browser-notice {
@@ -59,3 +64,11 @@
   font: 700 1rem/1.5 var(--haru-font);
 }
 .haru-browser-notice p { margin: 0; }
+
+.haru-heading h1,
+.haru-heading p,
+.haru-browser-notice p {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.haru-browser-notice .haru-return { white-space: nowrap; }
