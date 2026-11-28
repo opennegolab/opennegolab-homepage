@@ -97,7 +97,8 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
 | 결과 | `result` | 평균 점수 원, 100점·부분·0점 수, 문제별 비교, 다시 풀기 |
 
 - **문제 종류 (`settings.mode`)** — `dictation` 받아쓰기 / `qa` 질문에 답하기 / `copy` 보고 쓰기 / `math1`·`math2`·`math3` 수학.
-  보고 쓰기는 받아쓰기 문장을 화면에 보여 주고(소리도 읽어 줌) 그대로 따라 쓰게 함 — 따로 문제를 넣지 않고 받아쓰기 문제를 씀, 소리가 안 나도 됨.
+  보고 쓰기는 **자기 문장**(mode `copy`)을 화면에 보여 주고(소리도 읽어 줌) 그대로 따라 쓰게 함. 소리가 안 나도 됨.
+  기본 문제에는 생활 문장 40개(`typing-api.js` `COPY_SENTENCES`), 보호자는 문제 설정의 '보고 쓰기' 탭에서 넣음
   소리를 못 내는 곳에서는 받아쓰기 버튼이 꺼짐
 - **수학(덧셈·뺄셈)** — 한글 공부와 떨어진 `/haru/math/calc` 에서만 나옴 (서버가 `typing/index.html` 을 `data-math` 로 열고,
   설정은 `haru.calc.settings` 에 따로 기억). 서버에 저장하지 않고 화면이 그때그때 만든다 (`store.js` `makeMath(단계, 문제 수)`, 전체 = 30문제, 보호자가 넣을 필요 없음).
@@ -126,7 +127,7 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
 ### 6-2. 문제 설정 `typing/admin.html`
 
 - 문제집 고르기·만들기·이름 바꾸기·삭제(안의 문제도 함께)
-- 받아쓰기 / 질문에 답하기 탭 → **한 문제 등록** / **여러 문제 등록** 탭
+- 받아쓰기 / 질문에 답하기 / 보고 쓰기 탭 → **한 문제 등록** / **여러 문제 등록** 탭 (보고 쓰기는 받아쓰기처럼 한 줄에 문장 하나)
   - 여러 문제: 한 줄에 하나. 질문은 `질문 / 정답 / 다른 정답` (엑셀 탭 구분도 됨)
   - 허용 정답은 `/` 로 구분, 정답 칸에서 Enter 로 바로 등록
 - 목록: 최신순, 10개씩 페이지, 검색, 수정·삭제·선택 삭제(확인 창)
@@ -141,7 +142,7 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
 
 - **표** (서버가 처음 DB 에 붙을 때 `prepare()` 가 만듦):
   - `typing_sets(id, name, created_at)` — 문제집, 이름 중복 불가(대소문자 무시)
-  - `typing_items(id, set_id, mode, prompt, answers JSONB, created_at, updated_at)` — 문제. 문제집 삭제 시 함께 삭제
+  - `typing_items(id, set_id, mode, prompt, answers JSONB, created_at, updated_at)` — 문제. mode 는 `dictation`·`qa`·`copy`(보고 쓰기, 2026-11 추가 — `prepare()` 가 검사 조건을 바꿈). 문제집 삭제 시 함께 삭제
   - `typing_guardians` — 보호자 계정 및 비밀번호 해시
   - `typing_sessions(key, username, child_id, expires_at)` — 로그인 세션 (30일)
   - `haru_children(id, guardian, name, rewards JSONB, created_at)` — 하루랑 아이 프로필. 별·도장·꾸미기를 아이마다 저장. 보호자 한 명당 8명까지
@@ -165,7 +166,7 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
 - 변경 요청 보호: 다른 사이트 Origin 거절, JSON 만 받음, IP 당 1분 60회 제한, 보호자 세션 필요
 - `DATABASE_URL` 이 없으면 **메모리 모드**(재시작하면 사라짐, 문제 설정 화면에 경고)
 - **공개 기본 문제집** (코드에 정의된 읽기 전용 자료):
-  `기본 문제` 한 세트 — 예시 문장·낱말 받아쓰기(60)와 상식 질문(6) (`publicSeeds`). 산수 30문제는 수학 단계로 바뀌어 빠짐
+  `기본 문제` 한 세트 — 예시 문장·낱말 받아쓰기(60), 상식 질문(6), 보고 쓰기 생활 문장(40) (`publicSeeds`). 산수 30문제는 수학 단계로 바뀌어 빠짐
 
 ### 6-3b. 하루랑 수학 (`haru/math/`)
 

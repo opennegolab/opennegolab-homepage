@@ -19,7 +19,7 @@
      보호자 세션은 문제집 변경과 맞춤 링크 관리에 필요하다.
    ============================================================ */
 const auth = require("./typing-auth");
-const MODES = new Set(["dictation", "qa"]);
+const MODES = new Set(["dictation", "qa", "copy"]);   /* 받아쓰기 · 질문에 답하기 · 보고 쓰기 */
 const MAX_TEXT = 200;        /* 문장 한 개 최대 글자 수 */
 const MAX_ANSWERS = 10;      /* 질문 하나에 허용 정답 최대 개수 */
 const MAX_BULK = 2000;
@@ -77,6 +77,7 @@ function seedItems(seed) {
   return [
     ...(seed.qa || []).map(([q, a]) => ({ mode: "qa", prompt: q, answers: a })),
     ...(seed.dictation || []).map(t => ({ mode: "dictation", prompt: t, answers: [] })),
+    ...(seed.copy || []).map(t => ({ mode: "copy", prompt: t, answers: [] })),
   ];
 }
 
@@ -140,7 +141,7 @@ async function prepare(p) {
   await p.query(`
     CREATE TABLE IF NOT EXISTS typing_items (
       id         BIGSERIAL PRIMARY KEY,
-      mode       TEXT NOT NULL CHECK (mode IN ('dictation','qa')),
+      mode       TEXT NOT NULL CHECK (mode IN ('dictation','qa','copy')),
       prompt     TEXT NOT NULL,
       answers    JSONB NOT NULL DEFAULT '[]'::jsonb,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -149,6 +150,9 @@ async function prepare(p) {
   /* 문제집이 생기기 전에 만든 표에는 set_id 칸이 없다 — 붙인다 */
   await p.query(`ALTER TABLE typing_items ADD COLUMN IF NOT EXISTS set_id BIGINT REFERENCES typing_sets(id) ON DELETE CASCADE`);
   await p.query(`CREATE INDEX IF NOT EXISTS typing_items_set_idx ON typing_items (set_id, mode, id)`);
+  /* 보고 쓰기(copy) 종류 허용 — 예전에 만든 표의 검사 조건을 바꾼다 (기존 문제는 그대로) */
+  await p.query(`ALTER TABLE typing_items DROP CONSTRAINT IF EXISTS typing_items_mode_check`);
+  await p.query(`ALTER TABLE typing_items ADD CONSTRAINT typing_items_mode_check CHECK (mode IN ('dictation','qa','copy'))`);
 
   await resetGuardianData(p);
 }
@@ -252,17 +256,19 @@ const store = {
         counts: {
           dictation: memory.items.filter(x => x.set_id === st.id && x.mode === "dictation").length,
           qa: memory.items.filter(x => x.set_id === st.id && x.mode === "qa").length,
+          copy: memory.items.filter(x => x.set_id === st.id && x.mode === "copy").length,
         },
       }));
     }
     const r = await (await db()).query(`
       SELECT s.id, s.name,
              count(i.id) FILTER (WHERE i.mode = 'dictation')::int AS d,
-             count(i.id) FILTER (WHERE i.mode = 'qa')::int AS q
+             count(i.id) FILTER (WHERE i.mode = 'qa')::int AS q,
+             count(i.id) FILTER (WHERE i.mode = 'copy')::int AS c
         FROM typing_sets s LEFT JOIN typing_items i ON i.set_id = s.id
        WHERE s.owner IS NOT DISTINCT FROM $1::text
        GROUP BY s.id ORDER BY s.id`, [owner]);
-    return r.rows.map(x => ({ id: Number(x.id), name: x.name, counts: { dictation: x.d, qa: x.q } }));
+    return r.rows.map(x => ({ id: Number(x.id), name: x.name, counts: { dictation: x.d, qa: x.q, copy: x.c } }));
   },
   async getSet(id) {
     if (!usingDb()) { const st = memory.sets.find(x => x.id === id); return st ? { ...st } : null; }
@@ -484,7 +490,7 @@ function checkItem(mode, raw) {
 }
 
 function checkMode(m) {
-  if (!MODES.has(m)) throw new BadRequest("mode 는 dictation 또는 qa 여야 합니다.");
+  if (!MODES.has(m)) throw new BadRequest("mode 는 dictation, qa, copy 중 하나여야 합니다.");
   return m;
 }
 
@@ -814,15 +820,34 @@ function warmUp() {
    받아쓰기·질문에 답하기를 '기본 문제' 한 세트로 묶는다 (2026-11 운영자 요청).
    수학(덧셈·뺄셈)은 여기 두지 않는다 — 한글 공부 화면이 단계에 맞춰 스스로 만든다 (typing/store.js makeMath) */
 const DEFAULT_SET = "기본 문제";
+/* 보고 쓰기 문장 — 화면에 보이는 문장을 그대로 따라 쓴다. 받아쓰기 낱말과 따로, 생활 속 문장으로 */
+const COPY_SENTENCES = [
+  "안녕하세요.", "만나서 반가워요.", "고맙습니다.", "미안해요.", "내일 또 만나요.",
+  "생일 축하해요!", "도와줘서 고마워.", "친구에게 먼저 인사해요.",
+  "아침에 일어나서 세수를 해요.", "밥을 먹기 전에 손을 씻어요.", "이를 깨끗이 닦아요.",
+  "신발을 가지런히 놓아요.", "잠자기 전에 책을 읽어요.", "물을 아껴 써요.",
+  "쓰레기는 쓰레기통에 버려요.", "숙제를 다 하고 놀아요.", "선생님 말씀을 잘 들어요.",
+  "도서관에서는 조용히 해요.", "엄마와 함께 저녁을 만들어요.", "동생과 사이좋게 지내요.",
+  "횡단보도에서는 신호를 기다려요.", "초록불이 켜지면 길을 건너요.", "버스를 타면 손잡이를 잡아요.",
+  "엘리베이터 문이 열리면 내려요.", "길을 잃으면 경찰관에게 물어봐요.", "아플 때는 병원에 가요.",
+  "약은 어른과 함께 먹어요.", "필요한 것이 있으면 말로 부탁해요.",
+  "마트에서 우유를 샀어요.", "카페에서 딸기주스를 주문했어요.", "물건을 사면 영수증을 받아요.",
+  "거스름돈을 잘 세어 봐요.", "지갑을 가방에 넣어요.",
+  "오늘은 하늘이 맑아요.", "비가 오면 우산을 써요.", "추운 날에는 장갑을 껴요.",
+  "강아지가 꼬리를 흔들어요.", "나는 사과를 좋아해요.", "주말에 공원에서 자전거를 탔어요.",
+  "하루와 함께 열심히 공부해요.",
+];
+
 const publicSeeds = [{
   name: DEFAULT_SET,
   dictation: [...SAMPLES.dictation, ...DEFAULT_EXERCISES.flatMap(x => x.dictation || [])],
   qa: [...SAMPLES.qa, ...DEFAULT_EXERCISES.flatMap(x => x.qa || [])],
+  copy: COPY_SENTENCES,
 }];
 const publicSets = publicSeeds.map((seed, index) => {
   const id = index + 1;
   const items = seedItems(seed).map((item, position) => ({ ...item, id: position + 1 }));
-  const counts = { dictation: 0, qa: 0 };
+  const counts = { dictation: 0, qa: 0, copy: 0 };
   for (const item of items) counts[item.mode]++;
   return { id, name: seed.name, counts, items };
 });
@@ -849,7 +874,7 @@ async function handlePublic(req, res, pathname) {
       const query = new URL(req.url, "http://x").searchParams;
       const id = Number(query.get("set"));
       const mode = query.get("mode");
-      if (mode !== "qa" && mode !== "dictation") return send(res, 404, { ok: false, message: "문제집을 찾을 수 없어요." });
+      if (!MODES.has(mode)) return send(res, 404, { ok: false, message: "문제집을 찾을 수 없어요." });
       if (id < 0 && owner) {
         const st = await store.getSet(-id);
         if (!st || (st.owner ?? null) !== owner) return send(res, 404, { ok: false, message: "문제집을 찾을 수 없어요." });

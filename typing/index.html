@@ -519,7 +519,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   </section>
 </div>
 
-<script src="/typing/store.js?v=10"></script>
+<script src="/typing/store.js?v=11"></script>
 <script src="/haru/rewards.js?v=4"></script>
 <script type="module">
 import { screenHistory } from "/haru/navigation.js?v=1";
@@ -626,7 +626,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
       return "<div class='set-card" + (x.math ? " math" : "") + (open ? " open" : "") + "'>" +
         "<button type='button' class='set' data-set='" + x.id + "' aria-expanded='" + open + "' aria-pressed='" + open + "'>" +
         (x.math ? icon("math") : "") + esc(x.name) +
-        "<small>" + (x.math ? "덧셈·뺄셈" : x.counts.dictation + x.counts.qa) + "</small>" + icon("arrow").replace("class='i'", "class='i chev'") + "</button>" +
+        "<small>" + (x.math ? "덧셈·뺄셈" : x.counts.dictation + x.counts.qa + (x.counts.copy || 0)) + "</small>" + icon("arrow").replace("class='i'", "class='i chev'") + "</button>" +
         (open ? "<div class='types' role='group' aria-label='" + esc(x.name) + (x.math ? " 단계" : " 문제 종류") + "'>" + typesOf(x).map(t => {
           const n = typeCount(x, t.id);
           const off = !n || (t.id === "dictation" && !tts.ok);
@@ -641,7 +641,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   const TYPES = [
     { id: "dictation", cls: "dictation", name: "받아쓰기", icon: "headphones" },
     { id: "qa", cls: "qa", name: "질문에 답하기", icon: "chat" },
-    { id: "copy", cls: "copy", name: "보고 쓰기", icon: "keyboard" },     /* 받아쓰기 문장을 화면에 보여 주고 그대로 따라 쓴다 */
+    { id: "copy", cls: "copy", name: "보고 쓰기", icon: "keyboard" },     /* 보고 쓰기 문장을 화면에 보여 주고 그대로 따라 쓴다 */
   ];
   const LEVELS = [
     { id: "math1", cls: "math", level: 1, name: "1단계", desc: ["한 자리", "받아올림 없이"] },
@@ -652,7 +652,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   const MODE_NAME = { dictation: "받아쓰기", qa: "질문에 답하기", copy: "보고 쓰기", math1: "수학 1단계", math2: "수학 2단계", math3: "수학 3단계" };
   function typeCount(set, type) {
     if (set.math) return 1;                      /* 수학은 언제나 풀 수 있다 */
-    return type === "dictation" || type === "copy" ? set.counts.dictation : type === "qa" ? set.counts.qa : 0;
+    return set.counts[type] || 0;
   }
   /* 고른 종류가 이 문제집에 없으면(또는 소리가 안 나는데 받아쓰기면) 풀 수 있는 첫 종류로 */
   function fixMode() {
@@ -686,7 +686,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     let w = "";
     if (counts) {
       if (sets && !sets.length) w = "";
-      else if (cur && !cur.math && !counts.dictation && !counts.qa) w = "이 문제집에는 문제가 없어요. '문제 설정'에서 넣어 주세요.";
+      else if (cur && !cur.math && !counts.dictation && !counts.qa && !counts.copy) w = "이 문제집에는 문제가 없어요. '문제 설정'에서 넣어 주세요.";
     }
     if (loadError) w = loadError;
     warn.textContent = w;
@@ -809,7 +809,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
         /* 수학 — 새로 만든다. 다시 풀기(ids)는 방금 푼 문제 그대로 */
         const level = Number(String(req.mode).slice(4)) || 1;
         picked = Array.isArray(req.ids) ? T.shuffle(before.filter(x => req.ids.includes(x.id))) : T.makeMath(level, req.count);
-      } else picked = await T.store.pick(req.set, req.mode === "copy" ? "dictation" : req.mode, req.count, req.ids);   /* 보고 쓰기는 받아쓰기 문장을 쓴다 */
+      } else picked = await T.store.pick(req.set, req.mode, req.count, req.ids);
     }
     catch (e) {
       if (seq !== S.seq) return;

@@ -60,7 +60,7 @@
   /* 허용 정답 여러 개 중 가장 점수가 높은 것으로 채점한다 */
   function grade(item, rawInput) {
     const input = clean(rawInput);
-    const answers = item.mode === "dictation" ? [item.prompt] : item.answers;
+    const answers = item.mode === "qa" ? item.answers : [item.prompt];   /* 받아쓰기·보고 쓰기는 문장 그대로가 정답 */
     let best = null;
     for (const ans of answers) {
       const r = compare(clean(ans), input);
@@ -117,7 +117,7 @@
     async update(id, raw) { return (await call("/items/" + id, { prompt: raw.prompt, answers: raw.answers || [] }, "PUT")).item; },
     async remove(ids) { return (await call("/delete", { ids })).removed; },
     /* 출제 — 섞어서 고른다. ids 를 주면(오답 복습·다시 풀기) 그 문제들만 다시 섞는다 */
-    /* mode: 'dictation' 받아쓰기, 'qa' 질문에 답하기, 'all' 둘을 섞어서 */
+    /* mode: 'dictation' 받아쓰기, 'qa' 질문에 답하기, 'copy' 보고 쓰기, 'all' 받아쓰기·질문을 섞어서 */
     async pick(setId, mode, count, ids) {
       const modes = mode === "all" ? ["dictation", "qa"] : [mode];
       let pool = (await Promise.all(modes.map(m => this.list(setId, m)))).flat();

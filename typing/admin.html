@@ -96,6 +96,8 @@
   .tab[aria-selected="true"] .n{ background:var(--blue-soft); }
   .tab[data-mode="qa"][aria-selected="true"]{ color:var(--lav-d); }
   .tab[data-mode="qa"][aria-selected="true"] .n{ background:var(--lav-soft); }
+  .tab[data-mode="copy"][aria-selected="true"]{ color:var(--peach-d); }
+  .tab[data-mode="copy"][aria-selected="true"] .n{ background:var(--peach-soft); }
 
   /* 문제집 */
   .setcard-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
@@ -148,7 +150,7 @@
   @media (max-width:600px){
     .wrap{ padding:18px 14px 48px; }
     .card{ padding:18px 16px; }
-    .tabs{ display:grid; grid-template-columns:1fr 1fr; width:100%; }
+    .tabs{ display:grid; grid-template-columns:repeat(3, 1fr); width:100%; }
     .tab{ justify-content:center; padding:10px 6px; white-space:nowrap; font-size:.9rem; gap:6px; }
     .tab svg{ display:none; }
     .brand .logo{ width:40px; height:40px; border-radius:13px; }
@@ -223,6 +225,7 @@ details[open] > summary { margin-bottom:.8rem; }
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" data-mode="dictation" aria-selected="true"><svg class="i" aria-hidden="true"><use href="#i-headphones"/></svg>받아쓰기 <span class="n" id="n-dictation">0</span></button>
       <button class="tab" role="tab" data-mode="qa" aria-selected="false"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg>질문에 답하기 <span class="n" id="n-qa">0</span></button>
+      <button class="tab" role="tab" data-mode="copy" aria-selected="false"><svg class="i" aria-hidden="true"><use href="#i-pencil"/></svg>보고 쓰기 <span class="n" id="n-copy">0</span></button>
     </div>
 
     <div class="card add-card">
@@ -275,7 +278,7 @@ details[open] > summary { margin-bottom:.8rem; }
   </section>
 </div>
 
-<script src="/typing/store.js?v=10"></script>
+<script src="/typing/store.js?v=11"></script>
 <script>
 (function () {
   "use strict";
@@ -325,7 +328,7 @@ details[open] > summary { margin-bottom:.8rem; }
     const cur = curSetObj();
     $("sets").innerHTML = sets.length
       ? sets.map(x => "<button type='button' class='set' data-set='" + x.id + "' aria-pressed='" + (x.id === curSet) + "'>" + esc(x.name) +
-          "<small>" + (x.counts.dictation + x.counts.qa) + "</small></button>").join("")
+          "<small>" + (x.counts.dictation + x.counts.qa + (x.counts.copy || 0)) + "</small></button>").join("")
       : "<span class='note'>아직 문제집이 없어요. 위에서 이름을 넣고 '만들기'를 눌러 주세요.</span>";
     $("setActions").classList.toggle("hidden", !cur);
     $("setBody").classList.toggle("hidden", !cur);
@@ -333,6 +336,7 @@ details[open] > summary { margin-bottom:.8rem; }
     if (!cur) $("bookSettings").open = true;
     $("n-dictation").textContent = cur ? cur.counts.dictation : 0;
     $("n-qa").textContent = cur ? cur.counts.qa : 0;
+    $("n-copy").textContent = cur ? cur.counts.copy || 0 : 0;
     if (cur) {
       localSet("adminSet", cur.id);
       history.replaceState(null, "", "/typing/admin?set=" + cur.id);
@@ -372,7 +376,7 @@ details[open] > summary { margin-bottom:.8rem; }
   $("deleteSet").addEventListener("click", async () => {
     const cur = curSetObj();
     if (!cur) return;
-    const n = cur.counts.dictation + cur.counts.qa;
+    const n = cur.counts.dictation + cur.counts.qa + (cur.counts.copy || 0);
     if (!confirm("'" + cur.name + "' 문제집을 지울까요?\n\n안에 있는 문제 " + n + "개도 함께 지워지고, 되돌릴 수 없어요.")) return;
     try {
       await store.removeSet(cur.id);
@@ -393,14 +397,16 @@ details[open] > summary { margin-bottom:.8rem; }
     selected.clear();
     document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.mode === m)));
     const qa = m === "qa";
-    $("addPromptLabel").textContent = qa ? "질문" : "문장 (단어 또는 문장)";
-    $("addPrompt").placeholder = qa ? "우리나라의 수도는?" : "오늘은 날씨가 좋아요.";
+    const copy = m === "copy";     /* 보고 쓰기 — 화면에 보여 주고 그대로 따라 쓸 문장 */
+    $("addPromptLabel").textContent = qa ? "질문" : copy ? "따라 쓸 문장" : "문장 (단어 또는 문장)";
+    $("addPrompt").placeholder = qa ? "우리나라의 수도는?" : copy ? "횡단보도에서는 신호를 기다려요." : "오늘은 날씨가 좋아요.";
     $("addAnswersWrap").classList.toggle("hidden", !qa);
     $("thPrompt").textContent = qa ? "질문 / 허용 정답" : "문장";
     $("bulkHelp").innerHTML = qa
       ? "한 줄에 한 문제. <code>질문 / 정답</code> 처럼 / 로 나눕니다. 정답이 여러 개면 <code>질문 / 정답 / 다른 정답</code> (엑셀에서 붙여 넣은 탭도 됩니다)."
       : "한 줄에 한 문제씩 적습니다. 빈 줄은 건너뜁니다.";
-    $("bulkText").placeholder = qa ? "우리나라의 수도는? / 서울 / 서울특별시\n학교 이름은? / 창인학교" : "오늘은 날씨가 좋아요.\n나무\n학교에 가요.";
+    $("bulkText").placeholder = qa ? "우리나라의 수도는? / 서울 / 서울특별시\n학교 이름은? / 창인학교"
+      : copy ? "횡단보도에서는 신호를 기다려요.\n밥을 먹기 전에 손을 씻어요.\n도와줘서 고마워." : "오늘은 날씨가 좋아요.\n나무\n학교에 가요.";
     $("bulkMsg").textContent = "";
     $("addMsg").textContent = "";
     $("listMsg").textContent = "";
@@ -605,7 +611,7 @@ details[open] > summary { margin-bottom:.8rem; }
 
   function parseBulk(text) {
     const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    if (mode === "dictation") return { list: lines.map(l => ({ prompt: l, answers: [] })), bad: [] };
+    if (mode !== "qa") return { list: lines.map(l => ({ prompt: l, answers: [] })), bad: [] };   /* 받아쓰기·보고 쓰기: 한 줄에 문장 하나 */
     const list = [], bad = [];
     lines.forEach((l, k) => {
       const parts = l.split(l.includes("\t") ? "\t" : "/").map(x => x.trim()).filter(Boolean);
