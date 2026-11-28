@@ -201,7 +201,7 @@ html[data-haru] {
   padding: 1rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--paper);
 }
 .kiosk-basket { position: sticky; top: .75rem; }
-.kiosk-basket h2, .kiosk-ticket h2 { margin: 0 0 .75rem; font-size: 1.2rem; }
+.kiosk-ticket h2 { margin: 0 0 .75rem; font-size: 1.2rem; }
 .kiosk-lines, .kiosk-ticket-items { list-style: none; margin: 0; padding: 0; }
 .kiosk-empty { padding: 1rem 0; color: var(--haru-muted); }
 .kiosk-line {
@@ -212,7 +212,6 @@ html[data-haru] {
 .kiosk-line-copy { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .25rem .5rem; }
 .kiosk-stepper { grid-column: 1 / -1; display: flex; align-items: center; gap: .55rem; }
 .kiosk-stepper button { width: var(--haru-touch); padding: 0; font-size: 1.3rem; }
-.kiosk-total { margin: 1rem 0 .65rem; font-weight: 850; font-size: 1.25rem; }
 .kiosk-checkout { width: 100%; }
 .kiosk-checkout:disabled { background: #e6ebe4; color: var(--haru-muted); border-color: var(--line); cursor: default; }
 .kiosk-ticket { max-width: 34rem; }
@@ -224,12 +223,21 @@ html[data-haru] {
   .kiosk-basket { position: static; }
   .kiosk-products .items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-.kiosk-mobile-basket { display: none; }
+.kiosk-order-bar {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: space-between; gap: .35rem;
+  padding: 0 .45rem;
+  border: 1px solid var(--green); border-radius: var(--haru-radius);
+  background: var(--haru-mint);
+}
+.kiosk-order-jump {
+  flex: 1; padding-inline: .15rem; text-align: left;
+  border: 0; background: transparent; white-space: nowrap;
+  font-size: clamp(.85rem, 2.4vw, 1rem);
+}
 @media (max-width: 720px) {
-  .kiosk-mobile-basket {
-    display: block; position: sticky; top: .4rem; z-index: 1; text-align: left;
-    background: var(--haru-mint); border-color: var(--green);
-  }
+  .kiosk-order-bar { position: sticky; top: .4rem; z-index: 1; }
+  .kiosk-basket { scroll-margin-top: calc(var(--haru-touch) + .8rem); }
 }
 
 .kiosk-order-screen { padding-block-start: clamp(.75rem, 2vw, 1.25rem); }
@@ -255,11 +263,6 @@ html[data-haru] {
   background: var(--green); color: white; font-weight: 850; line-height: 1;
 }
 .kiosk-basket { padding: .65rem; }
-.kiosk-basket-header {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: .35rem; margin-bottom: .35rem;
-}
-.kiosk-basket-header h2 { margin: 0; font-size: 1rem; }
 .kiosk-basket-reset { padding-inline: .55rem; font-size: .875rem; }
 .kiosk-empty { padding: .45rem 0; font-size: .9rem; }
 .kiosk-line {
@@ -268,11 +271,9 @@ html[data-haru] {
 }
 .kiosk-line-copy { display: grid; gap: .12rem; font-size: .875rem; word-break: keep-all; }
 .kiosk-stepper { grid-column: auto; gap: .2rem; font-size: .875rem; white-space: nowrap; }
-.kiosk-total { margin: .55rem 0 .4rem; font-size: 1.05rem; }
 @media (max-width: 720px) {
   .kiosk-products .kiosk-categories-wide { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .kiosk-products .items { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .kiosk-mobile-basket { padding: .4rem .6rem; font-size: .9rem; }
 }
 @media (max-width: 350px) {
   .kiosk-products .items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
