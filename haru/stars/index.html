@@ -30,8 +30,19 @@
     .haru-dressed { position: relative; width: min(100%, 300px); margin: auto; aspect-ratio: 420 / 508; border-radius: 1rem; background: var(--haru-cream); overflow: hidden; }
     .haru-dressed img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
     .haru-dressed svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-    .slots { display: grid; gap: .8rem; }
-    .slot-group h3 { margin: 0 0 .4rem; font-size: 1rem; color: var(--haru-muted); }
+    /* 넘기기 — 위: 꾸미기·스티커판·도장 수첩, 꾸미기 안: 모자·안경·목도리·옷·신발·배경 */
+    .tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; padding: .35rem; background: white; border: 1px solid var(--haru-line); border-radius: 1.1rem; }
+    .tabs button { min-height: 50px; border: 0; border-radius: .8rem; background: none; font: inherit; font-weight: 800; font-size: 1rem; color: var(--haru-muted); cursor: pointer; word-break: keep-all; }
+    .tabs button[aria-selected="true"] { background: var(--haru-mint); color: var(--haru-green); box-shadow: inset 0 0 0 2px var(--haru-green); }
+    .tabs button:focus-visible, .slot-tabs button:focus-visible, .pager button:focus-visible { outline: 3px solid var(--haru-green); outline-offset: 2px; }
+    .slot-tabs { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .7rem; }
+    .slot-tabs button { min-height: 44px; padding: .3rem .8rem; border: 2px solid var(--haru-line); border-radius: 999px; background: white; font: inherit; font-weight: 800; color: var(--haru-muted); cursor: pointer; display: inline-flex; align-items: center; gap: .3rem; }
+    .slot-tabs button small { font-size: .76rem; font-weight: 700; }
+    .slot-tabs button[aria-selected="true"] { border-color: var(--haru-green); background: var(--haru-mint); color: var(--haru-green); }
+    .pager { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-top: .7rem; }
+    .pager button { min-height: 44px; padding: .3rem .9rem; border: 1px solid var(--haru-line); border-radius: .8rem; background: white; font: inherit; font-weight: 800; color: var(--haru-green); cursor: pointer; }
+    .pager span { color: var(--haru-muted); font-weight: 700; font-size: .9rem; }
+    [hidden] { display: none !important; }
     .items { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .55rem; }
     .item { display: grid; grid-template-columns: 52px 1fr; grid-template-rows: auto auto; column-gap: .6rem; align-items: center; text-align: left; min-height: 64px; padding: .45rem .6rem; border: 2px solid var(--haru-line); border-radius: .9rem; background: white; font: inherit; color: inherit; cursor: pointer; }
     .item .haru-item-preview { grid-row: 1 / span 2; width: 52px; height: 52px; border-radius: .6rem; background: var(--haru-cream); }
@@ -60,7 +71,7 @@
 
     @media (max-width: 640px) {
       .dress { grid-template-columns: 1fr; }
-      .haru-dressed { width: min(60%, 220px); }
+      .haru-dressed { width: min(46%, 190px); }
       .dress-figure { position: static; }
     }
     @media (max-width: 430px) {
@@ -69,6 +80,11 @@
       .item .haru-item-preview { width: 40px; height: 40px; }
       .item b { font-size: .92rem; }
       .item span { font-size: .74rem; }
+      .stamps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
+      .stamp { padding: .6rem .2rem; }
+      .stamp i { width: 52px; height: 52px; font-size: .7rem; }
+      .stamp.on i { font-size: .72rem; }
+      .stamp b { font-size: .88rem; }
     }
   </style>
 </head>
@@ -88,21 +104,31 @@
       <div class="total" aria-live="polite"><b id="total">0</b><span>모은 별</span></div>
     </section>
 
-    <section class="card" aria-labelledby="dress-title">
+    <div class="tabs" role="tablist" aria-label="내 별 보기" id="tabs">
+      <button type="button" role="tab" id="tab-dress" aria-controls="panel-dress" data-tab="dress">꾸미기</button>
+      <button type="button" role="tab" id="tab-board" aria-controls="panel-board" data-tab="board">스티커판</button>
+      <button type="button" role="tab" id="tab-stamps" aria-controls="panel-stamps" data-tab="stamps">도장 수첩</button>
+    </div>
+
+    <section class="card" role="tabpanel" id="panel-dress" aria-labelledby="dress-title">
       <h2 id="dress-title">하루 꾸미기 <small>별을 모으면 열려요</small></h2>
       <div class="dress">
         <div class="dress-figure" id="figure"></div>
-        <div class="slots" id="items"></div>
+        <div>
+          <div class="slot-tabs" role="tablist" aria-label="꾸미기 자리" id="slot-tabs"></div>
+          <div class="items" role="tabpanel" id="items"></div>
+          <div class="pager"><button type="button" id="slot-prev">← 이전</button><span id="slot-page"></span><button type="button" id="slot-next">다음 →</button></div>
+        </div>
       </div>
     </section>
 
-    <section class="card" aria-labelledby="board-title">
+    <section class="card" role="tabpanel" id="panel-board" aria-labelledby="board-title">
       <h2 id="board-title">별 스티커판 <small id="board-count"></small></h2>
       <div class="board" id="board"></div>
       <p class="board-note" id="board-note"></p>
     </section>
 
-    <section class="card" aria-labelledby="stamp-title">
+    <section class="card" role="tabpanel" id="panel-stamps" aria-labelledby="stamp-title">
       <h2 id="stamp-title">장소 도장 수첩 <small id="stamp-count"></small></h2>
       <div class="stamps" id="stamps"></div>
     </section>
@@ -113,6 +139,51 @@
     const R = window.HaruRewards;
     const $ = id => document.getElementById(id);
     const STAR = '<svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.6 2.9 6 6.5.9-4.7 4.6 1.1 6.5L12 17.5l-5.8 3.1 1.1-6.5L2.6 9.5l6.5-.9z" fill="#f7c948" stroke="#b07d12" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+
+    /* 지금 보고 있는 칸 — 새로 그려도, 다른 화면에 다녀와도 그대로 */
+    const ORDER = ["head", "face", "neck", "body", "feet", "bg"];
+    const TABS = ["dress", "board", "stamps"];
+    const remember = (k, v) => { try { sessionStorage.setItem("haru.stars." + k, v); } catch (e) {} };
+    const recall = k => { try { return sessionStorage.getItem("haru.stars." + k); } catch (e) { return null; } };
+    let tab = TABS.includes(recall("tab")) ? recall("tab") : "dress";
+    let slot = ORDER.includes(recall("slot")) ? recall("slot") : "head";
+
+    function showTab() {
+      for (const t of TABS) {
+        $("tab-" + t).setAttribute("aria-selected", String(t === tab));
+        $("tab-" + t).tabIndex = t === tab ? 0 : -1;
+        $("panel-" + t).hidden = t !== tab;
+      }
+    }
+    function arrows(list, current, go) {          /* 탭 줄에서 ← → 로 옮겨 다니기 */
+      return e => {
+        const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+        if (!step) return;
+        e.preventDefault();
+        go(list[(list.indexOf(current()) + step + list.length) % list.length], true);
+      };
+    }
+    function goTab(t, focus) { tab = t; remember("tab", t); showTab(); if (focus) $("tab-" + t).focus(); }
+    function goSlot(next, focus) {
+      slot = next; remember("slot", next); render();
+      if (focus) $("slot-tabs").querySelector('[data-slot="' + next + '"]').focus();
+    }
+    $("tabs").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) goTab(b.dataset.tab); });
+    $("tabs").addEventListener("keydown", arrows(TABS, () => tab, goTab));
+    $("slot-tabs").addEventListener("click", e => { const b = e.target.closest("[data-slot]"); if (b) goSlot(b.dataset.slot); });
+    $("slot-tabs").addEventListener("keydown", arrows(ORDER, () => slot, goSlot));
+    const turn = step => goSlot(ORDER[(ORDER.indexOf(slot) + step + ORDER.length) % ORDER.length]);
+    $("slot-prev").addEventListener("click", () => turn(-1));
+    $("slot-next").addEventListener("click", () => turn(1));
+    /* 휴대폰: 아이템 칸을 옆으로 밀어서 넘기기 */
+    let touch = null;
+    $("items").addEventListener("touchstart", e => { const t = e.touches[0]; touch = { x: t.clientX, y: t.clientY }; }, { passive: true });
+    $("items").addEventListener("touchend", e => {
+      if (!touch) return;
+      const t = e.changedTouches[0], dx = t.clientX - touch.x, dy = t.clientY - touch.y;
+      touch = null;
+      if (Math.abs(dx) > 60 && Math.abs(dy) < 50) turn(dx < 0 ? 1 : -1);
+    });
 
     function render() {
       const d = R.load();
@@ -126,29 +197,36 @@
         : next ? "다음 꾸미기 '" + next.name + "'까지 별 " + (next.need - d.stars) + "개!"
         : "모든 꾸미기를 열었어요. 정말 멋져요!";
 
-      /* 꾸미기 — 자리(모자·안경·목도리·옷·신발·배경)별로 묶는다 */
+      /* 꾸미기 — 자리(모자·안경·목도리·옷·신발·배경) 하나씩 넘겨 본다 */
       $("figure").innerHTML = R.figure(d, "꾸민 하루");
-      const order = ["head", "face", "neck", "body", "feet", "bg"];
       const slotName = Object.fromEntries(R.SLOTS);
-      $("items").replaceChildren(...order.map(slot => {
-        const group = document.createElement("div");
-        group.className = "slot-group";
-        group.innerHTML = '<h3 id="slot-' + slot + '">' + slotName[slot] + '</h3><div class="items" role="group" aria-labelledby="slot-' + slot + '"></div>';
-        group.lastChild.append(...R.ITEMS.filter(item => item.slot === slot).map(item => {
-          const b = document.createElement("button");
-          b.type = "button";
-          b.className = "item";
-          b.dataset.item = item.id;
-          const open = R.unlocked(d, item);
-          const on = open && d.wear[item.slot] === item.id;
-          b.disabled = !open;
-          b.setAttribute("aria-pressed", String(on));
-          b.innerHTML = R.preview(item.id) + "<b>" + item.name + "</b><span>" +
-            (open ? (on ? "입었어요 · 누르면 벗기" : "누르면 입기") : "별 " + item.need + "개 모으면") + "</span>";
-          b.addEventListener("click", () => R.wear(item.id));   /* 다시 그리기는 'haru-rewards' 알림이 한다 */
-          return b;
-        }));
-        return group;
+      $("slot-tabs").replaceChildren(...ORDER.map(key => {
+        const b = document.createElement("button");
+        const all = R.ITEMS.filter(item => item.slot === key);
+        b.type = "button";
+        b.setAttribute("role", "tab");
+        b.dataset.slot = key;
+        b.id = "slot-tab-" + key;
+        b.setAttribute("aria-selected", String(key === slot));
+        b.tabIndex = key === slot ? 0 : -1;
+        b.innerHTML = slotName[key] + " <small>" + all.filter(item => R.unlocked(d, item)).length + "/" + all.length + "</small>";
+        return b;
+      }));
+      $("items").setAttribute("aria-labelledby", "slot-tab-" + slot);
+      $("slot-page").textContent = (ORDER.indexOf(slot) + 1) + " / " + ORDER.length;
+      $("items").replaceChildren(...R.ITEMS.filter(item => item.slot === slot).map(item => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "item";
+        b.dataset.item = item.id;
+        const open = R.unlocked(d, item);
+        const on = open && d.wear[item.slot] === item.id;
+        b.disabled = !open;
+        b.setAttribute("aria-pressed", String(on));
+        b.innerHTML = R.preview(item.id) + "<b>" + item.name + "</b><span>" +
+          (open ? (on ? "입었어요 · 누르면 벗기" : "누르면 입기") : "별 " + item.need + "개 모으면") + "</span>";
+        b.addEventListener("click", () => R.wear(item.id));   /* 다시 그리기는 'haru-rewards' 알림이 한다 */
+        return b;
       }));
 
       /* 스티커판 — 지금 채우는 판. 10칸을 다 채우면 새 판 */
@@ -178,6 +256,7 @@
         return s;
       }));
     }
+    showTab();
     render();
     /* 서버에서 아이의 별을 받아 오면, 다른 창에서 별을 받고 돌아오면 다시 그린다 */
     window.addEventListener("haru-rewards", () => {
