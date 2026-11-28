@@ -1,5 +1,5 @@
 import { screenHistory } from '/haru/navigation.js?v=1';
-import { atm, atmProblems, places, shopProblems, shops } from './content.js?v=12';
+import { atm, atmProblems, places, shopProblems, shops } from './content.js?v=13';
 import { showSpeechHelp, speak, stopSpeech } from './speech.js?v=2';
 import { randomQuestion } from '/haru/questions.js?v=1';
 import { notes, values as noteValues, total, won } from '/haru/money/currency.js?v=1';
@@ -636,7 +636,7 @@ function atmScreen(step, scene, values, choose) {
   const slots = node('div', 'atm-slots');
   slots.append(
     slot('카드 투입구', step === 'returnCard' ? 'bank-12' : 'bank-7', cardAction),
-    slot('현금 투입·수령구', step === 'takeCash' ? 'bank-11' : 'bank-10', cashAction)
+    slot('현금 투입·수령', step === 'takeCash' ? 'bank-11' : 'bank-10', cashAction)
   );
   machine.append(panel, slots);
   app.append(machine);
@@ -687,7 +687,7 @@ function render() {
         const stores = places.filter(([key]) => key === 'mart' || Object.hasOwn(shops, key));
         group('grid places kiosk-menu',
           ...stores.map(([key, name, desc, image]) => card(name, image, () => startPlace(key), desc)),
-          card('ATM', atm.image, () => openAtm(), '카드로 입금하고 출금하기'));
+          card('ATM', atm.image, () => openAtm(), '입금과 출금 연습'));
       }
       return;
     }

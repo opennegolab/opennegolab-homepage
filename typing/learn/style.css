@@ -41,7 +41,7 @@ h1:focus { outline: none; }
 .photo-card img { width: 100%; display: block; object-fit: cover; aspect-ratio: 16 / 9; background: #e9ece5; }
 .items .photo-card img { aspect-ratio: 1; }
 .card-copy { display: grid; gap: .3rem; width: 100%; padding: .7rem .85rem; }
-.card-copy strong { font-size: clamp(1rem, 2.25vw, 1.35rem); line-height: 1.2; overflow-wrap: anywhere; }
+.card-copy strong { font-size: clamp(1rem, 2.25vw, 1.35rem); line-height: 1.2; word-break: keep-all; overflow-wrap: anywhere; }
 .card-copy small { color: #49594f; font-size: .93rem; font-weight: 500; }
 .single { max-width: 560px; margin-inline: auto; }
 .single .photo-card { width: 100%; }
@@ -286,3 +286,16 @@ html[data-haru] {
 .atm-opening { display: block; min-height: .6rem; border-radius: .2rem; background: #344d40; }
 .atm-slot img { display: block; width: 100%; height: 4rem; object-fit: contain; }
 .atm-slot-action { font-weight: 800; color: var(--green); }
+
+.prompt, .problem-goal p, .problem-feedback, .kiosk-ticket-items span {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.controls button:not(.photo-card), .kiosk-ticket-items strong, .receipt-price { white-space: nowrap; }
+.kiosk-menu .card-copy small { word-break: keep-all; }
+@media (max-width: 430px) {
+  .controls { gap: .35rem; }
+  .controls button:not(.photo-card) { padding-inline: .55rem; font-size: .9rem; }
+  .atm-slot { padding-inline: .4rem; }
+  .atm-slot > strong { font-size: .85rem; }
+}

@@ -9,3 +9,8 @@
 .money-wallet { display: flex; flex-wrap: wrap; gap: .5rem; padding: .75rem; border: 1px solid var(--haru-line); border-radius: var(--haru-radius); background: var(--haru-cream); }
 .money-wallet p { margin: 0; }
 #money-app button:disabled { cursor: default; }
+
+.money-menu .card-copy { padding: clamp(.4rem, 2vw, .75rem); gap: .15rem; }
+.money-menu .card-copy strong { font-size: clamp(1rem, 2.5vw, 1.25rem); }
+.money-menu .card-copy small { font-size: clamp(.825rem, 2vw, 1rem); word-break: keep-all; }
+.money-wallet button, .money-note .card-copy, .money-option .card-copy { white-space: nowrap; }
