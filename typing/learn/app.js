@@ -165,14 +165,10 @@ function problemScreen() {
       return figure;
     }));
   }
-  const actions = [button('문제 풀기', () => {
+  group('controls', button('문제 풀기', () => {
     const view = state.id === 'atm' ? 'action' : usesOrderScreen ? 'kiosk-order' : 'entrance';
     show({ ...state, view });
-  }, true), button('문제 다시 듣기', readProblem)];
-  if (shops[state.id] && state.target) {
-    actions.push(button('자유 선택 문제', () => openShop(state.id, null)));
-  }
-  group('controls', ...actions);
+  }, true), button('문제 다시 듣기', readProblem));
 }
 
 function showProblemGoal() {
