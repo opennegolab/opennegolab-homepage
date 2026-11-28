@@ -243,7 +243,11 @@ html[data-haru] {
 }
 
 .kiosk-order-screen { padding-block-start: clamp(.75rem, 2vw, 1.25rem); }
-.kiosk-order-screen .heading { margin-bottom: .65rem; }
+.kiosk-order-screen .heading {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: .45rem; margin-bottom: .65rem;
+}
+.kiosk-order-screen .heading button { flex: none; }
 .kiosk-order-screen .heading h1 { font-size: clamp(1.4rem, 3.4vw, 2rem); }
 .kiosk-order-screen .heading .prompt { margin-top: .2rem; font-size: .95rem; }
 .kiosk-order-screen .kiosk-progress { padding: .25rem; margin-bottom: .65rem; }
