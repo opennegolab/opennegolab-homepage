@@ -1,3 +1,4 @@
+import { screenHistory } from '/haru/navigation.js?v=1';
 import { atm, atmProblems, places, shopProblems, shops } from './content.js?v=12';
 import { showSpeechHelp, speak, stopSpeech } from './speech.js?v=2';
 import { randomQuestion } from '/haru/questions.js?v=1';
@@ -19,11 +20,11 @@ if (area) {
 }
 
 let state = { view: 'home' };
-let trail = [];
+const navigation = screenHistory(() => state, screen => show(screen, false));
 let lastOrderNumber = 100;
 
 function show(next, remember = true) {
-  if (remember) trail.push(state);
+  if (remember) navigation.push();
   state = next;
   render();
   app.querySelector('h1').focus({ preventScroll: true });
@@ -41,25 +42,9 @@ function readProblem() {
   speak(spokenGoal, () => showSpeechHelp(voiceStatus));
 }
 
-function previous() {
-  const last = trail.pop();
-  if (last) show(last, false);
-  else if (area?.id === 'burger') {
-    if (document.referrer === new URL('/haru', window.location.origin).href && window.history.length > 1) {
-      window.history.back();
-    } else {
-      window.location.replace('/haru');
-    }
-  }
-}
-
 function reset() {
-  trail = [];
-  if (area?.id === 'burger') {
-    previous();
-    return;
-  }
-  show({ view: 'home' }, false);
+  if (area?.id === 'burger') window.location.assign('/haru');
+  else show({ view: 'home' });
 }
 
 function node(tag, className = '', text) {
@@ -127,18 +112,6 @@ function startPlace(id) {
   else show({ view: 'places', id });
 }
 
-function resetActivity(parent) {
-  const start = { view: 'home' };
-  const hasParentMenu = parent && area?.id !== parent;
-  trail = hasParentMenu ? [start] : [];
-  state = hasParentMenu ? { view: 'places', id: parent } : start;
-}
-
-function restartShop(id, target) {
-  resetActivity(['fruit', 'vegetable'].includes(id) ? 'mart' : null);
-  openShop(id, target);
-}
-
 function newShopTarget(id, previous) {
   // 자유 선택도 출제하되 같은 문제를 연달아 내지 않습니다.
   if (previous !== null && Math.random() < 0.2) return null;
@@ -154,13 +127,13 @@ function newShopTarget(id, previous) {
   return randomQuestion(options);
 }
 
-function openShop(id, target = newShopTarget(id)) {
+function openShop(id, target = newShopTarget(id), remember = true) {
   const menu = shops[id].submit === '주문하기';
   const goal = target
     ? target.map(({ item, count }) => wording(item, count)).join(', ') + (menu ? ' 주문해 보세요.' : ' 사 보세요.')
     : menu ? '먹고 싶은 것을 선택해 주세요.' : '사고 싶은 것을 선택해 주세요.';
   const view = usesOrderScreen ? 'kiosk-order' : 'problem';
-  show({ view, id, goal, target, category: 0, cart: [] }, area?.id !== 'burger');
+  show({ view, id, goal, target, category: 0, cart: [] }, remember);
   if (usesOrderScreen) readProblem();
 }
 
@@ -239,22 +212,12 @@ function repeated(item, count) {
   return strip;
 }
 
-function updateCartHistory(cart) {
-  for (let i = trail.length - 1; i >= 0 && trail[i].id === state.id; i--) {
-    trail[i] = { ...trail[i], cart, notice: '' };
-  }
-}
-
 function saveQuantity() {
   const { item, count, cart } = state;
-  // 수량을 확정했으므로 확인 전의 수량 화면과 중복 장바구니를 건너뜁니다.
-  trail.pop();
-  if (trail.at(-1)?.view === 'cart') trail.pop();
   const updated = cart.filter(line => line.item !== item);
   const position = cart.findIndex(line => line.item === item);
   updated.splice(position < 0 ? updated.length : position, 0, { item, count });
-  updateCartHistory(updated);
-  changeShop('cart', { cart: updated, notice: wording(item, count) + ' 담았어요.' }, false);
+  changeShop('cart', { cart: updated, notice: wording(item, count) + ' 담았어요.' });
 }
 
 function orderTotal(cart) {
@@ -500,7 +463,6 @@ function receipt(cart, editable) {
       edit.setAttribute('aria-label', item.name + ' 수량 바꾸기');
       const remove = button('빼기', () => {
         const updated = cart.filter(line => line.item !== item);
-        updateCartHistory(updated);
         changeShop('cart', { cart: updated, notice: item.name + ' 빼기를 마쳤어요.' }, false);
       });
       remove.setAttribute('aria-label', item.name + ' 빼기');
@@ -622,12 +584,9 @@ function shopScreen(shop) {
   heading('문제를 해결했어요', shop.done, shop.name, 'cheer');
   showPickup(cart, menu);
   const isMarket = id === 'fruit' || id === 'vegetable';
-  const other = !area && isMarket ? () => {
-    trail = [];
-    show({ view: 'places', id: 'mart' });
-  } : reset;
+  const other = !area && isMarket ? () => show({ view: 'places', id: 'mart' }) : reset;
   const { target } = state;
-  finishActions(() => restartShop(id, target), other, () => restartShop(id, newShopTarget(id, target)));
+  finishActions(() => openShop(id, target), other, () => openShop(id, newShopTarget(id, target)));
 }
 
 function atmScreen(step, scene, values, choose) {
@@ -696,11 +655,7 @@ function atmActivityScreen() {
       cash.alt = '받은 현금 ' + won(values.amount);
       group('atm-pickup-cash', cash, node('p', '', cash.alt));
     }
-    const replay = problem => {
-      resetActivity();
-      openAtm(problem);
-    };
-    finishActions(() => replay(target), reset, () => replay(randomQuestion(atmProblems, target)));
+    finishActions(() => openAtm(target), reset, () => openAtm(randomQuestion(atmProblems, target)));
     return;
   }
 
@@ -723,7 +678,7 @@ function render() {
   const { id, view } = state;
   app.classList.toggle('kiosk-session', usesOrderScreen && Boolean(shops[id]));
   app.classList.toggle('kiosk-order-screen', view === 'kiosk-order');
-  back.hidden = trail.length === 0 && area?.id !== 'burger';
+  back.hidden = !navigation.hasPrevious && !area;
   home.hidden = view === 'home';
   if (view === 'home') {
     if (area) {
@@ -756,7 +711,7 @@ function render() {
   else shopScreen(shops[id]);
 }
 
-back.addEventListener('click', previous);
+back.addEventListener('click', () => navigation.back());
 home.addEventListener('click', reset);
-if (area?.id === 'burger') openShop('burger');
+if (area?.id === 'burger') openShop('burger', undefined, false);
 else render();

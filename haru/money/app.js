@@ -1,3 +1,4 @@
+import { screenHistory } from '/haru/navigation.js?v=1';
 import { showSpeechHelp, speak, stopSpeech } from '/typing/learn/speech.js?v=2';
 
 import { randomQuestion } from '/haru/questions.js?v=1';
@@ -23,6 +24,16 @@ const voiceStatus = document.querySelector('#voice-status');
 let page = 'home';
 let question;
 let wallet = [];
+const navigation = screenHistory(
+  () => ({ page, question, wallet, contents: [...app.childNodes] }),
+  screen => {
+    ({ page, question, wallet } = screen);
+    app.replaceChildren(...screen.contents);
+    stopSpeech();
+    voiceStatus.hidden = true;
+    app.querySelector('h1').focus();
+  }
+);
 
 function element(tag, text = '', className = '') {
   const result = document.createElement(tag);
@@ -64,6 +75,7 @@ function heading(title, prompt) {
 }
 
 function open(next) {
+  navigation.push();
   page = next;
   question = next === 'compare' ? randomQuestion(comparisons) : next === 'build' ? randomQuestion(targets) : undefined;
   draw(true);
@@ -71,7 +83,7 @@ function open(next) {
 
 function draw(focus = false) {
   app.replaceChildren();
-  back.hidden = page === 'home';
+  back.hidden = false;
   if (page === 'home') {
     heading('돈 공부', '돈의 금액을 읽고 비교해 볼까요?');
     const menu = element('div', '', 'grid money-menu');
@@ -121,6 +133,7 @@ function showNotes() {
 }
 
 function next(questions) {
+  navigation.push();
   question = randomQuestion(questions, question);
   draw(true);
 }
@@ -209,5 +222,5 @@ function showWallet() {
   update();
 }
 
-back.addEventListener('click', () => open('home'));
+back.addEventListener('click', () => navigation.back());
 draw();
