@@ -1,4 +1,4 @@
-import { atm, atmProblems, places, shopProblems, shops } from './content.js?v=11';
+import { atm, atmProblems, places, shopProblems, shops } from './content.js?v=12';
 import { showSpeechHelp, speak, stopSpeech } from './speech.js?v=2';
 import { randomQuestion } from '/haru/questions.js?v=1';
 import { notes, values as noteValues, total, won } from '/haru/money/currency.js?v=1';
@@ -44,10 +44,21 @@ function readProblem() {
 function previous() {
   const last = trail.pop();
   if (last) show(last, false);
+  else if (area?.id === 'burger') {
+    if (document.referrer === new URL('/haru', window.location.origin).href && window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.replace('/haru');
+    }
+  }
 }
 
 function reset() {
   trail = [];
+  if (area?.id === 'burger') {
+    previous();
+    return;
+  }
   show({ view: 'home' }, false);
 }
 
@@ -149,7 +160,7 @@ function openShop(id, target = newShopTarget(id)) {
     ? target.map(({ item, count }) => wording(item, count)).join(', ') + (menu ? ' 주문해 보세요.' : ' 사 보세요.')
     : menu ? '먹고 싶은 것을 선택해 주세요.' : '사고 싶은 것을 선택해 주세요.';
   const view = usesOrderScreen ? 'kiosk-order' : 'problem';
-  show({ view, id, goal, target, category: 0, cart: [] });
+  show({ view, id, goal, target, category: 0, cart: [] }, area?.id !== 'burger');
   if (usesOrderScreen) readProblem();
 }
 
@@ -712,14 +723,12 @@ function render() {
   const { id, view } = state;
   app.classList.toggle('kiosk-session', usesOrderScreen && Boolean(shops[id]));
   app.classList.toggle('kiosk-order-screen', view === 'kiosk-order');
-  back.hidden = trail.length === 0;
+  back.hidden = trail.length === 0 && area?.id !== 'burger';
   home.hidden = view === 'home';
   if (view === 'home') {
     if (area) {
       heading(area.title, area.prompt, undefined, 'guide');
-      if (area.id === 'burger') {
-        group('single', card('주문 연습 시작', shops.burger.image, () => openShop('burger')));
-      } else if (area.id === 'kiosk') {
+      if (area.id === 'kiosk') {
         const stores = places.filter(([key]) => key === 'mart' || Object.hasOwn(shops, key));
         group('grid places kiosk-menu',
           ...stores.map(([key, name, desc, image]) => card(name, image, () => startPlace(key), desc)),
@@ -749,4 +758,5 @@ function render() {
 
 back.addEventListener('click', previous);
 home.addEventListener('click', reset);
-render();
+if (area?.id === 'burger') openShop('burger');
+else render();
