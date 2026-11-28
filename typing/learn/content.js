@@ -53,13 +53,22 @@ export const shops = {
     ]);
     return [['음료', menu.slice(0, 7)], ['디저트', menu.slice(7)]];
   })() },
-  burger: { name: '햄버거 가게', image: 'burger-2', ...order, groups: (() => {
+  burger: { name: '패스트푸드', image: 'burger-2', ...order, groups: (() => {
     const menu = items('burger', [
       ['샌드위치'], ['치즈버거'], ['치킨버거'], ['불고기버거'],
       ['감자튀김', '팩'], ['치킨 조각', '팩'],
       ['콜라', '잔'], ['레몬소다', '잔'], ['오렌지주스', '잔']
     ]);
-    return [['버거·샌드위치', [menu[2], menu[3], menu[1], menu[0]]], ['사이드', menu.slice(4, 6)], ['음료', menu.slice(6)]];
+    const pizza = { name: '피자', unit: '판', image: 'food-8', price: prices.food[7] };
+    const friedChicken = { name: '프라이드 치킨', unit: '팩', image: 'food-7', price: prices.food[6] };
+    return [
+      ['햄버거', [menu[2], menu[3], menu[1]]],
+      ['샌드위치', [menu[0]]],
+      ['피자', [pizza]],
+      ['치킨', [menu[5], friedChicken]],
+      ['사이드', [menu[4]]],
+      ['음료', menu.slice(6)]
+    ];
   })() },
   food: { name: '음식점', image: 'places-4', ...order, prompt: '무엇을 먹을까요?',
     receive: '음식 받기', done: '음식을 받았어요. 잘 먹겠습니다.', groups: (() => {
@@ -108,7 +117,8 @@ export const shopProblems = {
     { items: [['치즈버거', 1], ['감자튀김', 1], ['콜라', 1]] },
     { items: [['치킨버거', 1], ['치킨 조각', 1], ['레몬소다', 2]] },
     { items: [['불고기버거', 2], ['오렌지주스', 1]] },
-    { items: [['샌드위치', 1], ['감자튀김', 2], ['오렌지주스', 1]] }
+    { items: [['샌드위치', 1], ['감자튀김', 2], ['오렌지주스', 1]] },
+    { items: [['피자', 1], ['프라이드 치킨', 1], ['콜라', 2]] }
   ],
   food: [{ items: [['돈가스', 1]] }, { items: [['김밥', 2], ['우동', 1]] }]
 };

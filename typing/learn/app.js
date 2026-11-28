@@ -1,4 +1,4 @@
-import { atm, atmProblems, places, shopProblems, shops } from './content.js?v=10';
+import { atm, atmProblems, places, shopProblems, shops } from './content.js?v=11';
 import { showSpeechHelp, speak, stopSpeech } from './speech.js?v=2';
 import { randomQuestion } from '/haru/questions.js?v=1';
 import { notes, values as noteValues, total, won } from '/haru/money/currency.js?v=1';
@@ -9,7 +9,7 @@ const home = document.querySelector('#home');
 const voiceStatus = document.querySelector('#voice-status');
 const area = {
   '/haru/kiosk': { id: 'kiosk', title: '키오스크', prompt: '가게에서 주문하거나 ATM을 이용해 보세요.' },
-  '/haru/burger': { id: 'burger', title: '햄버거 가게', prompt: '버거와 샌드위치, 사이드, 음료를 주문해 보세요.' }
+  '/haru/burger': { id: 'burger', title: '패스트푸드', prompt: '햄버거, 샌드위치, 피자, 치킨, 사이드, 음료를 주문해 보세요.' }
 }[window.location.pathname.replace(/\/$/, '')];
 const usesOrderScreen = area?.id === 'kiosk' || area?.id === 'burger';
 
@@ -290,6 +290,7 @@ function kioskOrder(shop) {
   const products = node('div', 'grid items');
   const productBadges = new Map();
   if (shop.groups.length > 1) {
+    categories.classList.toggle('kiosk-categories-wide', shop.groups.length > 3);
     shop.groups.forEach(([label], category) => {
       const tab = button(label, () => {
         state = { ...state, category };

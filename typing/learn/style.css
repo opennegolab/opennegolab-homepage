@@ -260,6 +260,7 @@ html[data-haru] {
 .kiosk-stepper { grid-column: auto; gap: .2rem; font-size: .875rem; white-space: nowrap; }
 .kiosk-total { margin: .55rem 0 .4rem; font-size: 1.05rem; }
 @media (max-width: 720px) {
+  .kiosk-products .kiosk-categories-wide { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .kiosk-products .items { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .kiosk-mobile-basket { padding: .4rem .6rem; font-size: .9rem; }
 }
