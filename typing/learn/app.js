@@ -288,6 +288,7 @@ function kioskOrder(shop) {
 
   const categories = node('div', 'categories kiosk-categories');
   const products = node('div', 'grid items');
+  const productBadges = new Map();
   if (shop.groups.length > 1) {
     shop.groups.forEach(([label], category) => {
       const tab = button(label, () => {
@@ -316,14 +317,36 @@ function kioskOrder(shop) {
     else cart[position] = { item, count };
     state = { ...state, cart };
     feedback('');
+    updateProductCount(item, count);
     drawBasket(focusControl ? { item, delta } : undefined);
   }
 
   function drawProducts() {
     [...categories.children].forEach((tab, index) =>
       tab.setAttribute('aria-pressed', String(index === state.category)));
-    products.replaceChildren(...shop.groups[state.category][1].map(item =>
-      card(item.name, item.image, () => adjust(item, 1), won(item.price))));
+    productBadges.clear();
+    products.replaceChildren(...shop.groups[state.category][1].map(item => {
+      const product = card(item.name, item.image, () => adjust(item, 1), won(item.price));
+      const badge = node('span', 'kiosk-product-count');
+      badge.setAttribute('aria-hidden', 'true');
+      product.append(badge);
+      productBadges.set(item, { product, badge });
+      updateProductCount(item, state.cart.find(line => line.item === item)?.count ?? 0);
+      return product;
+    }));
+  }
+
+  function updateProductCount(item, count) {
+    const entry = productBadges.get(item);
+    if (!entry) return;
+    const { product, badge } = entry;
+    badge.textContent = count;
+    badge.hidden = count === 0;
+    if (count) {
+      product.setAttribute('aria-label', item.name + ' ' + won(item.price) + ', 선택 수량 ' + count + item.unit);
+    } else {
+      product.removeAttribute('aria-label');
+    }
   }
 
   function drawBasket(focusControl) {
@@ -687,6 +710,7 @@ function render() {
   app.replaceChildren();
   const { id, view } = state;
   app.classList.toggle('kiosk-session', usesOrderScreen && Boolean(shops[id]));
+  app.classList.toggle('kiosk-order-screen', view === 'kiosk-order');
   back.hidden = trail.length === 0;
   home.hidden = view === 'home';
   if (view === 'home') {
