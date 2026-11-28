@@ -22,7 +22,7 @@ if (area) {
 }
 
 let state = { view: 'home' };
-/* 뒤로가기 — 주문·결제 중에는 한 단계씩 돌아가고, 문제를 다 푼 화면('문제를 해결했어요')에서는
+/* 뒤로가기 — 주문·결제 중에는 한 단계씩 돌아가고, 문제를 다 푼 화면('다 했어요!')에서는
    목록으로 바로 나간다 (운영자 요청): 키오스크는 마트·카페·음식점·ATM 고르기, 패스트푸드는 새 문제 */
 const solved = s => s.view === 'shop-done' || (s.view === 'action' && s.id === 'atm' && !atm.steps[s.step]);
 const navigation = screenHistory(() => state, screen => {
@@ -562,7 +562,7 @@ function shopScreen(shop) {
     app.append(receive);
     return;
   }
-  heading('문제를 해결했어요', shop.done, shop.name, 'cheer');
+  heading('다 했어요!', shop.done, shop.name, 'cheer');
   rewardOnce();
   showPickup(cart, menu);
 }
@@ -638,7 +638,7 @@ function atmActivityScreen() {
   const { step, values } = state;
   const nextStep = atm.steps[step];
   if (!nextStep) {
-    heading('문제를 해결했어요', atm.done, atm.name, 'cheer');
+    heading('다 했어요!', atm.done, atm.name, 'cheer');
     rewardOnce();
     const card = photo('bank-12');
     card.alt = '돌려받은 카드';
