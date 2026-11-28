@@ -407,34 +407,8 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
       <div class="step"><span class="n">1</span>어떤 문제집으로 할까요?</div>
       <div class="sets" id="sets" role="group" aria-label="문제집"><span class="note">불러오는 중…</span></div>
 
-      <div class="step" style="margin-top:26px"><span class="n">2</span>무엇을 연습할까요?</div>
-      <div class="modes" role="group" aria-label="연습 종류">
-        <button type="button" class="mode" data-mode="dictation" aria-pressed="true">
-          <span class="tick" aria-hidden="true"><svg class="i"><use href="#i-check"/></svg></span>
-          <span class="ico" aria-hidden="true"><svg class="i"><use href="#i-headphones"/></svg></span>
-          <span class="name">받아쓰기</span>
-          <span class="desc">듣고 써요</span>
-          <span class="cnt" id="cnt-dictation">불러오는 중…</span>
-        </button>
-        <button type="button" class="mode qa" data-mode="qa" aria-pressed="false">
-          <span class="tick" aria-hidden="true"><svg class="i"><use href="#i-check"/></svg></span>
-          <span class="ico" aria-hidden="true"><svg class="i"><use href="#i-chat"/></svg></span>
-          <span class="name">질문에 답하기</span>
-          <span class="desc">답을 써요</span>
-          <span class="cnt" id="cnt-qa">불러오는 중…</span>
-        </button>
-        <!-- 기존 문제 설정 시작 -->
-        <a class="mode setup" href="/typing/admin" id="setupLink">
-          <span class="tick" aria-hidden="true"><svg class="i"><use href="#i-arrow"/></svg></span>
-          <span class="ico" aria-hidden="true"><svg class="i"><use href="#i-gear"/></svg></span>
-          <span class="txt"><span class="name">문제 설정</span>
-          <span class="desc">문제를 만들고 고쳐요</span></span>
-          <span class="cnt">문제집 만들기</span>
-        </a>
-        <!-- 기존 문제 설정 끝 -->
-      </div>
 
-      <div class="step" style="margin-top:26px"><span class="n">3</span>몇 문제 풀까요?</div>
+      <div class="step" style="margin-top:26px"><span class="n">2</span>몇 문제 풀까요?</div>
       <div class="seg" role="group" aria-label="문제 수" id="counts">
         <button type="button" data-count="10" aria-pressed="true">10문제</button>
         <button type="button" data-count="20" aria-pressed="false">20문제</button>
@@ -502,7 +476,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   </section>
 </div>
 
-<script src="/typing/store.js?v=8"></script>
+<script src="/typing/store.js?v=9"></script>
 <script src="/haru/rewards.js?v=3"></script>
 <script type="module">
 import { screenHistory } from "/haru/navigation.js?v=1";
@@ -615,16 +589,13 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     renderSets();
     const setup = $("setupLink");
     if (setup) setup.search = cur ? "?set=" + cur.id : "";
-    document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === settings.mode)));
     document.querySelectorAll("[data-count]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.count === settings.count)));
     const warn = $("homeWarn");
     let w = "";
     if (counts) {
-      $("cnt-dictation").textContent = "문제 " + counts.dictation + "개";
-      $("cnt-qa").textContent = "문제 " + counts.qa + "개";
-      const n = counts[settings.mode];
       if (sets && !sets.length) w = "";
-      else if (!n) w = "이 문제집에는 " + (settings.mode === "qa" ? "질문" : "받아쓰기") + " 문제가 없어요. '문제 설정'에서 넣어 주세요.";
+      else if (!counts.dictation && !counts.qa) w = "이 문제집에는 문제가 없어요. '문제 설정'에서 넣어 주세요.";
+      else if (!tts.ok && !counts.qa) w = "이 문제집은 받아쓰기만 있어서 소리가 있어야 해요.";
     }
     if (loadError) w = loadError;
     warn.textContent = w;
@@ -636,7 +607,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
         ? (/KAKAOTALK/i.test(navigator.userAgent)
             ? "카카오톡 안에서는 소리가 나지 않아요. 크롬에서 열리지 않았다면 아래 버튼을 눌러 주세요."
             : "카카오톡·네이버 같은 앱 안에서 열면 문제를 소리 내어 읽지 못할 수 있어요. 크롬이나 삼성 인터넷으로 열어 주세요.")
-        : "이 화면에서는 소리 내어 읽기를 쓸 수 없어요" + (settings.mode === "dictation" ? " (받아쓰기는 소리가 있어야 해요)" : "") + ". 크롬이나 삼성 인터넷으로 열어 주세요.";
+        : "이 화면에서는 소리 내어 읽기를 쓸 수 없어요 (받아쓰기는 빼고 질문만 나와요). 크롬이나 삼성 인터넷으로 열어 주세요.";
       if (w) p.style.marginTop = "8px";
       warn.appendChild(p);
       const href = externalUrl();
@@ -648,7 +619,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
       w = w || "app";
     }
     warn.classList.toggle("hidden", !w);
-    $("startBtn").disabled = !counts || !counts[settings.mode] || (settings.mode === "dictation" && !tts.ok);
+    $("startBtn").disabled = !counts || !(counts.qa + (tts.ok ? counts.dictation : 0));
   }
 
   let loadError = "";
@@ -671,7 +642,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
       }
       if (!currentSet() && sets.length) { settings.set = sets[0].id; saveSettings(); }
     } catch (e) {
-      if (!sets) { $("cnt-dictation").textContent = $("cnt-qa").textContent = "불러오지 못함"; $("sets").innerHTML = ""; }
+      if (!sets) $("sets").innerHTML = "";
       if (shared) sets = [];
       loadError = "문제를 불러오지 못했어요. " + e.message;
     }
@@ -680,9 +651,10 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   /* 다른 창에서 문제를 바꾸고 돌아오면 숫자를 새로 맞춘다 */
   document.addEventListener("visibilitychange", () => { if (!document.hidden && S.phase === "idle" && !$("home").classList.contains("hidden")) loadCounts(); });
 
-  document.querySelectorAll("[data-mode]").forEach(b => b.addEventListener("click", () => { settings.mode = b.dataset.mode; saveSettings(); renderHome(); }));
   document.querySelectorAll("[data-count]").forEach(b => b.addEventListener("click", () => { settings.count = b.dataset.count; saveSettings(); renderHome(); }));
-  $("startBtn").addEventListener("click", () => { prepareSpeech(); begin({ set: settings.set, mode: settings.mode, count: settings.count }); });
+  $("startBtn").addEventListener("click", () => { prepareSpeech(); begin({ set: settings.set, mode: practiceMode(), count: settings.count }); });
+  /* 받아쓰기·질문을 섞어서 낸다. 소리를 못 내는 곳에서는 질문만 */
+  const practiceMode = () => tts.ok ? "all" : "qa";
 
   /* ============================================================
      문제 풀기
@@ -690,7 +662,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
      한 단계에서만 다음으로 넘어가게 해서 Enter 를 여러 번 눌러도
      두 번 채점하거나 두 문제를 건너뛰지 않는다
      ============================================================ */
-  const S = { set: 0, setName: "", mode: "dictation", items: [], i: 0, results: [], phase: "idle", seq: 0, timer: 0, fbAt: 0, last: null };
+  const S = { set: 0, setName: "", mode: "all", items: [], i: 0, results: [], phase: "idle", seq: 0, timer: 0, fbAt: 0, last: null };
   const input = $("answer");
   const navigation = screenHistory(
     () => ({ screen, practice: { ...S, results: [...S.results] }, answer: input.value }),
@@ -787,7 +759,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     $("submitBtn").disabled = false;
     $("submitBtn").textContent = "제출";
 
-    const qa = S.mode === "qa";
+    const qa = item.mode === "qa";     /* 문제마다 자기 종류대로 */
     $("stage").innerHTML = qa
       ? "<span class='qtag qa'>" + icon("chat") + "질문에 답하기</span>" +
         "<div class='question'>" + esc(item.question) + "</div>" +
@@ -860,7 +832,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     const last = S.i + 1 >= S.items.length;
     $("stage").innerHTML =
       "<div class='fb'>" +
-        (S.mode === "qa" ? "<div class='fq'>" + esc(item.question) + "</div>" : "") +
+        (item.mode === "qa" ? "<div class='fq'>" + esc(item.question) + "</div>" : "") +
         ring(r.score, 124) +
         "<div class='say'>" + esc(r.feedback) + "</div>" +
         (r.score === 100 ? "" :
@@ -1013,7 +985,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
       "<div class='medal'>" + medal + "</div>" +
       ring(avg, 168) +
       "<div class='say'>" + say + "</div>" +
-      "<div class='mode-name'>" + (S.setName ? esc(S.setName) + " · " : "") + (S.mode === "qa" ? "질문에 답하기" : "받아쓰기") + " 평균 점수</div>" +
+      "<div class='mode-name'>" + (S.setName ? esc(S.setName) + " · " : "") + "평균 점수</div>" +
       "<div class='tiles'>" +
         "<div class='tile'><b>" + total + "</b><span>전체 문제</span></div>" +
         "<div class='tile t100'><b>" + perfect + "</b><span>100점</span></div>" +
@@ -1049,7 +1021,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     if (ids.length) begin({ set: S.set, mode: S.mode, ids, count: "all" });
   });
   $("retryAll").addEventListener("click", () => begin({ set: S.set, mode: S.mode, ids: S.results.map(r => r.id), count: "all" }));
-  $("newRandom").addEventListener("click", () => begin({ set: S.set, mode: S.mode, count: settings.count }));
+  $("newRandom").addEventListener("click", () => begin({ set: S.set, mode: practiceMode(), count: settings.count }));
   $("toHome").addEventListener("click", goHome);
   for (const id of ["playBack", "resultBack"]) $(id).addEventListener("click", () => navigation.back());
 

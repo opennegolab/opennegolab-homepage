@@ -42,7 +42,6 @@ function chars(s) { return Array.from(s); }   /* 한글 음절 하나 = 한 글�
 let pool = null, connecting = null, lastTry = 0, note = "";
 const memory = { seq: 0, setSeq: 0, sets: [], items: [] };
 
-const SAMPLE_SET = "예시 문제집";
 const SAMPLES = {
   dictation: [
     "오늘은 날씨가 좋아요.", "나무", "학교에 가요.", "친구와 함께 놀아요.", "사과가 빨개요.",
@@ -846,11 +845,15 @@ function warmUp() {
   if (usingDb()) db().catch(() => {});
 }
 
-/* 공개 기본 문제집 — 코드에 들어 있는 읽기 전용 문제 */
-const publicSeeds = [
-  { name: SAMPLE_SET, ...SAMPLES },
-  ...DEFAULT_EXERCISES,
-];
+/* 공개 기본 문제집 — 코드에 들어 있는 읽기 전용 문제.
+   받아쓰기·질문에 답하기·산수를 '기본 문제' 한 세트로 묶는다 (2026-11 운영자 요청).
+   연습할 때 문제마다 종류에 맞게 나온다 */
+const DEFAULT_SET = "기본 문제";
+const publicSeeds = [{
+  name: DEFAULT_SET,
+  dictation: [...SAMPLES.dictation, ...DEFAULT_EXERCISES.flatMap(x => x.dictation || [])],
+  qa: [...SAMPLES.qa, ...DEFAULT_EXERCISES.flatMap(x => x.qa || [])],
+}];
 const publicSets = publicSeeds.map((seed, index) => {
   const id = index + 1;
   const items = seedItems(seed).map((item, position) => ({ ...item, id: position + 1 }));
@@ -862,7 +865,7 @@ const publicSets = publicSeeds.map((seed, index) => {
 /* 한글 공부(/haru/typing)가 읽는 문제
    - 누구나: 코드에 들어 있는 공개 기본 문제집 (번호 1, 2, 3 …)
    - 보호자가 로그인한 브라우저: 그 보호자가 문제 설정에서 만든 문제집.
-     보호자 문제집에 문제가 하나라도 있으면 기본 문제집은 빼고 보호자 문제집만 보여 준다.
+     기본 문제(공개)는 언제나 함께 보여 준다.
      공개 문제집 번호와 겹치지 않게 '-DB 번호'(음수)로 내보낸다 */
 async function handlePublic(req, res, pathname) {
   if (req.method !== "GET") {
@@ -873,10 +876,8 @@ async function handlePublic(req, res, pathname) {
   try {
     if (pathname === "/haru/practice-data/sets") {
       const mine = owner ? (await store.sets(owner)).map(({ id, name, counts }) => ({ id: -id, name, counts })) : [];
-      /* 보호자가 문제를 하나라도 넣었으면 그 문제집만 보여 준다 (기본 문제집은 뺀다).
-         문제집만 만들고 문제가 없으면 연습할 것이 없으니 기본 문제집을 보여 준다 */
-      const hasOwn = mine.some(st => st.counts.dictation + st.counts.qa > 0);
-      const sets = hasOwn ? mine : [...mine, ...publicSets.map(({ id, name, counts }) => ({ id, name, counts }))];
+      /* 기본 문제는 언제나 함께 보여 준다 (보호자 문제집이 앞) */
+      const sets = [...mine, ...publicSets.map(({ id, name, counts }) => ({ id, name, counts }))];
       return send(res, 200, { ok: true, sets });
     }
     if (pathname === "/haru/practice-data/items") {

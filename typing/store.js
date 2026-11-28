@@ -118,7 +118,9 @@
     async remove(ids) { return (await call("/delete", { ids })).removed; },
     /* 출제 — 섞어서 고른다. ids 를 주면(오답 복습·다시 풀기) 그 문제들만 다시 섞는다 */
     async pick(setId, mode, count, ids) {
-      let pool = await this.list(setId, mode);
+      /* mode 가 'all' 이면 받아쓰기·질문을 섞어서 낸다 — 문제마다 자기 종류대로 나온다 */
+      const modes = mode === "all" ? ["dictation", "qa"] : [mode];
+      let pool = (await Promise.all(modes.map(m => this.list(setId, m)))).flat();
       if (Array.isArray(ids)) { const want = new Set(ids); pool = pool.filter(x => want.has(x.id)); }
       let picked = shuffle(pool);
       const n = count === "all" ? Infinity : Number(count);
