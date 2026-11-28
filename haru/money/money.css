@@ -57,3 +57,16 @@
 .auto-next { display: block; width: min(100%, 240px); height: 6px; margin: .6rem 0 0; border-radius: 3px; background: #e1e6de; overflow: hidden; }
 .auto-next i { display: block; height: 100%; width: 0; background: var(--haru-green, #24543c); animation: auto-next-fill var(--t, 2500ms) linear forwards; }
 @keyframes auto-next-fill { to { width: 100%; } }
+
+/* 휴대폰 가로 화면: 처음 화면 네 칸을 한 줄로, 거스름돈 문제를 낮게 */
+@media (orientation: landscape) and (max-height: 540px) {
+  .money-home { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .money-menu .photo-card img { max-height: 70px; }
+  .change-scene { margin-bottom: .5rem; gap: .4rem; }
+  .change-tag, .change-paid { padding: .4rem .6rem; gap: .1rem; }
+  .change-paid img { width: 110px; }
+  .money-change .money-pictures { min-height: 0; }
+  .money-change .money-pictures img { width: min(30%, 70px); }
+  .money-compare { max-width: 620px; }
+  .money-pictures img { width: min(100%, 96px); }
+}

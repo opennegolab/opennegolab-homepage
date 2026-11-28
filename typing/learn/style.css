@@ -312,3 +312,33 @@ html[data-haru] {
   .atm-slot { padding-inline: .4rem; }
   .atm-slot > strong { font-size: .85rem; }
 }
+
+/* 휴대폰 가로 화면: 카드를 한 줄에 더 많이, 사진은 낮게 (세로 공간이 좁다) */
+@media (orientation: landscape) and (max-height: 540px) {
+  .heading { margin-bottom: .6rem; }
+  .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .55rem; }
+  .photo-card img { max-height: 96px; }
+  .card-copy { padding: .35rem .55rem; }
+  .controls, .categories { margin: .6rem 0; }
+}
+
+/* 휴대폰 가로 화면 — 키오스크·ATM: 제목을 얇게, 주문 줄·분류 버튼을 낮게, ATM 은 화면과 투입구를 나란히 */
+@media (orientation: landscape) and (max-height: 540px) {
+  .heading h1 { font-size: 1.35rem; }
+  .problem-goal { margin-bottom: .4rem; padding: .25rem .6rem; }
+  .kiosk-order-screen { padding-block-start: .4rem; }
+  .kiosk-order-screen .heading { margin-bottom: .35rem; }
+  .kiosk-order-screen .heading h1 { font-size: 1.15rem; }
+  .kiosk-order-screen .heading .prompt { display: none; }      /* '상품을 누르면 주문 목록에 담겨요' — 좁아서 생략 */
+  .kiosk-order-jump, .kiosk-order-bar .kiosk-basket-reset { min-height: 40px; }
+  .kiosk-products .kiosk-categories { margin-bottom: .4rem; }
+  .kiosk-products .kiosk-categories button { min-height: 40px; }
+  .kiosk-products .items { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .kiosk-products .photo-card img { max-height: 80px; }
+  .atm-machine { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: .6rem; padding: .5rem; max-width: none; }
+  .atm-display { padding: .5rem .7rem; border-width: .3rem; }
+  .atm-screen-message { font-size: 1.15rem; margin: .3rem 0; }
+  .atm-slots { grid-template-columns: 1fr; margin-top: 0; gap: .4rem; }
+  .atm-slot { padding: .45rem; gap: .3rem; }
+  .atm-slot img { max-height: 3.6rem; }
+}

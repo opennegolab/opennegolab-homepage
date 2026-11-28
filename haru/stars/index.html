@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#fff8e9">
   <title>내 별 | 하루랑</title>
   <link rel="icon" href="/haru/assets/favicon.png" type="image/png">
-  <link rel="stylesheet" href="/haru/brand.css?v=5">
+  <link rel="stylesheet" href="/haru/brand.css?v=6">
   <script src="/haru/rewards.js?v=4"></script>
   <style>
     * { box-sizing: border-box; }
@@ -69,6 +69,20 @@
     .stamp.on { border-style: solid; border-color: #e7b6b6; background: #fff7f6; }
     .stamp.on i { border: 4px double #c9485b; color: #c9485b; transform: rotate(-10deg); font-size: .82rem; }
 
+    /* 휴대폰 가로 화면: 제목 상자 얇게, 하루 그림은 작게 옆에 */
+    @media (orientation: landscape) and (max-height: 540px) {
+      main { gap: .6rem; padding-top: .5rem; }
+      .card { padding: .7rem .9rem; }
+      h1 { font-size: 1.35rem; }
+      .lead .total { min-width: 4rem; padding: .25rem .6rem; }
+      .lead .total b { font-size: 1.4rem; }
+      .tabs button { min-height: 40px; }
+      .dress { grid-template-columns: 150px 1fr; }
+      .haru-dressed { width: 140px; }
+      .board { grid-template-columns: repeat(10, minmax(0, 1fr)); max-width: none; }
+      .stamps { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+      .stamp i { width: 48px; height: 48px; font-size: .68rem; }
+    }
     @media (max-width: 640px) {
       .dress { grid-template-columns: 1fr; }
       .haru-dressed { width: min(46%, 190px); }

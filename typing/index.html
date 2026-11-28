@@ -430,6 +430,41 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
     *, *::before, *::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
     .timer i.run{ animation-duration:var(--t,1.8s) !important; }
   }
+
+  /* ---------- 휴대폰 가로 화면 (높이 540px 이하) ----------
+     세로가 낮다 → 푸는 동안은 맨 위 하루랑 줄을 숨기고, 문제·답 칸·✓✕·결과를 작게 해서 한 화면에 들어오게 */
+  @media (orientation: landscape) and (max-height: 540px){
+    .wrap{ padding:10px 16px 20px; max-width:860px; }
+    .card{ padding:14px 16px; }
+    body:has(#home.hidden) .haru-top{ display:none; }        /* 푸는 중·결과: 위쪽 하루랑 줄 숨김 (이전 단계·집 버튼은 그대로) */
+    .topbar{ margin-bottom:8px; }
+    .topbar .btn, .iconbtn{ min-height:40px; }
+    .stage{ min-height:0; padding:12px 16px; }
+    .qtag{ margin-bottom:6px; }
+    .question{ font-size:1.45rem; max-width:none; }
+    .listen-big{ width:64px; height:64px; }
+    .listen-big svg{ width:28px; height:28px; }
+    .listen-cap, .stage .hint{ display:none; }
+    .listen-pill{ margin-top:8px; min-height:40px; }
+    .answer-box{ margin-top:8px; }
+    .answer{ min-height:48px; font-size:1.35rem; padding:6px 4px; }
+    .answer-box .submit{ min-height:48px; }
+    .under{ display:none; }
+    .fb .mark{ width:72px; height:72px; font-size:2.4rem; margin-top:0; }
+    .next-row{ margin-top:10px; }
+    /* 휴대폰 키보드가 올라오면 진행 줄도 숨겨 문제와 답 칸만 */
+    body.kbd .topbar{ display:none; }
+    body.kbd .stage{ padding:8px 12px; }
+    body.kbd .question{ font-size:1.2rem; }
+    /* 결과 화면 */
+    .final{ padding-top:12px; }
+    .final .medal{ margin-bottom:8px; }
+    .ring{ --sz:96px !important; }
+    .final .say{ font-size:1.1rem; margin-top:8px; }
+    .tiles{ margin-top:10px; gap:8px; }
+    .tile{ padding:8px 6px; }
+    .tile b{ font-size:1.25rem; }
+  }
 </style>
 </head>
 <body>
@@ -1058,7 +1093,8 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
   function keepVisible() {
     if ($("play").classList.contains("hidden")) return;
     const vv = window.visualViewport;
-    const small = vv ? vv.height < window.innerHeight * 0.8 || vv.height < 520 : false;
+    /* 키보드가 올라왔는지: 보이는 높이가 줄었을 때. 세로 화면에서는 520px 보다 낮아도 키보드로 본다 (가로 화면은 원래 낮으므로 제외) */
+    const small = vv ? vv.height < window.innerHeight * 0.8 || (vv.height < 520 && window.innerHeight >= window.innerWidth) : false;
     document.body.classList.toggle("kbd", small && document.activeElement === input);
     requestAnimationFrame(() => {
       const r = $("form").getBoundingClientRect();

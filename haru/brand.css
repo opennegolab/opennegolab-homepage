@@ -75,3 +75,15 @@ body { word-break: keep-all; overflow-wrap: break-word; }
   overflow-wrap: anywhere;
 }
 .haru-browser-notice .haru-return { white-space: nowrap; }
+
+/* ---------- 휴대폰 가로 화면 (높이 540px 이하) ----------
+   세로가 낮아 위쪽 줄·제목 상자가 화면을 거의 다 차지했다 → 얇게 줄여 내용이 바로 보이게 */
+@media (orientation: landscape) and (max-height: 540px) {
+  html body .haru-top-inner { padding-block: .2rem; }
+  html body .haru-return, html body .haru-top button { min-height: 38px; padding-block: .15rem; font-size: .9rem; }
+  html body .haru-top .haru-return img { width: 84px; }
+  html body .haru-heading { padding: .35rem .9rem; gap: .6rem; margin-bottom: .6rem; }
+  html body .haru-heading h1 { font-size: 1.35rem; line-height: 1.25; }
+  html body .haru-heading p { font-size: .92rem; margin-top: .15rem; line-height: 1.4; }
+  html body .haru-heading .haru-pose { width: 46px; height: 46px; }
+}
