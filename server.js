@@ -76,7 +76,7 @@ function haruTypingHeader() {
     <a class="haru-return" href="/haru" aria-label="하루랑 처음으로">
       <img src="/haru/assets/logo.png" width="123" height="44" alt="하루랑">
     </a>
-    <a class="haru-return haru-top-action haru-typing-settings" href="/typing/admin">보호자 문제 설정</a>
+    <a class="haru-return haru-top-action haru-typing-settings" href="/typing/admin">문제 설정</a>
   </nav>
 </header>`;
 }
