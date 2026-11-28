@@ -34,7 +34,12 @@
     .kind-length .compare-pic { aspect-ratio: 2 / 1; align-items: center; }
     .compare-option .card-copy { font-weight: 800; font-size: clamp(1rem, 2.6vw, 1.2rem); justify-content: center; text-align: center; }
     .compare-option .card-copy:empty { display: none; }
+    .compare-option { position: relative; }
     .compare-option.right { border: 3px solid var(--haru-green, #24543c); }
+    /* 정답 여부 표시 — 맞으면 초록 ✓, 틀리면 빨간 ✕ (문장 없이) */
+    .compare-option.right::after, .compare-option.wrong::after { position: absolute; top: .5rem; right: .5rem; width: 2.6rem; height: 2.6rem; border-radius: 50%; display: grid; place-items: center; font-size: 1.5rem; font-weight: 900; line-height: 1; color: white; box-shadow: 0 4px 10px -4px rgba(0,0,0,.35); }
+    .compare-option.right::after { content: "✓"; background: var(--haru-green, #24543c); }
+    .compare-option.wrong::after { content: "✕"; background: #d0605a; }
     .compare-option.right .compare-pic { background: #e6efdd; }
     .compare-option.wrong { animation: compare-shake .4s; border-color: #d98b8b; }
     .compare-option:disabled { cursor: default; opacity: 1; color: inherit; }
@@ -53,7 +58,7 @@
     @media (prefers-reduced-motion: reduce) { .compare-option.wrong { animation: none; } }
   </style>
   <script src="/haru/rewards.js?v=4"></script>
-  <script type="module" src="/haru/math/compare/app.js?v=6"></script>
+  <script type="module" src="/haru/math/compare/app.js?v=7"></script>
 </head>
 <body>
   <header class="haru-top">

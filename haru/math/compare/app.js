@@ -178,7 +178,7 @@ function heading(title, prompt) {
 
 /* 맞힌 뒤 잠시 기다렸다가 저절로 다음 문제로 ('다음 문제' 버튼 없이).
    칭찬 말이 끝날 만큼 기다리고, 그동안 막대가 차오른다 */
-const AUTO_MS = 2500;
+const AUTO_MS = 1500;   /* 말 없이 ○ 표시만 보여 주므로 짧게 */
 let autoTimer = 0;
 function stopAuto() { clearTimeout(autoTimer); }
 function autoNext(go, place) {
@@ -250,18 +250,18 @@ function drawQuestion() {
     const card = btn('', () => {
       if (i === q.answer) {
         if (!q.tries) round.firstTry++;
+        /* 정답 여부만 표시 — 칭찬 문장·음성 없이 ✓ 표시 후 잠시 뒤 다음 문제 (운영자 요청) */
+        stopSpeech();
         card.classList.add('right');
+        card.setAttribute('aria-label', (option.name || '') + ' 정답');
         for (const b of choices.querySelectorAll('button')) b.disabled = true;
-        const other = q.options[1 - i];
-        const say = '맞아요! ' + (q.kind === 'number' ? subject(option.name) + ' ' + other.name + '보다 ' : subject(option.name) + ' ') + (q.more ? k.moreSay : k.lessSay) + '.';
-        status.textContent = say;
-        announce(say);
+        status.textContent = '';
         q.advanceBar();
       } else {
         q.tries++;
-        card.classList.remove('wrong'); void card.offsetWidth; card.classList.add('wrong');
-        status.textContent = '다시 골라 볼까요? ' + k.hint;
-        announce(status.textContent);
+        stopSpeech();
+        card.classList.remove('wrong'); void card.offsetWidth; card.classList.add('wrong');   /* ✕ 표시와 흔들림, 다시 고르기 */
+        card.setAttribute('aria-label', (option.name || '') + ' 틀렸어요');
       }
     }, 'photo-card compare-option');
     card.dataset.option = i;
