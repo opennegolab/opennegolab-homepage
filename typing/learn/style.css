@@ -75,11 +75,48 @@ h1:focus { outline: none; }
   background: #efe2cd url('/typing/learn/images/serving-tray.webp') center / 100% 100% no-repeat;
   border-radius: var(--haru-radius);
 }
-.pickup-bag {
-  width: min(100%, 35rem);
+.goods-pickup {
+  width: min(100%, 44rem);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: .65rem;
+  padding: 0;
+  margin: 0 auto;
+  list-style: none;
+}
+.goods-pickup-line {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--haru-radius);
+  background: var(--paper);
+  text-align: center;
+}
+.goods-pickup-photos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  gap: clamp(.25rem, 1vw, .55rem);
+  padding: .7rem;
+  min-height: 8rem;
+  background: radial-gradient(ellipse at 45% 25%, #fffdf8, #eae2d6);
+}
+.goods-pickup-photos img {
+  width: clamp(3.9rem, 15vw, 7rem);
   aspect-ratio: 1;
-  padding: 10%;
-  background-image: url('/typing/learn/images/pickup-bag.webp');
+  object-fit: contain;
+  filter: drop-shadow(0 .3rem .22rem #4b392b38);
+}
+.goods-pickup-photos img:only-child { width: clamp(5rem, 19vw, 8.5rem); }
+.goods-pickup-line p {
+  font-weight: 750;
+  margin: 0;
+  padding: .5rem;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 .pickup-item {
   width: 29%;

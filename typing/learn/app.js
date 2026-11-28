@@ -467,9 +467,28 @@ function receipt(cart, editable) {
   if (cart.length) app.append(node('p', 'pay-total', '합계 ' + won(orderTotal(cart))));
 }
 
+function showGoodsPickup(cart) {
+  const list = node('ul', 'goods-pickup');
+  list.setAttribute('aria-label', '받은 상품');
+  const wholeProduce = { 'fruit-10': 'whole-kiwi', 'vegetable-5': 'whole-napa-cabbage' };
+  for (const { item, count } of cart) {
+    const line = node('li', 'goods-pickup-line');
+    const pictures = node('div', 'goods-pickup-photos');
+    const image = wholeProduce[item.image] ?? item.image;
+    for (let index = 0; index < count; index++) pictures.append(photo('pickup/' + image));
+    line.append(pictures, node('p', '', wording(item, count)));
+    list.append(line);
+  }
+  app.append(list);
+}
+
 function showPickup(cart, menu) {
+  if (!menu) {
+    showGoodsPickup(cart);
+    return;
+  }
   const region = node('section', 'pickup');
-  region.setAttribute('aria-label', menu ? '쟁반에 담긴 메뉴' : '봉투에 담긴 상품');
+  region.setAttribute('aria-label', '쟁반에 담긴 메뉴');
   const servedInBowl = ['food-5', 'food-9', 'food-11', 'food-12'];
   const photos = cart.flatMap(({ item, count }) => {
     const plated = state.id === 'food' && !servedInBowl.includes(item.image);
@@ -480,7 +499,7 @@ function showPickup(cart, menu) {
     });
   });
   for (let offset = 0; offset < photos.length; offset += 6) {
-    const container = node('div', menu ? 'pickup-container' : 'pickup-container pickup-bag');
+    const container = node('div', 'pickup-container');
     container.setAttribute('aria-hidden', 'true');
     container.append(...photos.slice(offset, offset + 6));
     region.append(container);
