@@ -14,6 +14,9 @@ export function screenHistory(capture, restore) {
 
   return {
     get hasPrevious() { return index > 0; },
+    get index() { return index; },
+    /* 맨 처음 화면(이 페이지에서 처음 기록한 화면)으로 한 번에 돌아간다 */
+    toStart() { if (index > 0) history.go(-index); },
     push() {
       screens[index] = capture();
       screens.length = index + 1;

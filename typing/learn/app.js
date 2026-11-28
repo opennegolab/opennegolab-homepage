@@ -1,5 +1,5 @@
 import { selectionCounter } from '/haru/selection-count.js?v=1';
-import { screenHistory } from '/haru/navigation.js?v=1';
+import { screenHistory } from '/haru/navigation.js?v=2';
 import { atm, atmProblems, places, shopProblems, shops } from './content.js?v=16';
 import { showSpeechHelp, speak, stopSpeech } from './speech.js?v=2';
 import { randomQuestion } from '/haru/questions.js?v=1';
@@ -22,7 +22,21 @@ if (area) {
 }
 
 let state = { view: 'home' };
-const navigation = screenHistory(() => state, screen => show(screen, false));
+/* 뒤로가기 — 주문·결제 중에는 한 단계씩 돌아가고, 문제를 다 푼 화면('문제를 해결했어요')에서는
+   목록으로 바로 나간다 (운영자 요청): 키오스크는 마트·카페·음식점·ATM 고르기, 패스트푸드는 새 문제 */
+const solved = s => s.view === 'shop-done' || (s.view === 'action' && s.id === 'atm' && !atm.steps[s.step]);
+const navigation = screenHistory(() => state, screen => {
+  if (solved(state)) {
+    if (navigation.index > 0) { navigation.toStart(); return; }   /* 맨 처음 기록까지 한 번에 */
+    toList();
+    return;
+  }
+  show(screen, false);
+});
+function toList() {
+  if (area?.id === 'burger') openShop('burger', false);
+  else show({ view: 'home' }, false);
+}
 let lastOrderNumber = 100;
 
 function show(next, remember = true) {
