@@ -130,7 +130,7 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
   - `typing_sets(id, name, created_at)` — 문제집, 이름 중복 불가(대소문자 무시)
   - `typing_items(id, set_id, mode, prompt, answers JSONB, created_at, updated_at)` — 문제. 문제집 삭제 시 함께 삭제
   - `typing_guardians` — 보호자 계정 및 비밀번호 해시
-  - `typing_meta` — 한 번만 하는 일의 기록 (`reset:guardian-data-2026-11`: 그동안의 보호자 문제집·공유 링크를 지운 일)
+  - `typing_meta` — 한 번만 하는 일의 기록 (`reset:guardian-data-2026-11`: 보호자 문제집·공유 링크 삭제, `reset:guardian-accounts-2026-11`: 보호자 계정 전부 삭제)
   - (`typing_practice_links` 는 공유 기능 제거 때 삭제됨)
 - **API** (`/api/typing/…`, JSON)
 

@@ -172,25 +172,39 @@ async function prepare(p) {
   await resetGuardianData(p);
 }
 
-/* 보호자 설정 데이터 정리 — 운영자 요청으로 한 번만 한다 (2026-11).
-   그동안 저장된 문제집·문제와 연습 링크 공유를 모두 지운다. 보호자 계정(아이디·비밀번호)은 남긴다.
-   typing_meta 에 했다고 적어 두므로 다시 켜져도 새로 만든 문제집은 지워지지 않는다 */
-const RESET_KEY = "reset:guardian-data-2026-11";
-async function resetGuardianData(p) {
-  await p.query(`CREATE TABLE IF NOT EXISTS typing_meta (key TEXT PRIMARY KEY, done_at TIMESTAMPTZ NOT NULL DEFAULT now())`);
-  if ((await p.query(`SELECT 1 FROM typing_meta WHERE key = $1`, [RESET_KEY])).rows.length) return;
-  const client = await p.connect();
-  try {
-    await client.query("BEGIN");
+/* 보호자 데이터 정리 — 운영자 요청으로 각각 한 번만 한다 (2026-11).
+   typing_meta 에 했다고 적어 두므로, 다시 켜져도 그 뒤에 새로 만든 계정·문제집은 지워지지 않는다.
+   - reset:guardian-data-2026-11     그동안의 문제집·문제와 연습 링크 공유를 지운다 (계정은 남김)
+   - reset:guardian-accounts-2026-11 보호자 계정(아이디·비밀번호)을 모두 지운다.
+                                      문제집은 계정에 묶여 있어 보호자 문제집도 함께 지운다 */
+const RESETS = [
+  ["reset:guardian-data-2026-11", async client => {
     await client.query(`DROP TABLE IF EXISTS typing_practice_links`);
     const r = await client.query(`DELETE FROM typing_sets`);   /* 문제는 ON DELETE CASCADE 로 함께 */
-    await client.query(`INSERT INTO typing_meta (key) VALUES ($1)`, [RESET_KEY]);
-    await client.query("COMMIT");
-    console.log("타자 연습: 보호자 설정 데이터를 정리했다 (문제집 " + r.rowCount + "개와 공유 링크)");
-  } catch (e) {
-    try { await client.query("ROLLBACK"); } catch {}
-    throw e;
-  } finally { client.release(); }
+    return "보호자 문제집 " + r.rowCount + "개와 공유 링크를 지웠다";
+  }],
+  ["reset:guardian-accounts-2026-11", async client => {
+    const sets = await client.query(`DELETE FROM typing_sets WHERE owner IS NOT NULL`);
+    const accounts = await client.query(`DELETE FROM typing_guardians`);
+    return "보호자 계정 " + accounts.rowCount + "개와 그 문제집 " + sets.rowCount + "개를 지웠다";
+  }],
+];
+async function resetGuardianData(p) {
+  await p.query(`CREATE TABLE IF NOT EXISTS typing_meta (key TEXT PRIMARY KEY, done_at TIMESTAMPTZ NOT NULL DEFAULT now())`);
+  for (const [key, run] of RESETS) {
+    if ((await p.query(`SELECT 1 FROM typing_meta WHERE key = $1`, [key])).rows.length) continue;
+    const client = await p.connect();
+    try {
+      await client.query("BEGIN");
+      const what = await run(client);
+      await client.query(`INSERT INTO typing_meta (key) VALUES ($1)`, [key]);
+      await client.query("COMMIT");
+      console.log("타자 연습: " + what);
+    } catch (e) {
+      try { await client.query("ROLLBACK"); } catch {}
+      throw e;
+    } finally { client.release(); }
+  }
 }
 
 async function connect() {
