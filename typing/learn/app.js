@@ -33,9 +33,27 @@ const navigation = screenHistory(() => state, screen => {
   }
   show(screen, false);
 });
+let nextAfterList = null;
 function toList() {
-  if (area?.id === 'burger') openShop('burger', false);
-  else show({ view: 'home' }, false);
+  if (area?.id === 'burger') { openShop('burger', false); return; }
+  const again = nextAfterList;
+  nextAfterList = null;
+  show({ view: 'home' }, false);
+  /* '다음 주문'을 눌렀으면 목록을 지나 같은 가게의 새 문제로 (뒤로가기 하면 목록) */
+  if (again === 'atm') openAtm();
+  else if (again) openShop(again);
+}
+/* '다 했어요!' 화면의 '다음 주문'(ATM 은 '다음 문제') — 같은 곳에서 새 문제.
+   지난 주문의 단계 기록은 지우고 목록 다음에 새 문제를 둔다 */
+function nextOrder() {
+  nextAfterList = state.id;
+  if (navigation.index > 0) navigation.toStart();
+  else toList();
+}
+function nextOrderButton(label) {
+  const next = button(label, nextOrder, true);
+  next.classList.add('next-order');
+  app.append(next);
 }
 let lastOrderNumber = 100;
 
@@ -564,6 +582,7 @@ function shopScreen(shop) {
   }
   heading('다 했어요!', shop.done, shop.name, 'cheer');
   rewardOnce();
+  nextOrderButton('다음 주문');
   showPickup(cart, menu);
 }
 
@@ -640,6 +659,7 @@ function atmActivityScreen() {
   if (!nextStep) {
     heading('다 했어요!', atm.done, atm.name, 'cheer');
     rewardOnce();
+    nextOrderButton('다음 문제');
     const card = photo('bank-12');
     card.alt = '돌려받은 카드';
     group('scene', card);

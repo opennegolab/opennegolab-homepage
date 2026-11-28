@@ -51,6 +51,10 @@ const voiceStatus = document.querySelector('#voice-status');
 let page = 'home';
 let question;
 let wallet = [];
+/* 금액 비교하기·금액 만들기·거스름돈 계산은 한 판 10문제 (운영자 요청). 지폐 알아보기는 판 없음 */
+const ROUND = 10;
+const QUIZ = ['compare', 'build', 'change'];
+let round = null;          /* { section, i, firstTry, missed } */
 /* '문제 다시 듣기'는 위쪽 줄 오른쪽에 (키오스크와 같은 자리). 문제 화면에서만 보인다 */
 const replay = document.querySelector('#problem-replay');
 let replayText = '';
@@ -58,10 +62,11 @@ function setReplay(text) { replayText = text || ''; replay.hidden = !replayText;
 replay.addEventListener('click', () => announce(replayText));
 
 const navigation = screenHistory(
-  () => ({ page, question, wallet, contents: [...app.childNodes] }),
+  () => ({ page, question, wallet, round: round && { ...round }, contents: [...app.childNodes] }),
   screen => {
     stopAuto();
     ({ page, question, wallet } = screen);
+    round = screen.round && { ...screen.round };
     app.replaceChildren(...screen.contents);
     app.querySelectorAll('.auto-next').forEach(bar => bar.remove());   /* 돌아온 화면에서는 저절로 넘어가지 않는다 */
     stopSpeech();
@@ -112,11 +117,28 @@ function heading(title, prompt) {
 
 function open(next) {
   navigation.push();
-  page = next;
-  question = next === 'compare' ? randomQuestion(comparisons) : next === 'build' ? randomQuestion(targets)
-    : next === 'change' ? changeQuestion() : undefined;
+  startRound(next);
+}
+/* 새 판 시작 — '한 번 더 하기'도 여기로 (뒤로가기 기록은 남기지 않는다: 뒤로가기는 언제나 돈 계산 처음 화면으로) */
+function startRound(section) {
+  page = section;
+  round = QUIZ.includes(section) ? { section, i: 0, firstTry: 0, missed: false } : null;
+  question = firstQuestion(section);
   draw(true);
 }
+function firstQuestion(section, previous) {
+  return section === 'compare' ? randomQuestion(comparisons, previous) : section === 'build' ? randomQuestion(targets, previous)
+    : section === 'change' ? changeQuestion(previous) : undefined;
+}
+/* 맞힌 뒤: 10문제째면 '다 했어요', 아니면 다음 문제 */
+function advanceRound() {
+  if (round.i + 1 >= ROUND) { page = 'done'; draw(true); return; }
+  round.i++;
+  round.missed = false;
+  question = firstQuestion(round.section, question);
+  draw(true);
+}
+function solvedNow() { if (!round.missed) round.firstTry++; }
 
 /* 맞힌 뒤 잠시 기다렸다가 저절로 다음 문제로 ('다음 문제' 버튼 없이).
    칭찬 말이 끝날 만큼 기다리고, 그동안 막대가 차오른다 */
@@ -161,10 +183,13 @@ function draw(focus = false) {
       menu.append(card);
     }
     app.append(menu);
-  } else if (page === 'learn') showNotes();
+  } else if (page === 'done') { showDone(); return; }
+  else if (page === 'learn') showNotes();
   else if (page === 'compare') showComparison();
   else if (page === 'change') showChange();
   else showWallet();
+  /* 몇 번째 문제인지 — 제목 위에 '3 / 10' */
+  if (round && QUIZ.includes(page)) app.querySelector('.heading div').prepend(element('p', (round.i + 1) + ' / ' + ROUND, 'money-progress'));
   if (focus) {
     stopSpeech();
     voiceStatus.hidden = true;
@@ -200,9 +225,19 @@ function showNotes() {
 }
 
 /* 다음 문제는 기록을 남기지 않는다 — 몇 번째 문제에서든 뒤로가기(이전 단계)를 누르면 돈 계산 고르는 화면으로 (운영자 요청) */
-function next(questions) {
-  question = randomQuestion(questions, question);
-  draw(true);
+function showDone() {
+  const title = sections[round.section][0];
+  heading(title, ROUND + '문제를 모두 풀었어요!');
+  const box = element('div', '', 'money-done');
+  box.append(element('strong', '처음에 바로 맞힌 문제 ' + round.firstTry + '개'),
+    element('span', round.firstTry === ROUND ? '모두 한 번에 맞혔어요. 정말 멋져요!' : '끝까지 잘했어요!'));
+  const controls = element('div', '', 'controls');
+  controls.append(button('한 번 더 하기', () => startRound(round.section), 'primary'), button('다른 것 고르기', () => navigation.back()));
+  app.append(box, controls);
+  app.querySelector('h1').focus();
+  announce('다 했어요! 처음에 바로 맞힌 문제는 ' + round.firstTry + '개예요.');
+  /* 하루랑 별 — 10문제 한 판을 끝까지 하면 하나 */
+  window.HaruRewards?.award('money');
 }
 
 function showComparison() {
@@ -213,15 +248,14 @@ function showComparison() {
   heading(sections.compare[0], prompt);
   const status = messageLine();
   const choices = element('div', '', 'grid money-compare');
-  const advance = () => next(comparisons);
   /* 정답 여부만 표시 — 문장·음성 없이 ✓ / ✕ (운영자 요청) */
   function check(choice, option) {
     if (choice === correct) {
       markRight(option);
-      window.HaruRewards?.award('money');
+      solvedNow();
       for (const control of choices.querySelectorAll('button')) control.disabled = true;
-      autoNext(advance, status);
-    } else markWrong(option);
+      autoNext(advanceRound, status);
+    } else { round.missed = true; markWrong(option); }
   }
   for (const [side, notesToShow] of [left, right].entries()) {
     const option = button('', () => check(side, option), 'photo-card money-option');
@@ -247,18 +281,14 @@ function showChange() {
   scene.append(tag, element('span', '−', 'change-minus'), pay);
   const status = messageLine();
   const choices = element('div', '', 'grid money-change');
-  const advance = () => {
-    question = changeQuestion(question);
-    draw(true);
-  };
   for (const amount of changeChoices(question)) {
     const option = button('', () => {
       if (amount === answer) {
         markRight(option);
-        window.HaruRewards?.award('money');
+        solvedNow();
         for (const control of choices.querySelectorAll('button')) control.disabled = true;
-        autoNext(advance, status);
-      } else markWrong(option);
+        autoNext(advanceRound, status);
+      } else { round.missed = true; markWrong(option); }
     }, 'photo-card money-option');
     option.dataset.amount = amount;
     const photos = element('span', '', 'money-pictures');
@@ -279,7 +309,6 @@ function showWallet() {
   const sumLabel = element('p', '', 'money-total');
   sumLabel.setAttribute('aria-live', 'polite');
   const status = messageLine();
-  const advance = () => next(targets);
   const reset = button('다시 선택', () => {
     wallet = [];
     status.textContent = '';
@@ -290,10 +319,10 @@ function showWallet() {
     const sum = total(wallet);
     if (sum === target) {
       markRight(selection);
-      window.HaruRewards?.award('money');
+      solvedNow();
       for (const control of [...choices.querySelectorAll('button'), reset, check]) control.disabled = true;
-      autoNext(advance, status);
-    } else markWrong(selection);   /* 담은 금액은 상자에 늘 보인다 — 아이가 더 담거나 '다시 선택' */
+      autoNext(advanceRound, status);
+    } else { round.missed = true; markWrong(selection); }   /* 담은 금액은 상자에 늘 보인다 — 아이가 더 담거나 '다시 선택' */
   }, 'primary');
   const counters = new Map();
   function update() {

@@ -70,3 +70,9 @@
   .money-compare { max-width: 620px; }
   .money-pictures img { width: min(100%, 96px); }
 }
+
+/* 한 판 10문제 — 몇 번째인지, 다 했을 때 */
+.money-progress { margin: 0 0 .2rem; font-weight: 800; color: var(--haru-muted, #526456); font-size: .95rem; }
+.money-done { display: grid; gap: .35rem; padding: 1.2rem; border-radius: 1rem; background: #fffbea; border: 2px solid #f0d27a; }
+.money-done strong { font-size: 1.3rem; }
+.money-done span { color: var(--haru-muted, #526456); font-weight: 700; }
