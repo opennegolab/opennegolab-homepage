@@ -1,6 +1,6 @@
 import { selectionCounter } from '/haru/selection-count.js?v=1';
 import { screenHistory } from '/haru/navigation.js?v=1';
-import { atm, atmProblems, places, shopProblems, shops } from './content.js?v=15';
+import { atm, atmProblems, places, shopProblems, shops } from './content.js?v=16';
 import { showSpeechHelp, speak, stopSpeech } from './speech.js?v=2';
 import { randomQuestion } from '/haru/questions.js?v=1';
 import { notes, values as noteValues, total, won } from '/haru/money/currency.js?v=1';

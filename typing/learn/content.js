@@ -78,8 +78,9 @@ export const shops = {
       /* 햄버거·치킨·피자는 패스트푸드에서 연습하므로 음식점에서는 뺀다 (그림·가격 번호는 그대로 두려고 만든 뒤에 거른다) */
       const fastFood = new Set(['햄버거', '치킨', '피자']);
       const keep = group => group.filter(item => !fastFood.has(item.name));
-      return [['식사', keep(menu.slice(0, 6).concat(menu.slice(10, 14), menu.slice(15)))],
-        ['분식', keep(menu.slice(6, 10).concat(menu.slice(14, 15)))]];
+      /* 우동·라면(10·11번)은 분식 */
+      return [['식사', keep(menu.slice(0, 6).concat(menu.slice(12, 14), menu.slice(15)))],
+        ['분식', keep(menu.slice(6, 12).concat(menu.slice(14, 15)))]];
     })() }
 };
 
