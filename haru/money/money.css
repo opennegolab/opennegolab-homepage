@@ -3,7 +3,6 @@
 .money-menu .photo-card img { aspect-ratio: 2 / 1; object-fit: contain; background: #f4f1e8; }
 .money-menu .card-copy, .money-compare .card-copy { font-weight: 800; }
 .money-compare { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.money-compare > :last-child { grid-column: 1 / -1; justify-self: start; }
 .money-pictures { padding: .5rem; background: #f4f1e8; display: flex; flex-wrap: wrap; align-content: start; gap: .25rem; width: 100%; }
 .money-pictures img { aspect-ratio: 2 / 1; width: min(100%, 130px); object-fit: contain; }
 .money-total { font-weight: 800; font-size: 1.25rem; margin-bottom: .5rem; }

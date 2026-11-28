@@ -8,7 +8,7 @@ const comparisons = [
   { left: [10000], right: [5000], larger: false },
   { left: [10000], right: [1000, 1000, 1000], larger: true },
   { left: [1000, 1000], right: [5000], larger: false },
-  { left: [5000], right: [1000, 1000, 1000, 1000, 1000], larger: true }
+  { left: [5000], right: [5000, 1000, 1000], larger: true }
 ];
 const targets = [2000, 5000, 6000, 10000, 15000];
 const sections = {
@@ -128,7 +128,7 @@ function next(questions) {
 function showComparison() {
   const { left, right, larger } = question;
   const sums = [total(left), total(right)];
-  const correct = sums[0] === sums[1] ? 2 : Number(larger ? sums[1] > sums[0] : sums[1] < sums[0]);
+  const correct = Number(larger ? sums[1] > sums[0] : sums[1] < sums[0]);
   const prompt = larger ? '어느 쪽의 금액이 더 큰가요?' : '어느 쪽의 금액이 더 작은가요?';
   heading(sections.compare[0], prompt);
   const status = messageLine();
@@ -137,8 +137,7 @@ function showComparison() {
   advance.hidden = true;
   function check(choice) {
     if (choice === correct) {
-      status.textContent = correct === 2 ? '맞아요. 지폐 장수가 달라도 둘 다 ' + won(sums[0]) + '이에요.'
-        : '맞아요. ' + won(sums[choice]) + '이 ' + won(sums[1 - choice]) + '보다 ' + (larger ? '커요.' : '작아요.');
+      status.textContent = '맞아요. ' + won(sums[choice]) + '이 ' + won(sums[1 - choice]) + '보다 ' + (larger ? '커요.' : '작아요.');
       for (const control of choices.querySelectorAll('button')) control.disabled = true;
       advance.hidden = false;
       advance.focus();
@@ -153,7 +152,6 @@ function showComparison() {
     option.append(photos, element('span', won(sums[side]), 'card-copy'));
     choices.append(option);
   }
-  choices.append(button('두 금액이 같아요', () => check(2)));
   app.append(choices, button('문제 다시 듣기', () => announce(prompt)), status, advance);
 }
 
