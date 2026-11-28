@@ -47,6 +47,7 @@ function toList() {
    지난 주문의 단계 기록은 지우고 목록 다음에 새 문제를 둔다 */
 function nextOrder() {
   nextAfterList = state.id;
+  continueSet = true;
   if (navigation.index > 0) navigation.toStart();
   else toList();
 }
@@ -56,6 +57,23 @@ function nextOrderButton(label) {
   app.append(next);
 }
 let lastOrderNumber = 100;
+
+/* 하루랑 별 — 같은 곳에서 3번 주문(ATM 은 3문제)을 한 세트로, 세트를 70점 이상으로 끝내면 별 하나 (운영자 요청).
+   주문 하나는 100점에서 시작해 틀릴 때마다(다시 해 보라는 안내가 나올 때마다) 10점씩 빠지고, 세 주문의 평균으로 본다 */
+const SET = 3;
+let kioskSet = { id: null, scores: [] };
+let continueSet = false;   /* '다음 주문'으로 왔으면 세트를 이어 간다 */
+let orderMisses = 0;
+function startOrder(id) {
+  if (!continueSet && id !== 'burger') kioskSet = { id, scores: [] };   /* 패스트푸드는 목록 없이 계속 새 문제라 늘 이어 간다 */
+  continueSet = false;
+  orderMisses = 0;
+}
+/* 틀렸을 때의 안내 — 점수에서 10점 뺀다 */
+function miss(message) {
+  orderMisses++;
+  feedback(message);
+}
 
 function show(next, remember = true) {
   if (remember) navigation.push();
@@ -160,6 +178,7 @@ function newShopTarget(id) {
 }
 
 function openShop(id, remember = true) {
+  startOrder(id);
   const target = newShopTarget(id);
   const menu = shops[id].submit === '주문하기';
   const freeChoice = menu ? '먹고 싶은 것을 선택해 주세요.' : '사고 싶은 것을 선택해 주세요.';
@@ -174,6 +193,7 @@ function openShop(id, remember = true) {
 }
 
 function openAtm() {
+  startOrder('atm');
   const target = randomQuestion(atmProblems);
   const goal = 'ATM에서 ' + won(target.amount) + '을 ' + (target.deposit ? '입금해 보세요.' : '출금해 보세요.');
   show({ view: 'action', id: 'atm', goal, target, step: atm.start, values: {} });
@@ -214,7 +234,7 @@ function feedbackLine(parent = app) {
 
 function submitCart() {
   const { cart, target } = state;
-  if (!cart.length) return feedback('상품을 하나 이상 골라 주세요.');
+  if (!cart.length) return miss('상품을 하나 이상 골라 주세요.');
   if (!target) {
     changeShop('cash', { cash: [] });
     return;
@@ -224,10 +244,10 @@ function submitCart() {
   const different = cart.find(line => target.some(goal => goal.item === line.item && goal.count !== line.count));
   if (extra) {
     const action = usesOrderScreen ? '의 수량을 줄여 빼 보세요.' : ' 옆의 빼기를 눌러 보세요.';
-    return feedback('문제에 없는 물건이 담겼어요. ' + extra.item.name + action);
+    return miss('문제에 없는 물건이 담겼어요. ' + extra.item.name + action);
   }
-  if (missing) return feedback('아직 담지 않은 물건이 있어요. 문제와 고른 목록을 비교해 보세요.');
-  if (different) return feedback(different.item.name + '의 수량을 문제와 비교해 보세요.');
+  if (missing) return miss('아직 담지 않은 물건이 있어요. 문제와 고른 목록을 비교해 보세요.');
+  if (different) return miss(different.item.name + '의 수량을 문제와 비교해 보세요.');
   changeShop('cash', { cash: [] });
 }
 
@@ -442,7 +462,7 @@ function paymentScreen(shop) {
   const submitCash = button('결제하기', () => {
     const tendered = total(state.cash);
     if (tendered < due) {
-      feedback(won(due - tendered) + '이 더 필요해요. 지폐를 더 담아 보세요.');
+      miss(won(due - tendered) + '이 더 필요해요. 지폐를 더 담아 보세요.');
       return;
     }
     const change = tendered - due;
@@ -586,11 +606,28 @@ function shopScreen(shop) {
   showPickup(cart, menu);
 }
 
-/* 하루랑 보상 — 주문·결제를 끝까지 하면 별 하나. 같은 완료 화면이 다시 그려져도 한 번만 */
+/* 하루랑 보상 — 주문 하나를 끝낼 때마다 세트에 점수를 적고, 세 번째에 70점 이상이면 별 하나.
+   같은 완료 화면이 다시 그려져도 한 번만 센다 (결과는 state.set 에 남겨 다시 그릴 때 같은 문장) */
 function rewardOnce() {
-  if (state.rewarded) return;
-  state.rewarded = true;
-  window.HaruRewards?.award(state.id);
+  if (!state.set) {
+    if (kioskSet.id !== state.id) kioskSet = { id: state.id, scores: [] };
+    kioskSet.scores.push(Math.max(0, 100 - orderMisses * 10));
+    const done = kioskSet.scores.length;
+    const result = { done, star: null };
+    if (done >= SET) {
+      const average = kioskSet.scores.reduce((a, b) => a + b, 0) / done;
+      result.star = average >= (window.HaruRewards?.PASS ?? 70);
+      if (result.star) window.HaruRewards?.award(state.id);
+      kioskSet = { id: state.id, scores: [] };
+    }
+    state.set = result;
+  }
+  const { done, star } = state.set;
+  const word = state.id === 'atm' ? '문제' : '주문';
+  const text = star === null ? word + ' ' + done + ' / ' + SET + ' · ' + SET + '번 하면 별을 받아요'
+    : star ? SET + '번 모두 했어요! 별을 받았어요'
+    : SET + '번 모두 했어요! 실수를 줄이면 별을 받아요';
+  app.append(node('p', 'set-progress' + (star ? ' is-star' : ''), text));
 }
 
 function atmScreen(step, scene, values, choose) {
@@ -629,7 +666,7 @@ function atmScreen(step, scene, values, choose) {
     const option = scene.options[0];
     const control = button('', () => {
       if (active) choose(option);
-      else feedback('지금은 이곳을 사용할 차례가 아니에요. 거래 화면을 확인해 보세요.');
+      else miss('지금은 이곳을 사용할 차례가 아니에요. 거래 화면을 확인해 보세요.');
     });
     control.classList.add('atm-slot');
     control.append(node('strong', '', title));
@@ -674,11 +711,11 @@ function atmActivityScreen() {
   const scene = typeof nextStep === 'function' ? nextStep(values) : nextStep;
   atmScreen(step, scene, values, option => {
     if (step === 'choice' && option.values.deposit !== state.target.deposit) {
-      feedback('문제에서 돈을 넣으라고 했나요, 꺼내라고 했나요? 다시 골라 보세요.');
+      miss('문제에서 돈을 넣으라고 했나요, 꺼내라고 했나요? 다시 골라 보세요.');
       return;
     }
     if (step === 'amount' && option.values.amount !== state.target.amount) {
-      feedback('문제에 나온 금액을 다시 확인하고 골라 보세요.');
+      miss('문제에 나온 금액을 다시 확인하고 골라 보세요.');
       return;
     }
     show({ ...state, step: option.next, values: { ...values, ...option.values } });

@@ -335,6 +335,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   /* ---------- 결과 화면 ---------- */
   .final{ text-align:center; position:relative; overflow:hidden; padding-top:30px; }
   .final .medal{ display:inline-flex; align-items:center; gap:6px; font-size:.84rem; font-weight:800; padding:6px 14px; border-radius:999px; background:var(--yellow-soft); color:var(--yellow-d); margin-bottom:18px; }
+  .final .star-need{ margin:6px 0 12px; font-size:.92rem; font-weight:700; color:var(--ink-2); word-break:keep-all; }
   .final .medal svg{ width:18px; height:18px; }
   .final .say{ font-size:1.35rem; font-weight:900; margin-top:16px; letter-spacing:-.02em; }
   .final .mode-name{ font-size:.86rem; color:var(--ink-soft); font-weight:700; margin-top:2px; }
@@ -578,7 +579,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
 </div>
 
 <script src="/typing/store.js?v=11"></script>
-<script src="/haru/rewards.js?v=4"></script>
+<script src="/haru/rewards.js?v=5"></script>
 <script type="module">
 import { screenHistory } from "/haru/navigation.js?v=1";
 import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } from "/typing/learn/speech.js?v=2";
@@ -1136,8 +1137,6 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
 
   function finish() {
     S.phase = "idle";
-    /* 하루랑 보상 — 한 판을 끝까지 하면 별 하나 (점수와 상관없이) */
-    if (window.HaruRewards && S.results.length) window.HaruRewards.award(mathOnly ? "math" : "typing");
     tts.stop();
     input.blur();
     const rs = S.results;
@@ -1146,6 +1145,9 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     const right = rs.filter(r => r.score === 100).length;
     const wrongCount = total - right;
     const pct = total ? Math.round(right / total * 100) : 0;
+    /* 하루랑 보상 — 한 판을 70점 이상(맞힌 비율)으로 끝내면 별 하나 (운영자 요청) */
+    const star = !!window.HaruRewards && window.HaruRewards.passed(right, total);
+    if (star) window.HaruRewards.award(mathOnly ? "math" : "typing");
 
     const medal = right === total ? icon("trophy") + "모두 맞았어요" : pct >= 80 ? icon("star") + "아주 잘했어요" : icon("check") + "연습 완료";
     const say = right === total ? "모두 맞았어요! 정말 멋져요." : pct >= 80 ? "아주 잘했어요!" : pct >= 50 ? "끝까지 잘했어요! 조금만 더 연습해요." : "끝까지 해낸 것이 대단해요. 다시 해 봐요!";
@@ -1153,6 +1155,7 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
       "<div class='medal'>" + medal + "</div>" +
       countRing(right, total, 168) +
       "<div class='say'>" + say + "</div>" +
+      (window.HaruRewards && total && !star ? "<div class='star-need'>" + window.HaruRewards.needed(total) + "개 이상 맞히면 별을 받아요</div>" : "") +
       "<div class='mode-name'>" + (S.setName ? esc(S.setName) + " · " : "") + (MODE_NAME[S.mode] ? MODE_NAME[S.mode] + " " : "") + "맞힌 문제</div>" +
       "<div class='tiles three'>" +
         "<div class='tile'><b>" + total + "</b><span>전체 문제</span></div>" +

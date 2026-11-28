@@ -1,6 +1,6 @@
 /* 수학 › 비교하기 — 길이·높이·크기·무게·개수·수를 그림으로 비교한다
    - 한 판 5문제. 두 그림 중 맞는 것을 누른다. 틀리면 힌트를 주고 다시 고르게 한다
-   - 한 판을 끝까지 하면 하루랑 별 1개 (HaruRewards.award('math'))
+   - 한 판을 70점 이상으로 끝내면 하루랑 별 1개 (HaruRewards.award('math'))
    - 그림은 모두 SVG 도형 — 문제마다 크기·색을 새로 정한다 */
 import { screenHistory } from '/haru/navigation.js?v=1';
 import { showSpeechHelp, speak, stopSpeech, prepareSpeech } from '/typing/learn/speech.js?v=2';
@@ -291,16 +291,20 @@ function finish() {
   stopSpeech();
   app.replaceChildren();
   heading(kind === 'mix' ? '비교하기' : KINDS[kind].title + ' 비교', ROUND + '문제를 모두 풀었어요!');
+  /* 별은 처음에 바로 맞힌 문제가 70% 이상일 때만 (운영자 요청) */
+  const star = window.HaruRewards ? HaruRewards.passed(round.firstTry, ROUND) : false;
+  const need = window.HaruRewards ? HaruRewards.needed(ROUND) : ROUND;
   const box = el('div', '', 'compare-done');
   box.append(el('strong', '처음에 바로 맞힌 문제 ' + round.firstTry + '개'),
-    el('span', round.firstTry === ROUND ? '모두 한 번에 맞혔어요. 정말 멋져요!' : '끝까지 잘했어요!'));
+    el('span', round.firstTry === ROUND ? '모두 한 번에 맞혔어요. 정말 멋져요!'
+      : star ? '끝까지 잘했어요!' : need + '개 이상 맞히면 별을 받아요. 다시 해 봐요!'));
   const controls = el('div', '', 'controls');
   controls.append(btn('한 번 더 하기', () => start(kind), 'primary'), btn('다른 비교 고르기', () => navigation.back()));
   app.append(box, controls);
   app.querySelector('h1').focus();
   announce('다 했어요! 처음에 바로 맞힌 문제는 ' + round.firstTry + '개예요.');
-  /* 하루랑 별 — 한 판을 끝까지 하면 하나 */
-  window.HaruRewards?.award('math');
+  /* 하루랑 별 — 한 판을 70점 이상(5문제 중 4개)으로 끝내면 하나 */
+  if (star) window.HaruRewards.award('math');
 }
 
 back.addEventListener('click', () => navigation.back());

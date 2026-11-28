@@ -106,7 +106,12 @@
     return t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0");
   };
 
-  const rules = { BOARD, PLACES, PLACE_OF, SLOTS, ITEMS, normalize, applyAward, applyWear, merge, unlocked };
+  /* 별은 한 판(세트)을 70점 이상으로 끝냈을 때만 하나 (운영자 요청). 맞힌 비율로 센다 */
+  const PASS = 70;
+  const passed = (right, total) => total > 0 && right * 100 >= PASS * total;
+  const needed = total => Math.ceil(total * PASS / 100);
+
+  const rules = { PASS, passed, needed, BOARD, PLACES, PLACE_OF, SLOTS, ITEMS, normalize, applyAward, applyWear, merge, unlocked };
   if (typeof module === "object" && module.exports) { module.exports = rules; return; }
 
   /* ---------- 그림 — 하루 그림(haru-base.webp, 420×508) 위에 얹는다. 같은 좌표계 ---------- */

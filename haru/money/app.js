@@ -228,16 +228,20 @@ function showNotes() {
 function showDone() {
   const title = sections[round.section][0];
   heading(title, ROUND + '문제를 모두 풀었어요!');
+  /* 별은 처음에 바로 맞힌 문제가 70% 이상일 때만 (운영자 요청) */
+  const star = window.HaruRewards ? HaruRewards.passed(round.firstTry, ROUND) : false;
+  const need = window.HaruRewards ? HaruRewards.needed(ROUND) : ROUND;
   const box = element('div', '', 'money-done');
   box.append(element('strong', '처음에 바로 맞힌 문제 ' + round.firstTry + '개'),
-    element('span', round.firstTry === ROUND ? '모두 한 번에 맞혔어요. 정말 멋져요!' : '끝까지 잘했어요!'));
+    element('span', round.firstTry === ROUND ? '모두 한 번에 맞혔어요. 정말 멋져요!'
+      : star ? '끝까지 잘했어요!' : need + '개 이상 맞히면 별을 받아요. 다시 해 봐요!'));
   const controls = element('div', '', 'controls');
   controls.append(button('한 번 더 하기', () => startRound(round.section), 'primary'), button('다른 것 고르기', () => navigation.back()));
   app.append(box, controls);
   app.querySelector('h1').focus();
   announce('다 했어요! 처음에 바로 맞힌 문제는 ' + round.firstTry + '개예요.');
-  /* 하루랑 별 — 10문제 한 판을 끝까지 하면 하나 */
-  window.HaruRewards?.award('money');
+  /* 하루랑 별 — 10문제 한 판을 70점 이상(7개)으로 끝내면 하나 */
+  if (star) window.HaruRewards.award('money');
 }
 
 function showComparison() {

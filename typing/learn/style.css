@@ -348,4 +348,6 @@ html[data-haru] {
 }
 
 /* '다 했어요!' 화면의 '다음 주문' — 제목 바로 아래, 크게 */
+.set-progress { margin: 0 0 .7rem; font-weight: 800; color: var(--haru-muted, #526456); word-break: keep-all; }
+.set-progress.is-star { color: var(--haru-green, #24543c); }
 .next-order { display: flex; width: min(100%, 22rem); min-height: 56px; margin: 0 0 1rem; justify-content: center; font-size: 1.1rem; font-weight: 850; }
