@@ -1,6 +1,5 @@
 export const places = [
   ['mart', '마트', '과일과 채소 사기', 'places-1'],
-  ['stationery', '문구점', '학용품 사기', 'places-2'],
   ['cafe', '카페', '음료·디저트 주문', 'places-3'],
   ['food', '음식점', '음식 주문하기', 'places-4']
 ];
@@ -9,7 +8,6 @@ export const places = [
 const prices = {
   fruit: [2000, 1000, 1000, 4000, 10000, 1000, 3000, 3000, 2000, 1000],
   vegetable: [1000, 1000, 1000, 1000, 3000, 2000, 1000, 2000, 2000, 3000],
-  stationery: [1000, 1000, 2000, 1000, 3000, 2000, 1000, 3000, 5000, 2000],
   cafe: [4000, 4000, 4000, 3000, 3000, 4000, 5000, 3000, 5000, 2000, 4000],
   burger: [4000, 5000, 6000, 5000, 2000, 3000, 2000, 2000, 3000],
   food: [6000, 9000, 9000, 7000, 8000, 8000, 12000, 15000, 4000, 3000, 6000, 5000, 8000, 10000, 5000, 9000]
@@ -39,12 +37,6 @@ export const shops = {
   ] },
   vegetable: { name: '채소가게', image: 'places-8', ...purchase, groups: [
     ['채소', items('vegetable', list('당근 오이 감자 양파 배추 무 고추 토마토 가지 호박').map(([name]) => [name, name === '배추' ? '포기' : '개']))]
-  ] },
-  stationery: { name: '문구점', image: 'places-2', ...purchase, groups: [
-    ['학용품', items('stationery', [
-      ['연필', '자루'], ['지우개'], ['공책', '권'], ['색연필', '자루'], ['가위'],
-      ['풀'], ['자'], ['스케치북', '권'], ['필통'], ['색종이', '장']
-    ])]
   ] },
   cafe: { name: '카페', image: 'places-3', ...order, groups: (() => {
     const menu = items('cafe', [
@@ -120,7 +112,6 @@ export const atm = {
 export const shopProblems = {
   fruit: [{ items: [['사과', 2]] }, { items: [['바나나', 1], ['귤', 3]] }],
   vegetable: [{ items: [['당근', 2]] }, { items: [['오이', 1], ['감자', 3]] }],
-  stationery: [{ items: [['연필', 2]] }, { items: [['공책', 1], ['지우개', 2]] }],
   cafe: [{ items: [['딸기주스', 1]] }, { items: [['레모네이드', 2], ['쿠키', 1]] }],
   burger: [
     { items: [['치즈버거', 1], ['감자튀김', 1], ['콜라', 1]] },
