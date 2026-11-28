@@ -161,6 +161,17 @@ html[data-haru] {
 }
 
 .pay-total { font-size: 1.22rem; font-weight: 800; }
+.cash-selection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .35rem .65rem;
+  margin-bottom: .55rem;
+}
+.cash-selection p { margin: 0; font-weight: 800; font-size: clamp(1rem, 3.5vw, 1.25rem); }
+.cash-selection button { white-space: nowrap; }
+.cash-selection button:disabled { color: var(--haru-muted); background: #eef0eb; cursor: default; }
 .pay-cash-summary { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; }
 .pay-cash-summary span { padding: .5rem; background: var(--haru-mint); border-radius: var(--haru-radius); }
 .receipt-price { font-weight: 750; margin-left: auto; }

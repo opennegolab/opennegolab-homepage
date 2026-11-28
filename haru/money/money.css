@@ -5,12 +5,8 @@
 .money-compare { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .money-pictures { padding: .5rem; background: #f4f1e8; display: flex; flex-wrap: wrap; align-content: start; gap: .25rem; width: 100%; }
 .money-pictures img { aspect-ratio: 2 / 1; width: min(100%, 130px); object-fit: contain; }
-.money-total { font-weight: 800; font-size: 1.25rem; margin-bottom: .5rem; }
-.money-wallet { display: flex; flex-wrap: wrap; gap: .5rem; padding: .75rem; border: 1px solid var(--haru-line); border-radius: var(--haru-radius); background: var(--haru-cream); }
-.money-wallet p { margin: 0; }
 #money-app button:disabled { cursor: default; }
 
 .money-menu .card-copy { padding: clamp(.4rem, 2vw, .75rem); gap: .15rem; }
 .money-menu .card-copy strong { font-size: clamp(1rem, 2.5vw, 1.25rem); }
 .money-menu .card-copy small { font-size: clamp(.825rem, 2vw, 1rem); word-break: keep-all; }
-.money-wallet button, .money-note .card-copy, .money-option .card-copy { white-space: nowrap; }
