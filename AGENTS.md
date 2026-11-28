@@ -108,6 +108,8 @@ inquiry.js stats.js stats.html hit.js                        문의 메일·방�
   - `qa` 질문에 답하기: 질문을 크게 보여 주고 읽어 줌. **허용 정답 여러 개** 중 가장 높은 점수로 채점
 - **진행 상태**는 객체 `S` 하나에 있습니다 — `phase`: `idle → loading → answer → grading → feedback → …`
   한 단계에서만 다음으로 넘어가게 해서 Enter 연타·중복 채점을 막습니다
+- **채점 뒤 표시**: 정답 여부만 — 100점이면 큰 ✓, 아니면 ✕ (점수 원·칭찬 문장·틀린 글자 비교 없음, 운영자 요청).
+  틀린 글자 비교는 한 판이 끝난 뒤 결과 화면 문제별 목록에서 봄
 - **흐름**: `begin(req)` 문제 받아 오기 → `showQuestion()` → Enter → `submit()` 채점 → `showFeedback()` →
   1.8초 뒤(또는 버튼·Enter) `next()` → 마지막이면 `finish()`
 - **채점** (`store.js` 의 `grade`/`compare`): Levenshtein 편집거리

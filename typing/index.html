@@ -302,6 +302,10 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   .fb{ width:100%; animation:pop .3s var(--ease); }
   @keyframes pop{ from{ transform:translateY(6px) scale(.98); opacity:0; } to{ transform:none; opacity:1; } }
   .fb .say{ font-size:1.3rem; font-weight:900; margin-top:12px; letter-spacing:-.02em; }
+  /* 정답 여부 표시 (✓ / ✕) */
+  .fb .mark{ width:120px; height:120px; margin:6px auto 0; border-radius:50%; display:grid; place-items:center; font-size:4rem; font-weight:900; line-height:1; color:#fff; box-shadow:0 10px 24px -12px rgba(0,0,0,.45); }
+  .fb .mark.right{ background:var(--haru-green, #24543c); }
+  .fb .mark.wrong{ background:#d0605a; }
   .fb .fq{ font-size:.9rem; font-weight:700; color:var(--ink-soft); margin-bottom:14px; }
   .compare{ margin:18px auto 0; text-align:left; max-width:540px; background:#FBF8F3; border-radius:var(--r); padding:14px 16px; display:grid; grid-template-columns:auto 1fr; gap:8px 14px; align-items:baseline; }
   .compare dt{ font-size:.76rem; font-weight:900; color:var(--ink-soft); white-space:nowrap; padding:2px 8px; border-radius:8px; background:#fff; }
@@ -410,6 +414,7 @@ setTimeout(function () { document.documentElement.classList.add("ready"); }, 700
   body.kbd .topbar{ margin-bottom:10px; }
   body.kbd .ring{ --sz:84px !important; }
   body.kbd .fb .say{ font-size:1.05rem; margin-top:6px; }
+  body.kbd .fb .mark{ width:72px; height:72px; font-size:2.4rem; margin-top:0; }
   body.kbd .compare{ margin-top:10px; padding:10px 12px; }
   body.kbd .compare dd{ font-size:1.02rem; }
   body.kbd .legend{ display:none; }
@@ -945,19 +950,16 @@ import { prepareSpeech, showSpeechHelp, speak, speechAvailable, stopSpeech } fro
     S.phase = "feedback";
     S.fbAt = Date.now();
     updateTop();
+    /* 정답 여부만 표시 — 100점이면 ✓, 아니면 ✕ (점수·칭찬 문장·틀린 글자 비교 없이, 운영자 요청).
+       틀린 글자 비교는 한 판이 끝난 뒤 결과 화면의 문제별 목록에서 볼 수 있다 */
+    const right = r.score === 100;
     $("stage").innerHTML =
       "<div class='fb'>" +
-        (item.mode === "qa" ? "<div class='fq'>" + esc(item.question) + "</div>" : "") +
-        ring(r.score, 124) +
-        "<div class='say'>" + esc(r.feedback) + "</div>" +
-        (r.score === 100 ? "" :
-          "<dl class='compare'><dt>정답</dt><dd>" + diffHtml(r.ops, "answer") + "</dd><dt>내 답</dt><dd>" + diffHtml(r.ops, "input") + "</dd></dl>" +
-          "<div class='legend'><span><mark class='wrong'>가</mark> 틀린 글자</span><span><mark class='extra'>가</mark> 더 쓴 글자</span><span><mark class='miss'>가</mark> 빠진 글자</span></div>") +
+        "<div class='mark " + (right ? "right" : "wrong") + "' role='img' aria-label='" + (right ? "정답" : "틀렸어요") + "'>" + (right ? "✓" : "✕") + "</div>" +
         /* '다음' 버튼 없이 잠시 뒤 저절로 넘어간다 (막대가 차오름) */
         "<div class='next-row'>" +
         "<div class='timer' aria-hidden='true'><i class='run' style='--t:" + FEEDBACK_MS + "ms'></i></div></div>" +
-      "</div>" +
-      (r.score === 100 ? "<div class='burst' aria-hidden='true'>" + stars() + "</div>" : "");
+      "</div>";
     $("submitBtn").textContent = "제출";     /* 결과가 보이는 동안 답 칸 버튼은 꺼 둔다 (저절로 넘어감) */
     $("submitBtn").disabled = true;
     if (advance) S.timer = setTimeout(next, FEEDBACK_MS);
