@@ -170,6 +170,7 @@ html[data-haru] {
 }
 
 .pay-total { font-size: 1.22rem; font-weight: 800; }
+.payment-end-action { display: block; margin-block-start: .65rem; margin-inline-start: auto; }
 .cash-selection {
   display: flex;
   flex-wrap: wrap;

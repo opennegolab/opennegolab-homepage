@@ -438,7 +438,7 @@ function paymentScreen(shop) {
   const selection = node('div', 'cash-selection');
   selection.append(paidLabel, resetCash);
   choices.before(selection);
-  group('controls', button('현금 내기', () => {
+  const submitCash = button('현금 내기', () => {
     const tendered = total(state.cash);
     if (tendered < due) {
       feedback(won(due - tendered) + '이 더 필요해요. 지폐를 더 담아 보세요.');
@@ -446,7 +446,9 @@ function paymentScreen(shop) {
     }
     const change = tendered - due;
     finishPayment('현금', tendered, change);
-  }, true));
+  }, true);
+  submitCash.classList.add('payment-end-action');
+  app.append(submitCash);
 
   function updateCash() {
     for (const [value, updateCount] of counters) {
@@ -572,7 +574,9 @@ function shopScreen(shop) {
     heading('결제했어요', text, shop.name);
     if (kiosk) kioskTicket(cart, payment);
     else receipt(cart, false);
-    group('controls', button(shop.receive, () => changeShop('shop-done'), true));
+    const receive = button(shop.receive, () => changeShop('shop-done'), true);
+    receive.classList.add('payment-end-action');
+    app.append(receive);
     return;
   }
   heading('문제를 해결했어요', shop.done, shop.name, 'cheer');
